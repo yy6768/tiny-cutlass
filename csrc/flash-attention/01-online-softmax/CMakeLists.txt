@@ -3,11 +3,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 cutlass_example_add_executable(
-  flash_attention_01_online_softmax_test
-  online_softmax_test.cu
-)
-
-cutlass_example_add_executable(
   flash_attention_01_online_softmax_attention_test
   online_softmax_attention.cu
 )

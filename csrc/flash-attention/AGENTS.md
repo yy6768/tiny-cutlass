@@ -1,16 +1,24 @@
-# FlashAttention 学习
-需要你符合CUTLASS规范, 帮我学习FlashAttention，
-我边写代码， 边写博客@blogs
+# Flash Attention Working Notes
 
-## 当前状态
-我现在正在模仿 examples 41 的风格， 写一个完全没有优化的naive attention但是当前未跑通。
+## Goal
+This directory tracks the current flash-attention study path inside tiny-cutlass.
 
-## DO and NOT DO
-- 符合 “CUTLASS style” cuda风格，而不是滥用“Raw CUDA”风格。cutlass封装了大量好用的工具函数和代码。
-- 一切以benchmark为准。而不是乱猜
-- 这个目录下的修改要尽量局部、最小化，优先在现有 `kernel_forward.h` 模板里做参数化调整，不要为了抽象而抽象。
-- 如果 MM0 / MM1 只是在 `layout`、`epilogue`、`外层 tile 遍历方向` 上有差异，优先继续复用同一套 GEMM 骨架，通过模板参数或局部条件分支来区分。
-- 不要主动引入新的 `AttentionGemmKernel<Config>`、`MM0Config`、`MM1Config` 这类重构性封装，除非用户明确要求重构。
-- 不要把本地学习笔记写成“架构设计重构说明”；这里的目标是理解 CUTLASS / FlashAttention 的实现路径，而不是重新设计一套抽象层。
-- 写博客时优先对应现有代码路径、函数名、模板参数和数据流，不要先发散到理论上更漂亮的结构。
-- 涉及性能判断时，先看实现和 benchmark，再下结论。
+- Optimize for SM80, SM89, and SM90 using CUTLASS 2.x or CUTLASS 3.x style code where each fits best.
+- Use the current kernel family as a learning loop: understand the operator, implement the kernel, measure it, explain the changes, and keep the lesson for the next variant.
+- Match a trusted reference implementation first, usually PyTorch, cuDNN, or TensorRT, before trusting performance data.
+- Stay within the required numerical tolerance before treating a kernel as correct. The usual target is MAE <= 1e-3 unless a specific experiment needs something different.
+- Treat Nsight Compute and Nsight Systems as the primary performance workflow. Keep `.ncu-rep`, `.nsys-rep`, and CSV outputs as first-class artifacts for both human review and agent analysis.
+- Record learning outcomes with Chinese technical notes suitable for Zhihu, X, GitHub, or similar publication channels.
+
+## Workflow
+1. Build the kernel family.
+2. Verify against the chosen reference.
+3. Benchmark only after verification passes.
+4. Profile with Nsight when performance work needs evidence.
+
+## Conventions
+- Variants are numbered in order, such as `00`, `01`, `02`, and so on.
+- `00` is usually the baseline for a family, but the directory is not locked to a fixed number of variants.
+- Keep `blogs/` for notes only.
+- Keep generated build and profiling artifacts under `build/`.
+- Keep changes local to the current family unless the user explicitly broadens scope.

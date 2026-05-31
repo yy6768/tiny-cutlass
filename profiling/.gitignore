@@ -1,0 +1,4 @@
+reports/
+**/*.csv
+**/*.ncu-rep
+**/*.nsys-rep

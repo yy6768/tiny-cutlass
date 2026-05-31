@@ -88,7 +88,7 @@ example 41第一个关键的部分是 ` advance_to_block()` , 这个函数快速
 
 
 
-## 性能：NCU
+## 性能：Nsight Compute
 
 
 
