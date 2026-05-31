@@ -10,6 +10,7 @@ execute_process(
 )
 list(APPEND CMAKE_PREFIX_PATH "${TORCH_CMAKE_PREFIX_PATH}")
 find_package(Torch REQUIRED)
+find_library(TORCH_PYTHON_LIBRARY torch_python PATHS "${TORCH_INSTALL_PREFIX}/lib" REQUIRED)
 
 execute_process(
   COMMAND "${Python3_EXECUTABLE}" -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX') or '.pyd')"
@@ -50,6 +51,7 @@ target_include_directories(conv_fused PRIVATE
 
 target_link_libraries(conv_fused PRIVATE
   "${TORCH_LIBRARIES}"
+  "${TORCH_PYTHON_LIBRARY}"
   Python3::Module
 )
 

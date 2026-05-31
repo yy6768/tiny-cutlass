@@ -1,0 +1,44 @@
+include_guard(GLOBAL)
+
+set(TINY_CUTLASS_CUTLASS_DIR
+    "${PROJECT_SOURCE_DIR}/3rdparty/cutlass"
+    CACHE PATH "CUTLASS submodule directory")
+
+if(NOT EXISTS "${TINY_CUTLASS_CUTLASS_DIR}/include/cutlass/cutlass.h")
+  message(FATAL_ERROR
+    "CUTLASS headers were not found at ${TINY_CUTLASS_CUTLASS_DIR}. "
+    "Initialize the submodule with: git submodule update --init --recursive")
+endif()
+
+add_library(tiny_cutlass_cutlass_headers INTERFACE)
+add_library(tiny_cutlass::cutlass_headers ALIAS tiny_cutlass_cutlass_headers)
+
+target_include_directories(tiny_cutlass_cutlass_headers INTERFACE
+  "${TINY_CUTLASS_CUTLASS_DIR}/include"
+  "${TINY_CUTLASS_CUTLASS_DIR}/tools/util/include"
+)
+
+target_compile_options(tiny_cutlass_cutlass_headers INTERFACE
+  $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+  $<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>
+)
+
+function(tiny_cutlass_add_cutlass_executable NAME)
+  add_executable(${NAME} ${ARGN})
+  target_link_libraries(${NAME} PRIVATE
+    tiny_cutlass::cutlass_headers
+    CUDA::cudart
+  )
+  target_include_directories(${NAME} PRIVATE
+    "${PROJECT_SOURCE_DIR}"
+    "${PROJECT_SOURCE_DIR}/csrc"
+  )
+  set_target_properties(${NAME} PROPERTIES
+    CUDA_SEPARABLE_COMPILATION OFF
+    CUDA_RESOLVE_DEVICE_SYMBOLS OFF
+  )
+endfunction()
+
+function(cutlass_example_add_executable NAME)
+  tiny_cutlass_add_cutlass_executable(${NAME} ${ARGN})
+endfunction()
