@@ -7,7 +7,7 @@ The scripts target the current `00-naive-attention` variant and keep generated
 reports under:
 
 ```text
-build/reports/flash-attention/00-naive-attention/
+build/reports/profiling/flash-attention/00-naive-attention/
 ```
 
 ## Commands

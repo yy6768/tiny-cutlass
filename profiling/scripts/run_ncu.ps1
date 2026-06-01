@@ -46,11 +46,12 @@ $targetArgs = @(
     '--reference-check=false'
 )
 
-$reportRoot = Join-Path $BuildDir "reports\flash-attention\00-naive-attention\ncu"
-New-Item -ItemType Directory -Force -Path $reportRoot | Out-Null
+$reportRoot = Join-Path $BuildDir "reports\profiling\flash-attention\00-naive-attention\ncu"
+$csvRoot = Join-Path $reportRoot "csv"
+New-Item -ItemType Directory -Force -Path $csvRoot | Out-Null
 
 $reportPath = Join-Path $reportRoot "ncu_00_naive_attention"
-$csvPath = "$reportPath.csv"
+$csvPath = Join-Path $csvRoot "ncu_00_naive_attention.csv"
 
 $launchSkipBeforeMatch = 9
 $launchCount = 3 * $iterations

@@ -44,11 +44,12 @@ set "TARGET_ARGS=--batch_size=1 --head_number=32 --head_size=256 --head_size_v=2
 rem -----------------------------------------------------------------------------
 rem 4. Report path
 rem -----------------------------------------------------------------------------
-set "REPORT_DIR=%BUILD_DIR%\reports\flash-attention\00-naive-attention\ncu"
-if not exist "%REPORT_DIR%" mkdir "%REPORT_DIR%"
+set "REPORT_DIR=%BUILD_DIR%\reports\profiling\flash-attention\00-naive-attention\ncu"
+set "CSV_DIR=%REPORT_DIR%\csv"
+if not exist "%CSV_DIR%" mkdir "%CSV_DIR%"
 set "REPORT_PATH=%REPORT_DIR%\ncu_00_naive_attention"
 set "REPORT_FILE=%REPORT_PATH%.ncu-rep"
-set "CSV_FILE=%REPORT_PATH%.csv"
+set "CSV_FILE=%CSV_DIR%\ncu_00_naive_attention.csv"
 
 rem -----------------------------------------------------------------------------
 rem 5. Profiling metrics / filters
