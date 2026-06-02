@@ -22,3 +22,8 @@ This directory tracks the current flash-attention study path inside tiny-cutlass
 - Keep `blogs/` for notes only.
 - Keep generated build and profiling artifacts under `build/`.
 - Keep changes local to the current family unless the user explicitly broadens scope.
+
+## Current variants
+- `00-naive-attention` materializes the full `P` matrix and is the baseline.
+- `01-online-softmax` only changes the softmax kernel; it still materializes `P`.
+- `02-tiled-online-attention` is the first IO-aware tiled variant and keeps the attention tile local instead of writing the full `P` matrix to global memory.

@@ -29,8 +29,10 @@
 
 add_subdirectory(00-naive-attention)
 add_subdirectory(01-online-softmax)
+add_subdirectory(02-tiled-online-attention)
 
 add_custom_target(flash_attention
   DEPENDS flash_attention_00_naive_attention_test
           flash_attention_01_online_softmax_attention_test
+          flash_attention_02_tiled_online_attention_test
 )
