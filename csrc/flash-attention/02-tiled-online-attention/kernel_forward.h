@@ -614,41 +614,41 @@ struct AttentionKernel {
     CHECK_ALIGNED_PTR(p.value_ptr, kAlignmentV);
     if (kSupportsBias) {
       CHECK_ALIGNED_PTR(p.attn_bias_ptr, kAlignmentQ);
-      XFORMERS_CHECK(
+      TINY_CUTLASS_CHECK(
           p.num_batches <= 1 || p.bias_strideB % kAlignmentQ == 0,
           "attn_bias is not correctly aligned (strideB)");
-      XFORMERS_CHECK(
+      TINY_CUTLASS_CHECK(
           p.num_heads <= 1 || p.bias_strideH % kAlignmentQ == 0,
           "attn_bias is not correctly aligned (strideH)");
-      XFORMERS_CHECK(
+      TINY_CUTLASS_CHECK(
           p.bias_strideM % kAlignmentQ == 0,
           "attn_bias is not correctly aligned");
     }
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.q_strideM % kAlignmentQ == 0,
         "query is not correctly aligned (strideM)");
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.k_strideM % kAlignmentK == 0,
         "key is not correctly aligned (strideM)");
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.v_strideM % kAlignmentV == 0,
         "value is not correctly aligned (strideM)");
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.num_heads <= 1 || p.q_strideH % kAlignmentQ == 0,
         "query is not correctly aligned (strideH)");
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.num_heads <= 1 || p.k_strideH % kAlignmentK == 0,
         "key is not correctly aligned (strideH)");
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.num_heads <= 1 || p.v_strideH % kAlignmentV == 0,
         "value is not correctly aligned (strideH)");
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.custom_mask_type < NumCustomMaskTypes,
         "invalid value for `custom_mask_type`");
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.head_dim <= kMaxK,
         "kMaxK must cover `head_dim`");
-    XFORMERS_CHECK(
+    TINY_CUTLASS_CHECK(
         p.head_dim_value <= kMaxK,
         "kMaxK must cover `head_dim_value`");
     return true;

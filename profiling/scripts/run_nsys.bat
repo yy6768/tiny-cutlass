@@ -44,8 +44,9 @@ set "TARGET_ARGS=--batch_size=1 --head_number=32 --head_size=256 --head_size_v=2
 rem -----------------------------------------------------------------------------
 rem 4. Report path
 rem -----------------------------------------------------------------------------
-set "REPORT_DIR=%BUILD_DIR%\reports\flash-attention\00-naive-attention\nsys"
-if not exist "%REPORT_DIR%" mkdir "%REPORT_DIR%"
+set "REPORT_DIR=%BUILD_DIR%\reports\profiling\flash-attention\00-naive-attention\nsys"
+set "CSV_DIR=%REPORT_DIR%\csv"
+if not exist "%CSV_DIR%" mkdir "%CSV_DIR%"
 set "REPORT_PATH=%REPORT_DIR%\nsys_00_naive_attention"
 set "REPORT_FILE=%REPORT_PATH%.nsys-rep"
 
@@ -73,7 +74,7 @@ nsys %NSYS_PROFILE_ARGS% -o "%REPORT_PATH%" -- "%TARGET_EXE%" %TARGET_ARGS%
 set "EXIT_CODE=%ERRORLEVEL%"
 if not "%EXIT_CODE%"=="0" exit /b %EXIT_CODE%
 
-pushd "%REPORT_DIR%"
+pushd "%CSV_DIR%"
 nsys stats --force-export=true --force-overwrite=true --report cuda_gpu_kern_sum --format csv --output . "%REPORT_FILE%"
 if errorlevel 1 exit /b 1
 nsys stats --force-export=true --force-overwrite=true --report cuda_api_sum --format csv --output . "%REPORT_FILE%"

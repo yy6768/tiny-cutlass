@@ -23,7 +23,8 @@ This directory tracks the current flash-attention study path inside tiny-cutlass
 - `00` is usually the baseline for a family, but the directory is not locked to a fixed number of steps.
 - Keep numbered kernel `.cu` files as launch entries. The shared executable under `csrc/tests/flash-attention` owns input generation, reference execution, MAE checking, and timing.
 - Use cuDNN SDPA as the current reference backend for fixed-seqlen flash-attention tests. Check cuDNN dependencies at CMake configure time and fail early if they are missing; do not add `HAS_CUDNN`-style fallback branches in C++.
-- Keep `02-tiled-online-attention` independent until it is migrated into the shared `Kernel` interface; `flash_attention_test --kernel=all` currently covers the 00/01 shared harness only.
+- Keep every numbered kernel variant registered through the shared `Kernel` interface in `flash_attention.h`; `flash_attention_test --kernel=all` must cover 00/01/02 and future migrated variants.
+- Prefer CUTLASS example-style C++ structure: keep public learning interfaces in the simple global scope and use anonymous namespaces only for file-local helpers. Do not add multi-level project namespaces such as `tiny_cutlass::flash_attention` in this workspace.
 - Keep `blogs/` for notes only.
 - Keep generated build and profiling artifacts under `build/`.
 - Keep changes local to the current family unless the user explicitly broadens scope.
@@ -35,5 +36,5 @@ This directory tracks the current flash-attention study path inside tiny-cutlass
 
 ## Current test entry
 - `flash_attention_test` is the shared test executable for registered kernels.
-- Use `--kernel=list`, `--kernel=00-naive`, `--kernel=01-online-softmax`, or `--kernel=all`.
-- Compatibility executables `flash_attention_00_naive_attention_test` and `flash_attention_01_online_softmax_attention_test` point at the same shared host C++ test main with different default kernels.
+- Use `--kernel=list`, `--kernel=00-naive`, `--kernel=01-online-softmax`, `--kernel=02-tiled-online`, or `--kernel=all`.
+- Compatibility executables `flash_attention_00_naive_attention_test`, `flash_attention_01_online_softmax_attention_test`, and `flash_attention_02_tiled_online_attention_test` point at the same shared host C++ test main with different default kernels.

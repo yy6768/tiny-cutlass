@@ -44,6 +44,26 @@ if(NOT EXISTS "${TINY_CUTLASS_CUDNN_BIN_DIR}/cudnn64_9.dll")
     "cuDNN runtime DLL not found: ${TINY_CUTLASS_CUDNN_BIN_DIR}/cudnn64_9.dll")
 endif()
 
+file(GLOB TINY_CUTLASS_CUDNN_RUNTIME_DLLS CONFIGURE_DEPENDS
+  "${TINY_CUTLASS_CUDNN_BIN_DIR}/cudnn*.dll"
+)
+
+set(TINY_CUTLASS_CUDA_RUNTIME_DLLS)
+if(WIN32 AND DEFINED CUDAToolkit_BIN_DIR)
+  file(GLOB TINY_CUTLASS_CUDA_RUNTIME_DLLS CONFIGURE_DEPENDS
+    "${CUDAToolkit_BIN_DIR}/cublas64_*.dll"
+    "${CUDAToolkit_BIN_DIR}/cublasLt64_*.dll"
+    "${CUDAToolkit_BIN_DIR}/cudart64_*.dll"
+    "${CUDAToolkit_BIN_DIR}/nvrtc64_*.dll"
+    "${CUDAToolkit_BIN_DIR}/nvrtc-builtins64_*.dll"
+  )
+endif()
+
+set(TINY_CUTLASS_CUDNN_DEPLOY_DLLS
+  ${TINY_CUTLASS_CUDNN_RUNTIME_DLLS}
+  ${TINY_CUTLASS_CUDA_RUNTIME_DLLS}
+)
+
 if(NOT EXISTS "${TINY_CUTLASS_CUDNN_FRONTEND_INCLUDE_DIR}/cudnn_frontend.h")
   message(FATAL_ERROR
     "cuDNN frontend header not found: "
@@ -63,3 +83,14 @@ target_link_libraries(tiny_cutlass_cudnn INTERFACE
   CUDA::cuda_driver
   CUDA::nvrtc
 )
+
+function(tiny_cutlass_copy_cudnn_runtime TARGET)
+  foreach(DLL_PATH IN LISTS TINY_CUTLASS_CUDNN_DEPLOY_DLLS)
+    add_custom_command(TARGET ${TARGET} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              "${DLL_PATH}"
+              "$<TARGET_FILE_DIR:${TARGET}>"
+      VERBATIM
+    )
+  endforeach()
+endfunction()

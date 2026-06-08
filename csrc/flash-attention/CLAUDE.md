@@ -12,8 +12,9 @@ This folder contains the migrated flash-attention implementation inside tiny-cut
 ## How to work here
 - Build, then verify, then benchmark.
 - Use the chosen reference implementation for correctness checks before performance conclusions.
-- Keep 00/01 test logic in `csrc/tests/flash-attention/flash_attention_test.cpp`; numbered kernel `.cu` files should expose launch entries through `flash_attention.h`.
-- Keep `02-tiled-online-attention` independent until it is migrated into the shared `Kernel` interface; do not include it in `flash_attention_test --kernel=all` prematurely.
+- Keep shared test logic in `csrc/tests/flash-attention/flash_attention_test.cpp`; numbered kernel `.cu` files should expose launch entries through `flash_attention.h`.
+- Keep 00/01/02 and future migrated variants registered in the shared `Kernel` interface so `flash_attention_test --kernel=all` exercises them together.
+- Follow CUTLASS example style for C++ scope: avoid multi-level project namespaces in this learning workspace; use anonymous namespaces only for file-local helpers.
 - The current reference contract is cuDNN SDPA. CMake must fail early if cuDNN headers/frontend/import library are missing; avoid `HAS_CUDNN`-style C++ fallback branches.
 - Minimize fallback implementations. Unsupported architectures, dtypes, or dependencies should be rejected explicitly instead of selecting weaker hidden paths.
 - Focus current optimization work around SM80 FP16 and SM89 FP8 paths unless the user explicitly expands scope.
