@@ -2,36 +2,44 @@
 
 #include "cutlass/arch/mma.h"
 #include "cutlass/cutlass.h"
+#include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 #include "cutlass/layout/tensor.h"
 
 #include "device/b2b_implicit_gemm_convolution.h"
 #include "kernel/default_b2b_conv2d_fprop_sm80.h"
 
-#include "threadblock/conv1x1_relu_conv1x1_threadblock_shapes.h"
 #include "threads/epilogue_ops.h"
-#include "warp/conv1x1_relu_conv1x1_warp_shapes.h"
 
 namespace tiny_cutlass::conv_fused::kernel {
 
-template <typename Element>
-struct Conv1x1ReluConv1x1B2bSm80 {
-  using ElementA = Element;
-  using ElementB = Element;
-  using ElementC = Element;
-  using ElementAccumulator = Element;
-  using ElementCompute = Element;
+template <
+    typename ArchTag_,
+    typename Element_,
+    typename ThreadblockShape0_ = cutlass::gemm::GemmShape<64, 64, 32>,
+    typename ThreadblockShape1_ = cutlass::gemm::GemmShape<64, 128, 32>,
+    typename WarpShape0_ = cutlass::gemm::GemmShape<32, 64, 32>,
+    typename WarpShape1_ = cutlass::gemm::GemmShape<32, 128, 32>>
+struct DefaultConv1x1ReluConv1x1 {
+  using ArchTag = ArchTag_;
+  using ElementA = Element_;
+  using ElementB = Element_;
+  using ElementC = Element_;
+  using ElementAccumulator = Element_;
+  using ElementCompute = Element_;
 
-  using ThreadblockShape0 =
-      typename threadblock::Sm80RfResident::ThreadblockShape0;
-  using ThreadblockShape1 =
-      typename threadblock::Sm80RfResident::ThreadblockShape1;
-  using WarpShape0 = typename warp::Sm80RfResident::WarpShape0;
-  using WarpShape1 = typename warp::Sm80RfResident::WarpShape1;
+  using ThreadblockShape0 = ThreadblockShape0_;
+  using ThreadblockShape1 = ThreadblockShape1_;
+  using WarpShape0 = WarpShape0_;
+  using WarpShape1 = WarpShape1_;
   using InstructionShape = cutlass::gemm::GemmShape<16, 8, 16>;
 
   using EpilogueOutputOp0 =
-      threads::Conv0Relu<ElementC, ElementAccumulator, ElementCompute>;
+      threads::Conv0Relu<
+          ElementC,
+          ElementAccumulator,
+          ElementCompute,
+          cutlass::gemm::GemmShape<16, 8, 16>::kM * cutlass::gemm::GemmShape<16, 8, 16>::kN / 32>;
   using EpilogueOutputOp1 = threads::Conv1Linear<
       ElementC,
       ElementAccumulator,
@@ -47,7 +55,7 @@ struct Conv1x1ReluConv1x1B2bSm80 {
       cutlass::layout::TensorNHWC,
       ElementAccumulator,
       cutlass::arch::OpClassTensorOp,
-      cutlass::arch::Sm80,
+      ArchTag,
       ThreadblockShape0,
       ThreadblockShape1,
       WarpShape0,

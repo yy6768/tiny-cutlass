@@ -5,10 +5,12 @@
 
 namespace tiny_cutlass::conv_fused::threads {
 
-template <typename Element, typename Accumulator, typename Compute>
+// Family aliases for CUTLASS thread-level epilogues.
+// This file only chooses the output-op flavor used by the two fused conv stages.
+template <typename Element, typename Accumulator, typename Compute, int Count>
 using Conv0Relu = cutlass::epilogue::thread::LinearCombinationRelu<
     Element,
-    1,
+    Count,
     Accumulator,
     Compute,
     cutlass::epilogue::thread::ScaleType::OnlyAlphaScaling>;
