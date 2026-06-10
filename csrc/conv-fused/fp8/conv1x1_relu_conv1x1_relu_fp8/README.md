@@ -16,7 +16,7 @@ input_e4m3
   -> quantize to e4m3 with output_scale
 ```
 
-公开函数名保留 `conv1x1_relu_conv1x1_relu_fp8`。实际 dtype 只支持 CUTLASS `cutlass::float_e4m3_t`；本地 CUTLASS 没有标准 `e5m3` 类型。
+公开入口优先使用 `conv1x1_relu_conv1x1_relu<Element>` 和 `Arguments<Element>` 模板；`conv1x1_relu_conv1x1_relu_fp8` 只作为 e4m3 兼容 wrapper 保留。实际 dtype 只支持 CUTLASS `cutlass::float_e4m3_t`；本地 CUTLASS 没有标准 `e5m3` 类型。
 
 ## 分层
 
@@ -32,7 +32,7 @@ input_e4m3
 - ModelOpt `FP8_DEFAULT_CFG` 的第一版验证按 per-tensor scale 语义处理，host 侧只把 scalar stage0 scale 展开成 hidden-channel 等值向量以适配 CUTLASS example 13 的 loader 接口。
 - amax/动态 scale 更新不是第一版目标；若要与 ModelOpt 动态 amax 训练/校准闭环对齐，需要改成支持 absmax 的 CUTLASS epilogue 或扩展 final epilogue。
 
-## CUTLASS policy
+## CUTLASS 策略
 
 - 当前 kernel 走 CUTLASS example 13 的 back-to-back implicit-GEMM convolution。
 - stage0 accumulator 通过 CUTLASS 的 smem-accumulator specialization 暂存，再作为 stage1 的 A operand。

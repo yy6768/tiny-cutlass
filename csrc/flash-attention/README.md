@@ -63,9 +63,9 @@ For the current CUDA 12.9 + cuDNN v9.21 setup:
 
 ```powershell
 $env:CUDNN_PATH = "C:\Program Files\NVIDIA\CUDNN\v9.21"
-$env:Path = "$env:CUDNN_PATH\bin\12.9\x64;$env:Path"
 
 cmake -S . -B build `
+  -DTINY_CUTLASS_BUILD_FLASH_ATTENTION=ON `
   -DTINY_CUTLASS_BUILD_SWIN=OFF
 ```
 
@@ -73,9 +73,14 @@ If CMake is still using a different CUDA compiler, pin the cuDNN CUDA version:
 
 ```powershell
 cmake -S . -B build `
+  -DTINY_CUTLASS_BUILD_FLASH_ATTENTION=ON `
   -DTINY_CUTLASS_BUILD_SWIN=OFF `
   -DTINY_CUTLASS_CUDNN_CUDA_VERSION:STRING=12.9
 ```
+
+The flash-attention CMake target copies the required cuDNN and CUDA runtime DLLs
+into the executable output directories under `build/`, so test execution does
+not require adding cuDNN or CUDA `bin` directories to the global `PATH`.
 
 ## Diagnose
 
@@ -128,6 +133,7 @@ build\csrc\flash-attention\Release\flash_attention_test.exe `
   --head_size=64 `
   --head_size_v=64 `
   --iterations=1 `
+  --reference=cudnn `
   --reference-check=true
 ```
 

@@ -28,7 +28,7 @@ include(cmake/TinyCutlass.cmake)
 
 option(TINY_CUTLASS_BUILD_FLASH_ATTENTION "Build migrated flash-attention CUTLASS examples" ON)
 option(TINY_CUTLASS_BUILD_CONV_FUSED "Build conv-fused CUTLASS kernels" OFF)
-option(TINY_CUTLASS_BUILD_SWIN "Build Swin CUTLASS learning examples" ON)
+option(TINY_CUTLASS_BUILD_SWIN "Build Swin CUTLASS kernels and tests" ON)
 option(TINY_CUTLASS_BUILD_NATTEN "Build NATTEN SM80 CUTLASS learning examples" ON)
 
 if(TINY_CUTLASS_BUILD_FLASH_ATTENTION)
@@ -41,6 +41,7 @@ if(TINY_CUTLASS_BUILD_CONV_FUSED)
 endif()
 
 if(TINY_CUTLASS_BUILD_SWIN)
+  include(cmake/CUDNN.cmake)
   add_subdirectory(csrc/swin)
 endif()
 

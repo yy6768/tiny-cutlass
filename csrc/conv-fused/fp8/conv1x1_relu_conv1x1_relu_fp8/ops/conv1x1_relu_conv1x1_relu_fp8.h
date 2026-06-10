@@ -16,21 +16,34 @@ struct Problem {
   int output_channels = 0;
 };
 
+template <
+    typename Element = cutlass::float_e4m3_t,
+    typename ElementScaleBias = float,
+    typename ElementCompute = float>
 struct Arguments {
   Problem problem;
-  cutlass::float_e4m3_t const* input = nullptr;
-  cutlass::float_e4m3_t const* weight0 = nullptr;
-  cutlass::float_e4m3_t* stage0 = nullptr;
-  float const* stage0_scale = nullptr;
-  float const* bias0 = nullptr;
-  cutlass::float_e4m3_t const* weight1 = nullptr;
-  cutlass::float_e4m3_t const* bias1 = nullptr;
-  cutlass::float_e4m3_t* output = nullptr;
-  float stage0_alpha = 1.0f;
-  float output_alpha = 1.0f;
+  Element const* input = nullptr;
+  Element const* weight0 = nullptr;
+  Element* stage0 = nullptr;
+  ElementScaleBias const* stage0_scale = nullptr;
+  ElementScaleBias const* bias0 = nullptr;
+  Element const* weight1 = nullptr;
+  Element const* bias1 = nullptr;
+  Element* output = nullptr;
+  ElementCompute stage0_alpha = ElementCompute(1);
+  ElementCompute output_alpha = ElementCompute(1);
   cudaStream_t stream = nullptr;
 };
 
-cutlass::Status conv1x1_relu_conv1x1_relu_fp8(Arguments const& args);
+template <
+    typename Element = cutlass::float_e4m3_t,
+    typename ElementScaleBias = float,
+    typename ElementCompute = float>
+cutlass::Status conv1x1_relu_conv1x1_relu(
+    Arguments<Element, ElementScaleBias, ElementCompute> const& args);
+
+using E4m3Arguments = Arguments<cutlass::float_e4m3_t, float, float>;
+
+cutlass::Status conv1x1_relu_conv1x1_relu_fp8(E4m3Arguments const& args);
 
 }  // namespace tiny_cutlass::conv_fused::fp8::conv1x1_relu_conv1x1_relu

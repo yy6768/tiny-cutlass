@@ -6,7 +6,7 @@ set(TINY_CUTLASS_CUDNN_PATH
 
 if(NOT TINY_CUTLASS_CUDNN_PATH)
   message(FATAL_ERROR
-    "CUDNN_PATH is required for flash-attention. "
+    "CUDNN_PATH is required for cuDNN-backed targets. "
     "Set CUDNN_PATH or configure with -DTINY_CUTLASS_CUDNN_PATH=<path>.")
 endif()
 

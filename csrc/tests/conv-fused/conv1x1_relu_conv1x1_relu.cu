@@ -11,7 +11,7 @@
 
 namespace {
 
-using Element = cutlass::float_e4m3_t;
+using DefaultElement = cutlass::float_e4m3_t;
 namespace fp8 = tiny_cutlass::conv_fused::fp8::conv1x1_relu_conv1x1_relu;
 
 struct Case {
@@ -102,12 +102,14 @@ float value_at(int index, float scale, float phase) {
   return scale * (0.65f * x + 0.35f * y);
 }
 
+template <typename Element>
 void fill_tensor(std::vector<Element>& tensor, float scale, float phase) {
   for (size_t i = 0; i < tensor.size(); ++i) {
     tensor[i] = Element(value_at(int(i), scale, phase));
   }
 }
 
+template <typename Element>
 std::vector<float> reference(
     Case const& c,
     std::vector<Element> const& input,
@@ -147,6 +149,7 @@ std::vector<float> reference(
   return output;
 }
 
+template <typename Element>
 bool run_case(Case const& c) {
   int64_t input_count = int64_t(c.batch) * c.height * c.width * c.channels;
   int64_t stage0_count = int64_t(c.batch) * c.height * c.width * c.hidden;
@@ -163,9 +166,9 @@ bool run_case(Case const& c) {
   std::vector<float> bias0(c.hidden, 0.0f);
   std::vector<Element> bias1(c.output_channels, Element(0.0f));
 
-  fill_tensor(input, 0.25f, 0.13f);
-  fill_tensor(weight0, 0.20f, 0.29f);
-  fill_tensor(weight1, 0.18f, 0.47f);
+  fill_tensor<Element>(input, 0.25f, 0.13f);
+  fill_tensor<Element>(weight0, 0.20f, 0.29f);
+  fill_tensor<Element>(weight1, 0.18f, 0.47f);
 
   DeviceBuffer<Element> d_input(input.size());
   DeviceBuffer<Element> d_weight0(weight0.size());
@@ -187,7 +190,7 @@ bool run_case(Case const& c) {
     return false;
   }
 
-  fp8::Arguments args;
+  fp8::Arguments<Element> args;
   args.problem = fp8::Problem{
       c.batch,
       c.height,
@@ -206,7 +209,7 @@ bool run_case(Case const& c) {
   args.stage0_alpha = c.stage0_scale;
   args.output_alpha = c.output_scale / c.stage0_scale;
 
-  cutlass::Status status = fp8::conv1x1_relu_conv1x1_relu_fp8(args);
+  cutlass::Status status = fp8::conv1x1_relu_conv1x1_relu<Element>(args);
   if (status != cutlass::Status::kSuccess) {
     std::cerr << "case " << c.name << " failed can_implement/run with status "
               << static_cast<int>(status) << "\n";
@@ -224,7 +227,7 @@ bool run_case(Case const& c) {
     return false;
   }
 
-  std::vector<float> expected = reference(c, input, weight0, weight1);
+  std::vector<float> expected = reference<Element>(c, input, weight0, weight1);
   float max_abs = 0.0f;
   for (size_t i = 0; i < output.size(); ++i) {
     float diff = std::abs(float(output[i]) - expected[i]);
@@ -247,20 +250,25 @@ bool run_case(Case const& c) {
   return true;
 }
 
-}  // namespace
-
-int main() {
+template <typename Element>
+bool run_all() {
   std::vector<Case> cases = {
-      {"fp8_square", 1, 4, 4, 16, 16, 16, 1.0f, 1.0f},
-      {"fp8_rect", 2, 3, 5, 32, 32, 16, 0.5f, 0.75f},
-      {"fp8_wide", 1, 2, 3, 64, 32, 32, 1.25f, 0.5f},
+      {"square", 1, 4, 4, 16, 16, 16, 1.0f, 1.0f},
+      {"rect", 2, 3, 5, 32, 32, 16, 0.5f, 0.75f},
+      {"wide", 1, 2, 3, 64, 32, 32, 1.25f, 0.5f},
   };
 
   for (auto const& c : cases) {
-    if (!run_case(c)) {
-      return 1;
+    if (!run_case<Element>(c)) {
+      return false;
     }
   }
 
-  return 0;
+  return true;
+}
+
+}  // namespace
+
+int main() {
+  return run_all<DefaultElement>() ? 0 : 1;
 }

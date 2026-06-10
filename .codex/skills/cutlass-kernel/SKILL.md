@@ -35,10 +35,10 @@ description: Generic workflow and guardrails for developing, verifying, benchmar
 - Prefer small diffs that make the optimization hypothesis easy to inspect.
 - Emit both machine-readable and human-readable profiling artifacts.
 - Express CUTLASS kernel policies as template type factories, normally `DefaultXxx<ArchTag, Element..., ThreadblockShape..., WarpShape..., EpilogueOp...>`.
+- Keep concrete policy choices in launcher code, explicit instantiation code, CMake configuration, or local tests. Public operator, policy, target, and runtime names should remain template-driven.
 - Pass CUTLASS shape types such as `cutlass::gemm::GemmShape` directly as template parameters when the shape choice is local and simple.
 - Use CUTLASS-provided arch tags, storage/layout types, swizzles, and tensor reference helpers directly instead of wrapping them in local one-off functions or long concrete names.
 - Use traits only when they remove real duplication across multiple architecture or dtype specializations; do not add one-off traits that merely wrap a single `GemmShape`.
-- Use architecture-specific aliases only as thin conveniences around a templated policy; the primary implementation type must stay template-parameterized.
 - Report unsupported architectures or problem shapes through CMake checks, assertions, or explicit unsupported status paths.
 - If the optimized TensorOp or architecture-specific path cannot support a case, reject it explicitly instead of silently selecting a weaker implementation.
 
@@ -48,6 +48,8 @@ description: Generic workflow and guardrails for developing, verifying, benchmar
 - Do not treat numbers from an unverified kernel as valid performance analysis.
 - Do not accept a performance report that lacks reference parity.
 - Do not make a kernel-family workflow depend on attention-specific assumptions unless the current user request is explicitly about attention.
-- Do not introduce concrete policy implementation structs whose primary name bakes in an architecture, such as `SomethingSm89`, `SomethingSm80`, or `SomethingSm90`.
+- Do not introduce concrete policy implementation structs, aliases, launchers, targets, public APIs, or test names whose primary name bakes in architecture, dtype, or layout, such as `SomethingSm89`, `SomethingSm80`, `SomethingFp16`, `SomethingBF16`, `SomethingNHWC`, or `SomethingRowMajor`.
+- Do not expose non-template specialization aliases such as `using SomethingFp16 = DefaultSomething<cutlass::arch::Sm80, cutlass::half_t>`. Select concrete policies through template arguments at the launcher, explicit instantiation, benchmark, or test site.
+- Do not preserve fallback compatibility with alias shims such as `using OldSomething = NewTemplatedSomething<...>`. Rename call sites to the template form instead.
 - Do not make threadblock or warp shape files expose only one concrete architecture struct or one-off traits wrapper; keep shape defaults in the `DefaultXxx` factory until a separate layer earns its keep.
 - Do not add lower-quality fallback kernels, such as SIMT fallbacks for a TensorOp experiment. Broader support must be a separate explicit variant with its own policy, tests, and name.

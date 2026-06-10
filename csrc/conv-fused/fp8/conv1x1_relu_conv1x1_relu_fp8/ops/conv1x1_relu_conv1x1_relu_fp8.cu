@@ -25,7 +25,9 @@ cutlass::conv::Conv2dProblemSize make_problem(
       1);
 }
 
-cutlass::Status validate(Arguments const& args) {
+template <typename Element, typename ElementScaleBias, typename ElementCompute>
+cutlass::Status validate(
+    Arguments<Element, ElementScaleBias, ElementCompute> const& args) {
   auto const& p = args.problem;
   if (p.batch <= 0 || p.height <= 0 || p.width <= 0 ||
       p.channels <= 0 || p.hidden_channels <= 0 || p.output_channels <= 0) {
@@ -51,8 +53,11 @@ cutlass::Status validate(Arguments const& args) {
 
 }  // namespace
 
-cutlass::Status conv1x1_relu_conv1x1_relu_fp8(Arguments const& args) {
-  cutlass::Status status = validate(args);
+template <typename Element, typename ElementScaleBias, typename ElementCompute>
+cutlass::Status conv1x1_relu_conv1x1_relu(
+    Arguments<Element, ElementScaleBias, ElementCompute> const& args) {
+  cutlass::Status status =
+      validate<Element, ElementScaleBias, ElementCompute>(args);
   if (status != cutlass::Status::kSuccess) {
     return status;
   }
@@ -71,7 +76,14 @@ cutlass::Status conv1x1_relu_conv1x1_relu_fp8(Arguments const& args) {
       p.hidden_channels,
       p.output_channels);
 
-  return device::run_conv1x1_relu_conv1x1_relu_fp8(
+  return device::run_conv1x1_relu_conv1x1_relu_fp8<
+      cutlass::arch::Sm89,
+      Element,
+      Element,
+      Element,
+      ElementScaleBias,
+      float,
+      ElementCompute>(
       problem0,
       problem1,
       args.input,
@@ -86,5 +98,17 @@ cutlass::Status conv1x1_relu_conv1x1_relu_fp8(Arguments const& args) {
       args.output_alpha,
       args.stream);
 }
+
+cutlass::Status conv1x1_relu_conv1x1_relu_fp8(E4m3Arguments const& args) {
+  return conv1x1_relu_conv1x1_relu<
+      cutlass::float_e4m3_t,
+      float,
+      float>(args);
+}
+
+template cutlass::Status conv1x1_relu_conv1x1_relu<
+    cutlass::float_e4m3_t,
+    float,
+    float>(E4m3Arguments const&);
 
 }  // namespace tiny_cutlass::conv_fused::fp8::conv1x1_relu_conv1x1_relu

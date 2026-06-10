@@ -11,7 +11,7 @@
 
 namespace {
 
-using Element = cutlass::half_t;
+using DefaultElement = cutlass::half_t;
 namespace conv = tiny_cutlass::conv_fused;
 
 struct Case {
@@ -102,18 +102,21 @@ float value_at(int index, float scale, float phase) {
   return scale * (0.7f * x + 0.3f * y);
 }
 
+template <typename Element>
 void fill_tensor(std::vector<Element>& tensor, float scale, float phase) {
   for (size_t i = 0; i < tensor.size(); ++i) {
     tensor[i] = Element(value_at(int(i), scale, phase));
   }
 }
 
+template <typename Element>
 void fill_bias(std::vector<Element>& tensor, bool enabled, float scale, float phase) {
   for (size_t i = 0; i < tensor.size(); ++i) {
     tensor[i] = enabled ? Element(value_at(int(i), scale, phase)) : Element(0.0f);
   }
 }
 
+template <typename Element>
 std::vector<float> reference(
     Case const& c,
     std::vector<Element> const& input,
@@ -152,6 +155,7 @@ std::vector<float> reference(
   return output;
 }
 
+template <typename Element>
 bool run_case(Case const& c) {
   int64_t input_count = int64_t(c.batch) * c.height * c.width * c.channels;
   int64_t stage0_count = int64_t(c.batch) * c.height * c.width * c.hidden;
@@ -167,11 +171,11 @@ bool run_case(Case const& c) {
   std::vector<Element> stage0(stage0_count);
   std::vector<Element> output(output_count);
 
-  fill_tensor(input, 0.12f, 0.11f);
-  fill_tensor(weight0, 0.09f, 0.23f);
-  fill_tensor(weight1, 0.08f, 0.37f);
-  fill_bias(bias0, c.use_bias, 0.04f, 0.41f);
-  fill_bias(bias1, c.use_bias, 0.03f, 0.53f);
+  fill_tensor<Element>(input, 0.12f, 0.11f);
+  fill_tensor<Element>(weight0, 0.09f, 0.23f);
+  fill_tensor<Element>(weight1, 0.08f, 0.37f);
+  fill_bias<Element>(bias0, c.use_bias, 0.04f, 0.41f);
+  fill_bias<Element>(bias1, c.use_bias, 0.03f, 0.53f);
 
   DeviceBuffer<Element> d_input(input.size());
   DeviceBuffer<Element> d_weight0(weight0.size());
@@ -233,7 +237,8 @@ bool run_case(Case const& c) {
     return false;
   }
 
-  std::vector<float> expected = reference(c, input, weight0, bias0, weight1, bias1);
+  std::vector<float> expected =
+      reference<Element>(c, input, weight0, bias0, weight1, bias1);
   float max_abs = 0.0f;
   for (size_t i = 0; i < output.size(); ++i) {
     float diff = std::abs(float(output[i]) - expected[i]);
@@ -254,9 +259,8 @@ bool run_case(Case const& c) {
   return true;
 }
 
-}  // namespace
-
-int main() {
+template <typename Element>
+bool run_all() {
   std::vector<Case> cases = {
       {"reject_unaligned", 1, 5, 7, 3, 4, 2, true,
        cutlass::Status::kErrorInvalidProblem},
@@ -267,10 +271,16 @@ int main() {
   };
 
   for (auto const& c : cases) {
-    if (!run_case(c)) {
-      return 1;
+    if (!run_case<Element>(c)) {
+      return false;
     }
   }
 
-  return 0;
+  return true;
+}
+
+}  // namespace
+
+int main() {
+  return run_all<DefaultElement>() ? 0 : 1;
 }
