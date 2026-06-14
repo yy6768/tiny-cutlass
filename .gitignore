@@ -2,5 +2,6 @@
 __pycache__/
 cutlass_library.egg-info/
 /build*
+/cache/
 
 .claude/settings.local.json

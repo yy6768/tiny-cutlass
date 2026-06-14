@@ -42,6 +42,7 @@ endif()
 
 if(TINY_CUTLASS_BUILD_SWIN)
   include(cmake/CUDNN.cmake)
+  include(cmake/TensorRT.cmake)
   add_subdirectory(csrc/swin)
 endif()
 
