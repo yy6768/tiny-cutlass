@@ -2,6 +2,7 @@
 
 #include "cutlass/half.h"
 
+#include "device/implicit_gemm_convolution_fusion.h"
 #include "kernel/conv1x1_relu_conv1x1.h"
 
 namespace tiny_cutlass::conv_fused::device {
@@ -21,8 +22,8 @@ cutlass::Status run_impl(
     cudaStream_t stream) {
   using KernelConfig =
       kernel::DefaultConv1x1ReluConv1x1<ArchTag, Element>;
-  using Conv = cutlass::conv::device::B2bImplicitGemmConvolution<
-      typename KernelConfig::CutlassKernel>;
+  using Conv =
+      ImplicitGemmConvolutionFusion<typename KernelConfig::CutlassKernel>;
   using TensorRef = cutlass::TensorRef<Element, cutlass::layout::TensorNHWC>;
   using VectorRef = cutlass::TensorRef<Element, cutlass::layout::RowMajor>;
 

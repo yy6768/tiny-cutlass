@@ -9,33 +9,9 @@
 
 
 
-## 从 naive attention的 softmax 开始
+## 回顾：从上一篇的 Softmax 性能报告开始
 
-上一篇中我们实现的 softmax 是最标准的 safe softmax。给定一行 score：
-
-$$
-s_1, s_2, \ldots, s_N
-$$
-
-为了数值稳定，先找最大值：
-
-$$
-m = \max_j s_j
-$$
-
-然后计算分母：
-
-$$
-d = \sum_j e^{s_j - m}
-$$
-
-最后归一化：
-
-$$
-p_j = \frac{e^{s_j - m}}{d}
-$$
-
-这个写法非常自然，但在 kernel 里就是 3 趟扫描：
+上一篇中我们实现的 softmax 是最标准的 safe softmax。 3 轮row方向的遍历：
 
 1. 读一遍 `P`，找 `row_max`
 2. 再读一遍 `P`，写回 `exp(x - row_max)`，同时求 `row_sum`
@@ -62,18 +38,28 @@ for (int j = tid; j < num_keys; j += kThreads) {
 }
 ```
 
-但如果从 CUDA kernel 的角度看，就有点难受：
+从上一篇的性能报告可以看到的问题包括
+
+-  DRAM Throughput 过高
+- Device/L1 Global 的压力过大
+
+![image-20260610005304631](https://metahome-1310941840.cos.ap-guangzhou.myqcloud.com/image-20260610005304631.png)
 
 - `P` 被反复读写
 - max reduce 和 sum reduce 分两轮做
 - 每一轮 cross-warp reduction 都要同步
-- 对长序列来说，softmax 基本是在给 `P` 交 memory traffic 的税
 
-`00b-profiling` 里 softmax 的 DRAM 压力和 `long_scoreboard` 就是这个结构的结果。
+所以接下来的问题就是 能不能减少全局读写的次数。
 
-## Online Softmax 的核心
 
-Online softmax 的关键点是：**max 和 denominator 可以一起维护**。
+
+## Online Softmax  Algorithm
+
+如何减少全局读写次数呢？ 最好的情况下是把所有3阶段融合成单个kernel（后续篇章）。但是现在最严重的问题是来自于00中实现的softmax的前后依赖性：计算pass2 时， 需要依赖pass1 计算的 `row_max`。 而得到最终结果之前必须把 $\sum\limits_{i=0}^N e^{i-row_{max}}$ 计算出来。
+
+为了减少遍历次数， Online Softmax的核心思想就是维护中间量，一次性解决最值和求和问题
+
+
 
 我们维护一个状态：
 
@@ -102,7 +88,7 @@ $$
 d_{new} = d \cdot e^{m - m_{new}} + e^{x - m_{new}}
 $$
 
-这个公式的直觉其实很好理解：如果新的 max 变大了，那旧分母里的所有项都要按新的 max 重新缩放。
+
 
 比如旧状态里我们保存的是：
 
@@ -124,9 +110,15 @@ $$
 
 这就是 online softmax。
 
-## 为什么它适合并行归约
+具体的推理过程可以看：
 
-如果只是单线程扫一行，online recurrence 已经够用了。但我们的 softmax kernel 是 256 threads 一起处理一行 `P`，所以还需要合并两个部分状态。
+[From Online Softmax to FlashAttention](https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf)
+
+
+
+## OnlineSoftmax的并行化实现
+
+
 
 假设两个 partial state 是：
 
@@ -305,95 +297,9 @@ Pass 2: read P, write normalized P
 01: read P -> read/write P
 ```
 
-## Shared Memory 的变化
 
-`00` 的 softmax 每次 reduction 只需要存一个 float 数组：
 
-```text
-kNumWarps * sizeof(float)
-```
 
-`01` 需要同时存 `m` 和 `d`：
-
-```cpp
-CUTLASS_HOST int getSmemBytes() const {
-  return 2 * kNumWarps * sizeof(accum_t);
-}
-```
-
-对于 `kThreads = 256`：
-
-```text
-kNumWarps = 8
-smem = 2 * 8 * 4 = 64 bytes
-```
-
-这个 shared memory 增量可以忽略。真正的差异还是少了一趟对 `P` 的 global memory 访问。
-
-## 这版到底改了什么
-
-没改的部分：
-
-- `MM0` 仍然是 CUTLASS threadblock GEMM
-- `MM1` 仍然是 CUTLASS threadblock GEMM
-- `P` 仍然是 `[B, H, Sq, Sk]`
-- `Testbed`、初始化、host reference、timing 流程基本沿用 `00`
-- grid 仍然是一行 `P` 对应一个 softmax block
-
-改了的部分：
-
-- safe softmax 从 3-pass 改成 2-pass
-- `warp_reduce_max` / `warp_reduce_sum` 合并成 online reduction
-- shared memory 存 `m` 和 `d`
-- softmax kernel 少一轮读写和同步
-
-这就是 `01` 的全部边界。
-
-## 性能应该怎么看
-
-这里先不要把 `01` 吹成 FlashAttention。
-
-它能改善的是 softmax kernel 内部的访存结构：
-
-| 项目 | 00 safe softmax | 01 online softmax |
-|---|---|---|
-| 扫描次数 | 3 pass | 2 pass |
-| global read | 3 次 | 2 次 |
-| global write | 2 次 | 1 次 |
-| reduction | max 和 sum 分开 | `(m, d)` 一起 |
-| `P` 是否还在 HBM | 是 | 是 |
-
-所以预期是：
-
-- softmax kernel 的 DRAM 压力下降
-- softmax kernel 的 barrier / scoreboard stall 有机会下降
-- 总体 attention 时间会改善，但不会发生质变
-
-真正的质变要等 `02`：MM0 的结果不再写完整 `P`，而是在 tile 里直接进入 online softmax 和 MM1。
-
-## 为什么这篇仍然值得写
-
-`01` 很像一个过渡版本。
-
-从最终目标看，它不够激动人心，因为完整 `P` 还在。但从学习路线看，它非常必要，因为它把后面 fused attention 里的核心状态先拆出来了：
-
-```text
-m        当前已经看过的最大值
-d / l    当前 softmax denominator
-merge    两段 partial softmax 状态的合并
-```
-
-这些东西到了 `02` 会变成 tile 级别的：
-
-```text
-for each K/V tile:
-  S_tile = Q_tile @ K_tile^T
-  update m/l
-  rescale old O
-  add P_tile @ V_tile
-```
-
-如果没有 `01` 这一步，`02` 的 `iterative_softmax(...)` 就会显得太突然。
 
 ## 当前结论
 

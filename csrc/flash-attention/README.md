@@ -1,37 +1,39 @@
 # FlashAttention
 
-This folder is the tiny-cutlass FlashAttention study workspace. Kernels are built and verified through the shared harness under `csrc/tests/flash-attention`.
+这个目录是 tiny-cutlass 的 FlashAttention 学习工作区。kernel 通过
+`csrc/tests/flash-attention` 下的共享 harness 构建、验证和 benchmark。
 
-## Scope
+## 范围
 
-- Current optimization focus: SM80 FP16 and SM89 FP8.
-- Reference backend: cuDNN frontend SDPA.
-- No CPU reference fallback.
-- Normal workflow: build, verify against cuDNN, then benchmark/profile.
+- 当前优化重点：SM80 FP16 和 SM89 FP8。
+- reference backend：cuDNN frontend SDPA。
+- 不提供 CPU reference fallback。
+- 标准流程：先 build，再用 cuDNN verify，通过后才 benchmark/profile。
 
-## Dependencies
+## 依赖
 
-- CUDA Toolkit with MSVC enabled.
-- CUTLASS submodule at `3rdparty/cutlass`.
-- cuDNN backend installed on the machine.
-- cuDNN frontend at `3rdparty/cudnn-frontend`.
+- 启用 MSVC 的 CUDA Toolkit。
+- `3rdparty/cutlass` 子模块。
+- 本机安装 cuDNN backend。
+- `3rdparty/cudnn-frontend`。
 
-References:
+参考资料：
 
-- NVIDIA cuDNN install docs: <https://docs.nvidia.com/deeplearning/cudnn/installation/>
-- NVIDIA cuDNN frontend: <https://github.com/NVIDIA/cudnn-frontend>
+- NVIDIA cuDNN 安装文档：<https://docs.nvidia.com/deeplearning/cudnn/installation/>
+- NVIDIA cuDNN frontend：<https://github.com/NVIDIA/cudnn-frontend>
 
-## Expected Layout
+## 预期目录布局
 
-`cmake/CUDNN.cmake` uses one explicit cuDNN path and one CUDA version. It does not search fallback locations.
+`cmake/CUDNN.cmake` 使用一个明确的 cuDNN 路径和一个 CUDA 版本，不搜索 fallback
+位置。
 
-Set `CUDNN_PATH` to the cuDNN installation path:
+设置 `CUDNN_PATH` 指向 cuDNN 安装目录：
 
 ```powershell
 $env:CUDNN_PATH = "C:\Program Files\NVIDIA\CUDNN\v9.21"
 ```
 
-With CUDA 12.9, the expected backend layout is:
+CUDA 12.9 下预期 backend 布局：
 
 ```text
 %CUDNN_PATH%\include\12.9\cudnn.h
@@ -39,27 +41,27 @@ With CUDA 12.9, the expected backend layout is:
 %CUDNN_PATH%\bin\12.9\x64\cudnn64_9.dll
 ```
 
-The expected frontend layout is:
+预期 frontend 布局：
 
 ```text
 3rdparty\cudnn-frontend\include\cudnn_frontend.h
 ```
 
-If you keep cuDNN in a nonstandard location, pass the path directly:
+如果 cuDNN 放在非标准位置，直接传入路径：
 
 ```powershell
 -DTINY_CUTLASS_CUDNN_PATH:PATH="D:\path\to\cudnn"
 ```
 
-If the cuDNN package subdirectory does not match the CUDA compiler version, pass the version explicitly:
+如果 cuDNN package 子目录和 CUDA compiler 版本不一致，显式传入版本：
 
 ```powershell
 -DTINY_CUTLASS_CUDNN_CUDA_VERSION:STRING=12.9
 ```
 
-## Configure
+## 配置
 
-For the current CUDA 12.9 + cuDNN v9.21 setup:
+当前 CUDA 12.9 + cuDNN v9.21 配置：
 
 ```powershell
 $env:CUDNN_PATH = "C:\Program Files\NVIDIA\CUDNN\v9.21"
@@ -69,7 +71,7 @@ cmake -S . -B build `
   -DTINY_CUTLASS_BUILD_SWIN=OFF
 ```
 
-If CMake is still using a different CUDA compiler, pin the cuDNN CUDA version:
+如果 CMake 仍然使用不同 CUDA compiler，固定 cuDNN CUDA 版本：
 
 ```powershell
 cmake -S . -B build `
@@ -78,11 +80,11 @@ cmake -S . -B build `
   -DTINY_CUTLASS_CUDNN_CUDA_VERSION:STRING=12.9
 ```
 
-The flash-attention CMake target copies the required cuDNN and CUDA runtime DLLs
-into the executable output directories under `build/`, so test execution does
-not require adding cuDNN or CUDA `bin` directories to the global `PATH`.
+FlashAttention CMake target 会把需要的 cuDNN 和 CUDA runtime DLL 复制到 `build/`
+下的 executable 输出目录，所以运行测试时不需要把 cuDNN 或 CUDA `bin` 加到全局
+`PATH`。
 
-## Diagnose
+## 诊断
 
 ```powershell
 Test-Path "$env:CUDNN_PATH\include\12.9\cudnn.h"
@@ -91,20 +93,20 @@ Test-Path "$env:CUDNN_PATH\bin\12.9\x64\cudnn64_9.dll"
 Test-Path "3rdparty\cudnn-frontend\include\cudnn_frontend.h"
 ```
 
-Check the cuDNN version:
+检查 cuDNN 版本：
 
 ```powershell
 Select-String -Path "$env:CUDNN_PATH\include\12.9\cudnn_version.h" `
   -Pattern "CUDNN_MAJOR|CUDNN_MINOR|CUDNN_PATCHLEVEL"
 ```
 
-## Build
+## 构建
 
 ```powershell
 cmake --build build --config Release --target flash_attention_test
 ```
 
-Compatibility targets:
+兼容 target：
 
 ```powershell
 cmake --build build --config Release --target `
@@ -113,15 +115,15 @@ cmake --build build --config Release --target `
   flash_attention_02_tiled_online_attention_test
 ```
 
-## Verify
+## 验证
 
-List kernels:
+列出 kernel：
 
 ```powershell
 build\csrc\flash-attention\Release\flash_attention_test.exe --kernel=list
 ```
 
-Run a small cuDNN-verified case:
+运行一个小型 cuDNN verified case：
 
 ```powershell
 build\csrc\flash-attention\Release\flash_attention_test.exe `
@@ -137,4 +139,10 @@ build\csrc\flash-attention\Release\flash_attention_test.exe `
   --reference-check=true
 ```
 
-Then run the same shape for `01-online-softmax` and `02-tiled-online`.
+随后用相同 shape 验证 `01-online-softmax` 和 `02-tiled-online`。
+
+## 性能约束
+
+- 没有通过 cuDNN reference parity 的结果不能作为性能结论。
+- benchmark 和 profiling artifact 必须落在 `build/`。
+- 每个性能数字都应该记录 kernel、shape、dtype、GPU、编译 arch 和误差阈值。

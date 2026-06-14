@@ -8,8 +8,8 @@
 #include "cutlass/layout/tensor.h"
 #include "cutlass/numeric_types.h"
 
-#include "device/b2b_implicit_gemm_convolution.h"
 #include "kernel/default_b2b_conv2d_fprop.h"
+#include "kernel/default_b2b_conv2d_fprop_smem_accumulator_sm80.h"
 
 #include "fp8/conv1x1_relu_conv1x1_relu_fp8/threads/conv1x1_relu_conv1x1_relu_fp8_epilogue_ops.h"
 

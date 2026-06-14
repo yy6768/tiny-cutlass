@@ -21,7 +21,7 @@ input_e4m3
 ## 分层
 
 - `ops/conv1x1_relu_conv1x1_relu_fp8.{h,cu}`: raw-pointer core API、problem/scale/pointer 检查、CUTLASS device 调用。
-- `device/conv1x1_relu_conv1x1_relu_fp8.{h,cu}`: CUTLASS device wrapper 和 `Arguments` 组装。
+- `device/conv1x1_relu_conv1x1_relu_fp8.{h,cu}`: 组装 `tiny_cutlass::conv_fused::device::ImplicitGemmConvolutionFusion<...>::Arguments`，执行 `can_implement` 检查并通过 `operator()` 启动。
 - `kernel/conv1x1_relu_conv1x1_relu_fp8.h`: `DefaultConv1x1ReluConv1x1ReluFp8<ArchTag, ...>` type factory，直接持有 CTA/warp shape 默认模板参数。
 - `threads/conv1x1_relu_conv1x1_relu_fp8_epilogue_ops.h`: stage0/stage1 的 thread-level epilogue 别名。
 
@@ -36,7 +36,8 @@ input_e4m3
 
 - 当前 kernel 走 CUTLASS example 13 的 back-to-back implicit-GEMM convolution。
 - stage0 accumulator 通过 CUTLASS 的 smem-accumulator specialization 暂存，再作为 stage1 的 A operand。
-- `kernel/` 只提供模板化 policy factory；当前 device 默认实例是 `ArchTag = cutlass::arch::Sm89` 与 `cutlass::float_e4m3_t`，但入口保留 arch/type 模板参数。
+- `kernel/` 只提供模板化 policy factory，不 include CUTLASS device adapter；device 启动统一走 `device/implicit_gemm_convolution_fusion.h` 的 CUTLASS-style operator。
+- 当前 device 默认实例是 `ArchTag = cutlass::arch::Sm89` 与 `cutlass::float_e4m3_t`，但入口保留 arch/type 模板参数。
 - CTA/warp shape 不再单独建 traits 文件；当前 shape 直接作为 `DefaultConv1x1ReluConv1x1ReluFp8` 的默认模板参数，真实 pipeline 仍由 CUTLASS `DefaultB2bConv2dFprop` 组装。
 
 ## 约束

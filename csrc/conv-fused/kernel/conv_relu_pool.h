@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cutlass/arch/mma.h"
-#include "cutlass/conv/device/implicit_gemm_convolution.h"
 #include "cutlass/conv/kernel/default_conv2d_fprop.h"
 #include "cutlass/cutlass.h"
 #include "cutlass/epilogue/thread/linear_combination_relu.h"
@@ -9,7 +8,6 @@
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 #include "cutlass/layout/tensor.h"
-#include "cutlass/reduction/device/tensor_reduce_affine_strided.h"
 
 namespace tiny_cutlass::conv_fused::kernel {
 
@@ -54,8 +52,6 @@ struct DefaultConvRelu {
       cutlass::conv::IteratorAlgorithm::kOptimized,
       cutlass::conv::StrideSupport::kUnity>::Kernel;
 
-  using Operation =
-      cutlass::conv::device::ImplicitGemmConvolution<CutlassKernel>;
 };
 
 template <
@@ -65,16 +61,8 @@ template <
 struct DefaultPool {
   using Element = Element_;
   using ElementCompute = ElementCompute_;
+  static int const kVectorLength = VectorLength_;
   using ReductionOp = cutlass::maximum<ElementCompute>;
-
-  using Operation = cutlass::reduction::device::TensorReductionAffineStrided<
-      6,
-      4,
-      Element,
-      Element,
-      ReductionOp,
-      VectorLength_,
-      ElementCompute>;
 };
 
 }  // namespace tiny_cutlass::conv_fused::kernel

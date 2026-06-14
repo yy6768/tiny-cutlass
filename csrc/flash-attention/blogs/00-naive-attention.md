@@ -8,7 +8,7 @@
 
 
 
-## Attention Recap
+## Attention 回顾
 
 标准的 Multi-Head Attention 分三步，每一步对应一个独立的 kernel：
 
@@ -89,6 +89,5 @@ example 41第一个关键的部分是 ` advance_to_block()` , 这个函数快速
 
 
 ## 性能：Nsight Compute
-
 
 

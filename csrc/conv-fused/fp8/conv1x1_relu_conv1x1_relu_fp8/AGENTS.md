@@ -14,7 +14,10 @@
 - 这次手动补依赖把 `pydantic` 从 `1.10.12` 升到了 `2.13.4`，会和 `anaconda-cloud-auth` 的 `pydantic<2.0` 约束冲突；这是环境事实，不是 conv-fused 代码要求。
 - 当前 ModelOpt 导入会提示 triton plugin DLL 初始化失败、transformers plugin 与本地 `transformers==4.32.1` 不兼容；这些警告不影响当前 conv PTQ smoke。
 - stage0 scale 当前是 per-tensor 标量语义，在 CUTLASS device wrapper 中展开为 hidden-channel 等值向量给 smem-staged stage0 epilogue。
+- ModelOpt FP8 reference artifacts 中 `*_scale_inv = amax / 448`；喂给 CUTLASS plugin 的 `stage0_scale` 应该是 `input_scale_inv * weight0_scale_inv / stage0_scale_inv`，`output_alpha` 应该是 `stage0_scale_inv * weight1_scale_inv / output_scale_inv`。
+- TensorRT plugin 验证时，plugin 输出 kFP8 后必须接 `IDequantizeLayer` 再和 ModelOpt/TensorRT reference 的 half output 对齐；不要直接把 raw FP8 bytes 当成最终 reference。
 - 当前 kernel policy 必须从 `DefaultConv1x1ReluConv1x1ReluFp8<ArchTag, ...>` 模板工厂实例化；不要新增 primary name 写死 `Sm89` 的 concrete policy struct。
+- `kernel/` 层只产出 `CutlassKernel`；FP8 device 也必须复用 `tiny_cutlass::conv_fused::device::ImplicitGemmConvolutionFusion<Kernel>`，不要新增只做 alias 的 `device/default_*` wrapper。
 - 不要为单个 CTA/warp `GemmShape` 新增 traits wrapper；shape 简单时直接留在 kernel factory 的模板参数里。
 - 不要为 CUTLASS 已经提供的 arch、layout、TensorRef packing 或 swizzle 写本地 helper。
 - 当前 SM89 FP8 smem-staged fused path 最终仍落到 CUTLASS `DefaultB2bConv2dFprop<..., IteratorAlgorithm::kOptimized, true>`，不要退回旧的 RF resident path。

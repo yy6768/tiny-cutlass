@@ -34,7 +34,10 @@ Kernel
       -> Threads
 ```
 
-- `Kernel` 层决定用哪一个 CUTLASS kernel 组合模板。
+- `Kernel` 层决定用哪一个 CUTLASS kernel 组合模板，只产出
+  `CutlassKernel`。
+- `Device` 层提供 CUTLASS-style device operator，持有 `Params`，
+  负责 `Arguments` 组装、`can_implement`、`initialize/run/operator()`。
 - `CTA` 层决定一个 threadblock 怎么做两段 implicit-GEMM、怎么走 shared memory、怎么串起两次卷积。
 - `Warp` 层只固定 warp 的 tile 形状。
 - `Threads` 层只固定 epilogue 的逐线程算子。
@@ -54,9 +57,10 @@ Kernel
 ### 文件职责
 
 - `ops/conv1x1_relu_conv1x1.{h,cu}`: 默认 core API，接收 raw device pointer、problem descriptor、`cudaStream_t`，调用 device wrapper。
-- `device/conv1x1_relu_conv1x1.{h,cu}`: device 层，负责把 `Conv2dProblemSize` 和裸指针喂给 CUTLASS device wrapper。
+- `device/implicit_gemm_convolution_fusion.h`: CUTLASS-style back-to-back implicit-GEMM fusion device operator，模板参数是 `ImplicitGemmFusionKernel`，内部通过 `cutlass::Kernel<ImplicitGemmFusionKernel>` 启动。
+- `device/conv1x1_relu_conv1x1.{h,cu}`: device 层，负责把 `Conv2dProblemSize` 和裸指针组装成 `ImplicitGemmConvolutionFusion<...>::Arguments` 并通过 `operator()` 启动。
 - `ops/conv_relu_pool.{h,cu}`: `conv3x3 -> relu -> pool -> conv1x1 -> relu -> pool` 的 raw-pointer core contract，负责 problem/pointer validation。
-- `device/conv_relu_pool.{h,cu}`: staged CUTLASS device wrapper，负责 workspace layout、两次 implicit-GEMM conv launch 和两次 CUTLASS reduction pool launch。
+- `device/conv_relu_pool.{h,cu}`: staged CUTLASS device class `ConvReluPool<ArchTag, Element>`，持有 `Arguments/Params` 和 `initialize/run/operator()`，在 `run()` 中顺序调用两次 CUTLASS implicit-GEMM conv device operator 和两次 CUTLASS reduction pool device operator。
 - `kernel/conv_relu_pool.h`: kernel policy 层，提供 `DefaultConvRelu<ArchTag, Element, ...>` 与 `DefaultPool<Element, ...>` 模板工厂。
 - `kernel/conv1x1_relu_conv1x1.h`: kernel 层，负责组装 `DefaultB2bConv2dFprop` 的模板参数，包括 CTA/warp shape 默认值。
 - `threads/epilogue_ops.h`: threads 层的 epilogue 别名，只固定逐线程输出算子。
@@ -69,8 +73,8 @@ Kernel
 ### 核心结构
 
 - `ops` 只放无 ATen 的 core API。
-- `device` 只管 CUTLASS device wrapper。
-- `kernel` 只负责模板装配。
+- `device` 只管 CUTLASS device operator、启动参数和 `operator()` 调用。
+- `kernel` 只负责模板装配，不 include CUTLASS device adapter。
 - CTA 和 warp shape 当前直接作为 `Default...` factory 的模板参数；没有额外逻辑时不单独建 traits 文件。
 - `threads` 对应 CUTLASS 的逐线程 epilogue 层。
 
@@ -82,14 +86,14 @@ Kernel
 - `cutlass::gemm::threadblock::DefaultMmaCore`
 - `cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle`
 - `cutlass::conv::kernel::DefaultB2bConv2dFprop`
-- `cutlass::conv::device::B2bImplicitGemmConvolution`
+- `cutlass::Kernel<ImplicitGemmFusionKernel>`
 - `cutlass::epilogue::thread::LinearCombination`
 - `cutlass::epilogue::thread::LinearCombinationRelu`
 
 ### 现状
 
 - 当前 `float16` 主路径只走 CUTLASS back-to-back TensorOp implicit-GEMM。
-- `conv_relu_pool` 当前是 staged CUTLASS baseline，不是最终 monolithic fusion。它用 CUTLASS implicit-GEMM conv 和 CUTLASS reduction pool 串联，先提供和 TensorRT reference 对齐、可计时的 ours 路线。
+- `conv_relu_pool` 当前是 staged CUTLASS baseline，不是最终 monolithic fusion。它封装为 `device::ConvReluPool<ArchTag, Element>`，用 CUTLASS implicit-GEMM conv 和 CUTLASS reduction pool 串联，先提供和 TensorRT reference 对齐、可计时的 ours 路线。
 - 非 FP8 path 要求 `channels`、`hidden_channels`、`output_channels` 满足 TensorOp vector access 对齐；不满足时返回 `kErrorInvalidProblem`，不降级。
 - `fp8/conv1x1_relu_conv1x1_relu_fp8/` 是独立 FP8 family，保持 `ops/device/kernel/threads` 分层；只有出现真实 CTA 或 warp 逻辑时才新增 `threadblock/` 或 `warp/`。
 - FP8 family 当前只支持 CUTLASS `cutlass::float_e4m3_t`，目标硬件是 SM89。

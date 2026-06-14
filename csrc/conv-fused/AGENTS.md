@@ -12,6 +12,7 @@
 - kernel policy primary type 必须是 CUTLASS-style 模板工厂，例如 `DefaultXxx<ArchTag, Element..., ThreadblockShape..., WarpShape...>`；不要新增 `SomethingSm89` 这种把架构写进 primary struct 名的实现。
 - 不要为单个 `cutlass::gemm::GemmShape` 新增 threadblock/warp traits 文件；shape 简单时直接作为 `Default...` 模板参数默认值。
 - 不要为 CUTLASS 已经存在的 arch、storage、swizzle、layout、TensorRef packing 能力写本地函数或长名字 wrapper；直接使用 CUTLASS 类型和函数。
+- `kernel/` 层只产出 `CutlassKernel`，不 include `cutlass/conv/device/*`、CUTLASS example `device/*` 或 reduction device adapter；B2B fusion 的 device operator 必须是 `device/implicit_gemm_convolution_fusion.h` 里的模板类，持有 `Params` 并通过 `operator()` 调用 `cutlass::Kernel<ImplicitGemmFusionKernel>`。
 - 即使当前默认实例按 family 分成 legacy fp16/Sm80、`conv_relu_pool` fp16/Sm89、FP8 e4m3/Sm89，也必须通过模板参数控制 arch 和 element type，默认实例只做薄实例化。
 - 不允许 SIMT 或 raw-kernel fallback；SM、dtype、layout 或 problem shape 不支持时必须通过 CMake、assert 或 `cutlass::Status` 明确报错。
 - 长期 runtime 入口必须朝 raw device pointer、problem descriptor、`cudaStream_t` 收敛，不能把 ATen tensor ownership 带进 core。
@@ -24,17 +25,22 @@
 ## 已知设计
 
 - `ops/conv1x1_relu_conv1x1.{h,cu}` 是默认 core API，名字只描述 `conv1x1 -> relu -> conv1x1`。
-- `ops/conv_relu_pool.{h,cu}` 是 `conv3x3 -> relu -> pool -> conv1x1 -> relu -> pool` raw-pointer contract；`device/conv_relu_pool.{h,cu}` 是 staged CUTLASS device wrapper，串联两次 implicit-GEMM conv 和两次 CUTLASS reduction pool。
+- `ops/conv_relu_pool.{h,cu}` 是 `conv3x3 -> relu -> pool -> conv1x1 -> relu -> pool` raw-pointer contract；`device/conv_relu_pool.{h,cu}` 持有 `ConvReluPool<ArchTag, Element>` staged CUTLASS device class，串联两次 implicit-GEMM conv 和两次 CUTLASS reduction pool，并通过 `operator()` 启动 staged pipeline。
 - `kernel/conv_relu_pool.h` 持有 `DefaultConvRelu<ArchTag, Element, ...>` 与 `DefaultPool<Element, ...>` 模板工厂；不要把它拆成只有一个 `GemmShape` 的 traits 文件。
 - `conv_fused_core` 是默认构建目标；不要重新引入 `conv_fused_torch`。
 - `conv_pool` 是 C++ raw-pointer 测试入口，不加载 Python extension。
 - `conv_relu_pool` 覆盖 staged conv/pool core small correctness、missing workspace、bad shape 和 null pointer。
 - `conv_relu_pool_plugin` 覆盖小规模 TensorRT IPluginV3 构图、序列化/反序列化和 plugin vs direct core 一致性。
 - `conv_relu_pool_trt` 是 full-shape ours runner：读取 `build/conv-fused/reference` 下的 PyTorch artifacts，构建 TensorRT IPluginV3 network，导出 `ours_output.bin` 和 `ours_times.json`。
+- `conv1x1_relu_conv1x1_relu_trt` 是 FP8 ours runner：读取 `build/conv-fused/fp8-reference` 下的 ModelOpt artifacts，构建 TensorRT IPluginV3 network，plugin 输出 kFP8 后接 TensorRT `IDequantizeLayer`，最终导出 half `ours_output.bin`。
 - `device/conv1x1_relu_conv1x1.{h,cu}` 负责 device wrapper。
+- `device/implicit_gemm_convolution_fusion.h` 持有 back-to-back implicit-GEMM fusion 的 CUTLASS-style device operator，不要用只定义 `Operation` alias 的 `default_*` 文件替代。
+- `device/conv_relu_pool.{h,cu}` 也必须保持 `Arguments/Params/initialize/run/operator()` 的 device class 形态；兼容 free function 只能是薄 wrapper。
 - `kernel/conv1x1_relu_conv1x1.h` 负责 kernel 类型组合和 CTA/warp shape 默认值。
 - `fp8/conv1x1_relu_conv1x1_relu_fp8/` 使用同样分层，不能把外部框架 binding、layout 准备和 CUTLASS 参数组装混在一个 `.cu` 文件里。
+- FP8 back-to-back conv 也必须使用 `tiny_cutlass::conv_fused::device::ImplicitGemmConvolutionFusion<Kernel>`；不要再新增 FP8 专属 device alias wrapper。
 - `binding/tensorrt/conv_relu_pool.{h,cpp}` 是 TensorRT IPluginV3 绑定层，不属于 core kernel；`conv_fused_core` 不能依赖 TensorRT。
+- `binding/tensorrt/conv1x1_relu_conv1x1_relu.{h,cpp}` 是 FP8 TensorRT IPluginV3 绑定层；它的 runtime 输入 contract 是 `input/weight0/weight1/bias1` 为 E4M3 raw bytes，`stage0_scale/bias0` 为 FP32，`output_alpha` 通过 plugin field 固定，stage0 中间张量使用 TensorRT plugin workspace。
 
 ## 已知问题
 
@@ -46,6 +52,13 @@
 - 用户目标运行环境可能是和 DX12 interop 的普通 CUDA 环境；不要把 PyTorch 作为核心设计假设。
 - 本机 TensorRT 10/cu12 安装在 `C:\Program Files\NVIDIA GPU Computing Toolkit\TensorRT`；headers 在 `include`，import libs 与 runtime DLL 都在 `lib`，`trtexec.exe` 在 `bin`。运行 TensorRT 测试时需要把 `...\TensorRT\lib` 加到 PATH。
 - 当前 Python 是 3.11，但没有安装 `tensorrt` package；本机 wheel 在 `...\TensorRT\python\tensorrt-10.13.3.9-cp311-none-win_amd64.whl`。C++ plugin/test 不依赖 Python TensorRT，Python reference 先走 PyTorch export + `trtexec`。
+- ModelOpt 正确 pip 包名是 `nvidia-modelopt`，不是 `modelopt`。当前可用组合是 `nvidia-modelopt==0.43.0`、`torch==2.7.1+cu126`、`numpy==1.24.3`、`scipy==1.11.3`；不要直接升级到 `nvidia-modelopt==0.44.0`，它会拉取 PyPI `torch==2.12.0`，在当前 Windows/conda 环境下触发 `c10.dll` 初始化失败。
+- 当前 FP8 ONNX reference 只需要 `modelopt.torch.quantization` 提供校准 scale，并用基础 `onnx` package 手工建图；不要为了这条链路默认安装完整 `nvidia-modelopt[onnx]`，它会额外拉 ONNXRuntime/CuPy 等依赖。只有需要 `modelopt.onnx` post-process native QDQ 时，再单独补缺失依赖并记录原因。
+- 当前 `conv1x1_relu_conv1x1_relu` FP8 reference 没有继续依赖 `torch.onnx.export`：ModelOpt 的 FP8 custom QDQ 让 Torch exporter 在 Conv symbolic 阶段把 shape 变成 unknown，报 `Unsupported: ONNX export of convolution for kernel of unknown shape`。现阶段脚本用 ModelOpt 校准出的 amax/scale 手工生成 TensorRT/ModelOpt 风格 `trt::TRT_FP8QuantizeLinear/DequantizeLinear` ONNX。
+- TensorRT FP8 QDQ ONNX reference 必须同时传 `trtexec --fp8 --fp16`；只传 `--fp8` 会因为 graph 内 high-precision tensor 是 FP16 而报 builder 没启用 fp16。
+- TensorRT 10.13 构建 FP8 QDQ reference 时可能打印 `Skipping tactic` / `Unsupported data type FP8` 的 tactic warning；只要 `trtexec` 最终 `PASSED` 且 `verify.py --mode fp8` 通过，不要把这些 skipped tactic 当成 workflow 失败。
+- 如果 ModelOpt import 报 `numpy.dtype size changed`，优先检查 NumPy 是否被升级到 2.x；本环境需要回到 NumPy 1.24.x/SciPy 1.11.x。
+- ModelOpt import 可能警告 triton/HF plugin 不可用；当前 conv-fused PTQ/export 路线只依赖 `modelopt.torch.quantization`，不依赖这些 plugin。
 - TensorRT 10.13 的 plugin registry C API 是全局 `getPluginRegistry()`，不是 `nvinfer1::getPluginRegistry()`。
 - `binding/tensorrt/conv_relu_pool.cpp` 的 `enqueue` 已接入 staged CUTLASS core；后续不要再把它改回 unsupported stub，也不要用 TensorRT layer、raw CUDA 或 SIMT fallback 假装 ours。
 - `conv_relu_pool` staged baseline 已经能经过 C++ plugin test；它不是最终 monolithic fusion，后续性能结论必须明确区分 staged CUTLASS baseline 和真正单 kernel fusion。

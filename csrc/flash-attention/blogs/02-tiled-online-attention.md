@@ -1,218 +1,174 @@
-# CUTLASS学习记（七）：把P矩阵拿掉以后
+# CUTLASS学习记（八）：真正的 02，IO-aware tiled online attention
 
-## 前言
+## 目标
 
-上一篇 naive attention 的重点是建立 baseline：
+这一篇对应 `02-tiled-online-attention`，不是把 `01-online-softmax` 改个名字。
 
-$$
-S = QK^T \rightarrow P=\text{softmax}(S) \rightarrow O=PV
-$$
+1. 面向 `sm80 / sm89 / sm90` 做 CUDA kernel 优化和编程，代码风格以 CUTLASS 2.x / 3.x 为主。
+2. 这个系列的核心目的不是“写完一个 demo”，而是根据当前需求学习、验证、沉淀优化经验。
+3. 每个 kernel 必须先和 reference 实现对齐，通常是 PyTorch / cuDNN / TensorRT。只有在容忍度以内，通常是 `MAE <= 1e-3`，才继续谈性能。
+4. 性能结论必须来自真实 profiling 工具链：Nsight Compute、Nsight Systems，以及 `.ncu-rep`、`.nsys-rep` 和 `.csv`。
+5. 新学到的东西要能被人和 AI 一起整理成中文技术博客，面向 Zhihu / X / GitHub 这类公开笔记场景。
 
-这个写法足够直观，但是它会把完整的 `P` 写到 global memory。`00-naive-attention` 里 `block_P` 的布局是 `[B, H, Sq, Sk]`，所以当序列长度变大时，`P` 很快就会成为 attention 里最显眼的中间状态。
+## 为什么 `00` 和 `01` 还不是 FlashAttention
 
-`01-online-softmax` 只是把 softmax kernel 从 3-pass safe softmax 换成 online softmax。它仍然需要：
-
-1. MM0 写完整 `P`
-2. softmax 读写 `P`
-3. MM1 再读 `P`
-
-所以 01 的结论比较清楚：online softmax 本身不是重点。真正的重点是让 `P` 不再作为完整矩阵存在。
-
-## 02 做了什么
-
-`examples/flash_attention/02-tiled-online-attention` 现在使用 CUTLASS example 41 的 fused forward kernel。它不是手写 scalar CUDA kernel，而是直接走 CUTLASS/tensor core 路径：
+`00-naive-attention` 的数据流很直观：
 
 ```text
-MM0 CUTLASS MMA
-  -> iterative online softmax
-  -> B2B shared-memory handoff
-  -> MM1 CUTLASS MMA
-  -> normalize/write O
+S = QK^T
+P = softmax(S)
+O = PV
 ```
 
-本地文件结构是：
+问题也很直观：完整的 `P` 会写到 global memory。
+
+`01-online-softmax` 只改了 softmax 这一步。它把 softmax 从普通 safe softmax 改成 online softmax，但没有改变整体 attention 的数据流：
 
 ```text
-02-tiled-online-attention/
-  kernel_forward.h          // 本地化的 example 41 fused forward kernel
-  tiled_online_attention.cu // 保留 00/01 风格的测试入口
-  CMakeLists.txt
+MM0 写完整 P
+softmax 读写完整 P
+MM1 再读完整 P
 ```
 
-`tiled_online_attention.cu` 里仍然使用和 00/01 类似的命令行参数、BMHK tensor 初始化和 host reference。区别是设备端不再分配 `block_P`。主路径只有：
+所以 `01` 仍然不是 IO-aware tiling。它证明了 online softmax 的数值递推是可用的，但还没有进入 FlashAttention-1 真正关心的问题：**不要把完整的 `[B, H, Sq, Sk]` 中间矩阵落到 HBM**。
 
-```cpp
-block_Q
-block_K
-block_V
-block_O
-```
+真正的分界线是：
 
-这里的 02 对 example 41 做了一个局部调整：跨 key tile 的中间输出用 `output_t` 保存，epilogue 内部缩放仍然用 `float` 计算。这样大 `d_v` 路径可以避免额外的 float `output_accum_ptr` buffer。这个 buffer 不是 attention matrix `P`，但它确实会带来额外 global memory 流量。完整的 `[B, H, Sq, Sk]` 矩阵仍然没有回到 global memory。
+- `P` 不能作为完整矩阵存在于 global memory
+- 计算要按 `Q/K/V` tile 流式推进
+- tile 级别的 score / probability fragment 只能短暂存在于 register 或 shared memory
+- `O` 通过 online softmax 状态逐步更新，最后归一化写回
 
-## 核心代码路径
+这才是 `02` 要实现的东西。
 
-02 的 kernel 类型是：
+## `02` 的数据流
 
-```cpp
-using Attention = AttentionKernel<
-    cutlass::half_t,
-    cutlass::arch::Sm80,
-    true,
-    kQueriesPerBlock,
-    kKeysPerBlock,
-    kMaxK,
-    false,
-    false>;
-```
-
-launch 的是：
-
-```cpp
-attention_kernel_batched_impl<Attention>
-```
-
-这对应 example 41 的 `kernel_forward.h`。关键路径可以按 attention 语义分成三段。
-
-### MM0: score tile
-
-MM0 使用 CUTLASS threadblock MMA 计算当前 query block 和 key block 的 score：
-
-```cpp
-mma(gemm_k_iterations, accum, iterator_A, iterator_B, accum);
-```
-
-这里的 `accum` 不是写回 global memory 的 `P`，而是当前 CTA 内部的 accumulator fragment。它代表当前 tile 的：
-
-$$
-Q_{tile}K_{tile}^T
-$$
-
-### Online Softmax
-
-MM0 之后直接调用：
-
-```cpp
-iterative_softmax(...)
-```
-
-这个函数在 accumulator 上更新每一行的 softmax 状态：
+`02-tiled-online-attention` 把同一个 attention 公式改写成 tile streaming：
 
 ```text
-mi       当前已经看过的最大 score
-m_prime  上一次用于缩放 output accumulator 的 max
-s_prime  softmax denominator
-out_rescale  output accumulator 的缩放因子
+for each Q tile:
+  initialize m = -inf, l = 0, O = 0
+  for each K/V tile:
+    MM0: S_tile = Q_tile @ K_tile^T
+    online softmax update m/l on S_tile
+    hand current P_tile through shared memory
+    MM1: O_tile += P_tile @ V_tile
+  normalize and write O_tile
 ```
 
-数学上对应：
+注意这里没有完整的 `P`：
 
-$$
-m_{new} = \max(m_{old}, m_{tile})
-$$
+- `S_tile` 是当前 CTA 内部的 score fragment
+- `P_tile` 是经过 online softmax 变换后的当前 tile fragment
+- `P_tile` 通过 shared memory 交给 MM1
+- global memory 里只有输入 `Q/K/V` 和输出 `O`
 
-$$
-l_{new} = l_{old}\exp(m_{old}-m_{new}) + \sum_j \exp(s_j-m_{new})
-$$
+这就是 `02` 和 `00/01` 的本质区别。
 
-同时当前 tile 的 score 会被改成未归一化的 attention 权重：
+## 本地目录
 
-$$
-\exp(s_j - m_{new})
-$$
-
-### MM1: attention tile 乘 V
-
-softmax 后的当前 attention tile 会通过：
-
-```cpp
-MM0::B2bGemm::accumToSmem(...)
-```
-
-写到 shared memory。然后 MM1 从 shared memory 读取这个 tile，和当前 value tile 做 CUTLASS MMA：
-
-```cpp
-mma_pv(gemm_k_iterations, accum_o, iterator_V, accum_o);
-```
-
-最后 epilogue 使用 `s_prime` 和 `out_rescale` 做归一化，把结果写到 `O`。
-
-这就是 02 和 00/01 的本质差异：`P` 只在 tile 级别以 register/shared memory 的形式短暂存在，不再作为完整矩阵写回 global memory。
-
-## 性能观察
-
-测试均使用 Release exe。
-
-### d = 64
-
-参数：
+现在 tiny-cutlass 里的结构是：
 
 ```text
-Sq=1024, Sk=1024, d=64, d_v=64, H=32, B=1
+csrc/flash-attention/
+  00-naive-attention/
+  01-online-softmax/
+  02-tiled-online-attention/
+    CMakeLists.txt
+    tiled_online_attention.cu
+    kernel_forward.h
+  epilogue/
+  gemm/
+  iterators/
+  transform/
+  debug_utils.h
 ```
 
-结果：
+`02` 来自 CUTLASS flash-attention example 的 fused forward 路径。为了让 tiny-cutlass 自己可以独立构建，我把它需要的 support headers 本地化到了 `csrc/flash-attention` 下面。
+
+## 关键代码路径
+
+`02` 的测试入口是：
 
 ```text
-00 naive attention   约 1.24 ms
-02 fused attention   约 0.33 ms
+csrc/flash-attention/02-tiled-online-attention/tiled_online_attention.cu
 ```
 
-这里 02 明显更快，因为 MM0/MM1 都走 CUTLASS MMA，同时避免了完整 `P` 的 global memory 生命周期。
-
-### d = 128
-
-参数：
+真正的 fused kernel 在：
 
 ```text
-Sq=1024, Sk=1024, d=128, d_v=128, H=32, B=1
+csrc/flash-attention/02-tiled-online-attention/kernel_forward.h
 ```
 
-结果：
+核心路径可以拆成五步：
+
+1. `MM0` 用 CUTLASS MMA 计算 `Q_tile @ K_tile^T`
+2. `iterative_softmax(...)` 在当前 score tile 上更新 `m / l / out_rescale`
+3. `MM0::B2bGemm::accumToSmem(...)` 把当前 attention tile 写入 shared memory
+4. `MM1` 从 shared memory 读取 attention tile，再和 `V_tile` 做 MMA
+5. epilogue 负责按 online softmax 的分母归一化并写回 `O`
+
+这不是“一个更快的 softmax kernel”，而是把 attention 的中间数据生命周期从 HBM 移到片上。
+
+## 为什么这是 IO-aware
+
+单看 `MM0` 和 `MM1`，它们仍然是 tensor core GEMM 路径；它们的局部指标甚至可能看起来很像 `00/01` 里的两个 GEMM。
+
+但 FlashAttention 的动机不是让某一个局部 kernel 看起来更轻，而是减少整个 attention 的 HBM 读写：
 
 ```text
-00 naive attention   约 1.38 ms
-02 fused attention   约 0.71 ms
+00/01:
+  Q/K/V -> MM0 -> full P in HBM -> softmax -> full P in HBM -> MM1 -> O
+
+02:
+  Q/K/V tiles -> MM0 -> P_tile on chip -> MM1 -> O
 ```
 
-02 仍然明显更快。
+所以判断 `02` 是否方向正确，应该优先看：
 
-### d = 256
+- 是否完全避免 full `P` materialization
+- 中间状态是否限制在 tile scope
+- HBM traffic 是否减少
+- reference parity 是否通过
 
-参数：
+而不是只看某个局部 kernel 的 tensor core utilization。
+
+## 构建和验证顺序
+
+这个系列的固定顺序是：
 
 ```text
-Sq=1024, Sk=1024, d=256, d_v=256, H=32, B=1
+build -> verify -> bench
 ```
 
-结果：
+`02` 必须先编译通过，再跑 reference check。只有 correctness 通过以后，benchmark 和 Nsight 报告才有意义。
+
+当前 CMake 目标是：
 
 ```text
-01 online softmax    约 1.76 ms
-02 fused attention   约 1.57 ms
+flash_attention_02_tiled_online_attention_test
 ```
 
-这个参数下最终使用的 tile 是：
+聚合目标 `flash_attention` 也已经包含 `00 / 01 / 02`。
 
-```text
-kQueriesPerBlock = 64
-kKeysPerBlock    = 64
-kMaxK            = 65536
-```
+## 性能分析产物
 
-之前直接沿用 example 41 的 `d_v > 128` 路径时，`output_accum_t = float`，会分配 `output_accum_ptr` 并在多个 key tile 之间读写 float 中间结果。当前 02 把中间输出类型改成 `output_t`，同时保留 epilogue 的 float 缩放计算，减少了这部分 global memory 压力。`64x64` 的 tile 在目标参数下也比 `32x64` 更好。
+后续 profiling 应该把产物放在 `build/` 下，并同时保留：
 
-## 当前结论
+- `.ncu-rep`：给人类看
+- `.csv`：给 agent 分析
+- `.nsys-rep`：看系统级时间线
 
-02 现在已经不是“语义学习版 scalar kernel”，而是 CUTLASS/tensor core fused attention 路径：
+性能结论必须绑定 reference parity。没有 correctness 的性能数字，不应该进入博客结论。
 
-```text
-AttentionKernel
-  MM0::Mma
-  iterative_softmax
-  MM0::B2bGemm::accumToSmem
-  MM1::Mma
-  MemoryEfficientAttentionNormalize
-```
+## 下一步
 
-它在 `d=64/128/256` 下都已经通过 correctness check，并且在目标参数 `Sq=Sk=1024, d=d_v=256, H=32, B=1` 上快于 01。下一步可以继续用 Nsight Compute 看 `64x64` tile 下的 occupancy、shared memory、epilogue 和 global memory 行为。
+`02` 完成以后，后续变体才应该继续讨论：
+
+- tile shape
+- shared memory handoff
+- warp 分工
+- work partitioning
+- FA2 风格的并行组织
+
+这些优化都建立在一个前提上：完整 `P` 已经从 global-memory 路径里拿掉了。

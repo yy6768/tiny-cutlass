@@ -6,7 +6,6 @@
 #include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 #include "cutlass/layout/tensor.h"
 
-#include "device/b2b_implicit_gemm_convolution.h"
 #include "kernel/default_b2b_conv2d_fprop_sm80.h"
 
 #include "threads/epilogue_ops.h"

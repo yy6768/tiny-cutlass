@@ -3,6 +3,7 @@
 #include "cutlass/layout/tensor.h"
 #include "cutlass/tensor_ref.h"
 
+#include "device/implicit_gemm_convolution_fusion.h"
 #include "fp8/conv1x1_relu_conv1x1_relu_fp8/kernel/conv1x1_relu_conv1x1_relu_fp8.h"
 
 namespace tiny_cutlass::conv_fused::fp8::conv1x1_relu_conv1x1_relu::device {
@@ -37,8 +38,9 @@ cutlass::Status run_conv1x1_relu_conv1x1_relu_fp8(
           ElementC,
           ElementAccumulator,
           ElementCompute>;
-  using Conv = cutlass::conv::device::B2bImplicitGemmConvolution<
-      typename KernelConfig::CutlassKernel>;
+  using Conv =
+      tiny_cutlass::conv_fused::device::ImplicitGemmConvolutionFusion<
+          typename KernelConfig::CutlassKernel>;
   using TensorRefA = cutlass::TensorRef<ElementA, cutlass::layout::TensorNHWC>;
   using TensorRefB = cutlass::TensorRef<ElementB, cutlass::layout::TensorNHWC>;
   using TensorRefC = cutlass::TensorRef<ElementC, cutlass::layout::TensorNHWC>;

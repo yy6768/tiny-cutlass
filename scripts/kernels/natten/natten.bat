@@ -29,23 +29,9 @@ if errorlevel 1 exit /b 1
 "%EXE%" --batch_size=2 --length=128 --heads=2 --head_dim=32 --head_dim_value=32 --kernel_size=33
 if errorlevel 1 exit /b 1
 
-if /I "%CUTLASS_PROFILE%"=="1" goto profile
-goto end
+if /I "%CUTLASS_PROFILE%"=="1" (
+  echo NATTEN FNA currently has only an interface scaffold and no launchable kernel; profiling is disabled until a CUTLASS-native TensorOp implementation exists.
+  exit /b 1
+)
 
-:profile
-echo NATTEN FNA currently has only an interface scaffold and no launchable kernel; profiling is disabled until a CUTLASS-native TensorOp implementation exists.
-exit /b 1
-
-set "REPORT_DIR=%BUILD_DIR%\reports\natten"
-if not exist "!REPORT_DIR!" mkdir "!REPORT_DIR!"
-
-set "NCU_BASE=!REPORT_DIR!\%TARGET%"
-ncu --force-overwrite --set full --launch-skip 4 --launch-count 4 --page raw --csv --import-source=1 --import-sass=1 -o "!NCU_BASE!" "%EXE%" --batch_size=4 --length=1024 --heads=8 --head_dim=32 --head_dim_value=32 --kernel_size=129 --iterations=20 --reference-check=false > "!NCU_BASE!.csv"
-if errorlevel 1 exit /b 1
-
-set "NSYS_BASE=!REPORT_DIR!\%TARGET%"
-nsys profile --force-overwrite=true --trace=cuda,nvtx -o "!NSYS_BASE!" "%EXE%" --batch_size=4 --length=1024 --heads=8 --head_dim=32 --head_dim_value=32 --kernel_size=129 --iterations=20 --reference-check=false
-if errorlevel 1 exit /b 1
-
-:end
 endlocal

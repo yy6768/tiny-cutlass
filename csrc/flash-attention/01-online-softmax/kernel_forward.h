@@ -426,8 +426,9 @@ struct AttentionSoftmaxKernel {
       return;
     }
 
-    accum_t m_new = fmaxf(mi, mj);
-    di = di * __expf(mi - m_new) + dj * __expf(mj - m_new);
+    accum_t m_new = cutlass::fast_max(mi, mj);
+    di = di * cutlass::fast_exp(mi - m_new) +
+         dj * cutlass::fast_exp(mj - m_new);
     mi = m_new;
   }
 
@@ -485,7 +486,8 @@ struct AttentionSoftmaxKernel {
 
     // ---------- Pass 2: normalize ----------
     for (int j = tid; j < p.num_keys; j += kThreads) {
-      row_ptr[j] = scalar_t(__expf(accum_t(row_ptr[j]) - row_max) * inv_sum);
+      row_ptr[j] =
+          scalar_t(cutlass::fast_exp(accum_t(row_ptr[j]) - row_max) * inv_sum);
     }
   }
 };

@@ -1,40 +1,60 @@
-# Flash Attention Working Notes
+# FlashAttention 记忆
 
-## Goal
-This directory tracks the current flash-attention study path inside tiny-cutlass.
+## 目标
 
-- Optimize for SM80, SM89, and SM90 using CUTLASS 2.x or CUTLASS 3.x style code where each fits best.
-- Use the current kernel family as a learning loop: understand the operator, implement the kernel, measure it, explain the changes, and keep the lesson for the next numbered step.
-- Match a trusted reference implementation first, usually PyTorch, cuDNN, or TensorRT, before trusting performance data.
-- Stay within the required numerical tolerance before treating a kernel as correct. The usual target is MAE <= 1e-3 unless a specific experiment needs something different.
-- Treat Nsight Compute and Nsight Systems as the primary performance workflow. Keep `.ncu-rep`, `.nsys-rep`, and CSV outputs as first-class artifacts for both human review and agent analysis.
-- Record learning outcomes with Chinese technical notes suitable for Zhihu, X, GitHub, or similar publication channels.
-- Keep fallback implementations to a minimum. Prefer explicit CMake dependency checks and explicit unsupported paths over hidden fallback code in kernels or test harnesses.
-- Focus current optimization work around SM80 FP16 and SM89 FP8 paths unless the user explicitly expands the architecture or dtype scope.
+这个目录记录 tiny-cutlass 当前 FlashAttention 学习路线。
 
-## Workflow
-1. Build the kernel family.
-2. Verify against the chosen reference.
-3. Benchmark only after verification passes.
-4. Profile with Nsight when performance work needs evidence.
+- 围绕 SM80、SM89、SM90 做优化；CUTLASS 2.x 或 CUTLASS 3.x 风格按实验需要选择。
+- 每个 kernel family 都是一轮学习闭环：理解算子、实现 kernel、测量、解释变化，
+  再把经验保留下来。
+- 性能数据可信之前，必须先对齐 PyTorch、cuDNN、TensorRT 或其他明确 reference。
+- 只有数值误差进入要求范围后，才能把 kernel 当作正确实现；默认目标是
+  MAE <= 1e-3，除非具体实验另有阈值。
+- Nsight Compute 和 Nsight Systems 是主要性能工作流；`.ncu-rep`、`.nsys-rep`
+  和 CSV 都是一等 profiling artifact。
+- 学到的内容要沉淀成中文技术笔记，适合后续发布到知乎、X、GitHub 等渠道。
+- fallback implementation 尽量少；依赖缺失或配置不支持时，优先用 CMake 检查或
+  显式 unsupported path，而不是在 kernel/test harness 里藏 fallback。
+- 当前优化重点是 SM80 FP16 和 SM89 FP8，除非用户明确扩大架构或 dtype 范围。
 
-## Conventions
-- Kernel steps are numbered in order, such as `00`, `01`, `02`, and so on.
-- `00` is usually the baseline for a family, but the directory is not locked to a fixed number of steps.
-- Keep numbered kernel `.cu` files as launch entries. The shared executable under `csrc/tests/flash-attention` owns input generation, reference execution, MAE checking, and timing.
-- Use cuDNN SDPA as the current reference backend for fixed-seqlen flash-attention tests. Check cuDNN dependencies at CMake configure time and fail early if they are missing; do not add `HAS_CUDNN`-style fallback branches in C++.
-- Keep every numbered kernel variant registered through the shared `Kernel` interface in `flash_attention.h`; `flash_attention_test --kernel=all` must cover 00/01/02 and future migrated variants.
-- Prefer CUTLASS example-style C++ structure: keep public learning interfaces in the simple global scope and use anonymous namespaces only for file-local helpers. Do not add multi-level project namespaces such as `tiny_cutlass::flash_attention` in this workspace.
-- Keep `blogs/` for notes only.
-- Keep generated build and profiling artifacts under `build/`.
-- Keep changes local to the current family unless the user explicitly broadens scope.
+## 工作流
 
-## Current kernels
-- `00-naive-attention` materializes the full `P` matrix and is the baseline.
-- `01-online-softmax` only changes the softmax kernel; it still materializes `P`.
-- `02-tiled-online-attention` is the first IO-aware tiled kernel and keeps the attention tile local instead of writing the full `P` matrix to global memory.
+1. build kernel family。
+2. 用选定 reference 做 verify。
+3. verify 通过后才 benchmark。
+4. 需要性能证据时，用 Nsight 做 profile。
 
-## Current test entry
-- `flash_attention_test` is the shared test executable for registered kernels.
-- Use `--kernel=list`, `--kernel=00-naive`, `--kernel=01-online-softmax`, `--kernel=02-tiled-online`, or `--kernel=all`.
-- Compatibility executables `flash_attention_00_naive_attention_test`, `flash_attention_01_online_softmax_attention_test`, and `flash_attention_02_tiled_online_attention_test` point at the same shared host C++ test main with different default kernels.
+## 约定
+
+- kernel step 按 `00`、`01`、`02` 这样的顺序编号。
+- `00` 通常是 family baseline，但目录不锁死固定 step 数。
+- 编号 kernel `.cu` 文件保持为 launch entry。`csrc/tests/flash-attention` 下的共享
+  executable 负责输入生成、reference 执行、MAE 检查和计时。
+- fixed-seqlen flash-attention 测试当前使用 cuDNN SDPA 作为 reference backend。
+  cuDNN 依赖必须在 CMake configure 阶段检查并提前失败；不要新增
+  `HAS_CUDNN` 风格的 C++ fallback 分支。
+- 所有编号 kernel variant 都要注册到 `flash_attention.h` 的共享 `Kernel` 接口；
+  `flash_attention_test --kernel=all` 必须覆盖 00/01/02 和后续迁移变体。
+- C++ 结构偏向 CUTLASS example 风格：公开学习接口保持简单全局作用域，文件局部
+  helper 使用匿名 namespace。这个工作区不要新增
+  `tiny_cutlass::flash_attention` 这类多层项目 namespace。
+- `blogs/` 只放笔记。
+- 构建和 profiling 产物都放在 `build/`。
+- 除非用户明确扩大范围，修改保持在当前 family 内。
+
+## 当前 kernel
+
+- `00-naive-attention` 会 materialize 完整 `P` 矩阵，是 baseline。
+- `01-online-softmax` 只改变 softmax kernel，仍然会 materialize `P`。
+- `02-tiled-online-attention` 是第一个 IO-aware tiled kernel，把 attention tile
+  保留在局部，不把完整 `P` 矩阵写回全局内存。
+
+## 当前测试入口
+
+- `flash_attention_test` 是所有已注册 kernel 的共享测试 executable。
+- 可用参数包括 `--kernel=list`、`--kernel=00-naive`、
+  `--kernel=01-online-softmax`、`--kernel=02-tiled-online`、`--kernel=all`。
+- 兼容 executable `flash_attention_00_naive_attention_test`、
+  `flash_attention_01_online_softmax_attention_test`、
+  `flash_attention_02_tiled_online_attention_test` 指向同一个共享 host C++ test main，
+  只是默认 kernel 不同。
