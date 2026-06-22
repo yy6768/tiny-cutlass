@@ -39,8 +39,8 @@ cutlass::Status validate(
     return cutlass::Status::kErrorInvalidProblem;
   }
 
-  if (!args.input || !args.weight0 || !args.stage0 || !args.stage0_scale ||
-      !args.bias0 || !args.weight1 || !args.bias1 || !args.output) {
+  if (!args.input || !args.weight0 || !args.stage0_scale || !args.bias0 ||
+      !args.weight1 || !args.bias1 || !args.output) {
     return cutlass::Status::kErrorInvalidProblem;
   }
 
@@ -76,39 +76,35 @@ cutlass::Status conv1x1_relu_conv1x1_relu(
       p.hidden_channels,
       p.output_channels);
 
-  return device::run_conv1x1_relu_conv1x1_relu_fp8<
+  using Operation = device::Conv1x1ReluConv1x1Relu<
       cutlass::arch::Sm89,
       Element,
       Element,
       Element,
       ElementScaleBias,
       float,
-      ElementCompute>(
-      problem0,
-      problem1,
-      args.input,
-      args.weight0,
-      args.stage0,
-      args.stage0_scale,
-      args.bias0,
-      args.weight1,
-      args.bias1,
-      args.output,
-      args.stage0_alpha,
-      args.output_alpha,
-      args.stream);
-}
+      ElementCompute>;
 
-cutlass::Status conv1x1_relu_conv1x1_relu_fp8(E4m3Arguments const& args) {
-  return conv1x1_relu_conv1x1_relu<
-      cutlass::float_e4m3_t,
-      float,
-      float>(args);
+  typename Operation::Arguments device_args;
+  device_args.problem_size_0 = problem0;
+  device_args.problem_size_1 = problem1;
+  device_args.input = args.input;
+  device_args.weight0 = args.weight0;
+  device_args.stage0_scale = args.stage0_scale;
+  device_args.bias0 = args.bias0;
+  device_args.weight1 = args.weight1;
+  device_args.bias1 = args.bias1;
+  device_args.output = args.output;
+  device_args.stage0_alpha = args.stage0_alpha;
+  device_args.output_alpha = args.output_alpha;
+
+  Operation op;
+  return op(device_args, nullptr, args.stream);
 }
 
 template cutlass::Status conv1x1_relu_conv1x1_relu<
     cutlass::float_e4m3_t,
     float,
-    float>(E4m3Arguments const&);
+    float>(Arguments<cutlass::float_e4m3_t, float, float> const&);
 
 }  // namespace tiny_cutlass::conv_fused::fp8::conv1x1_relu_conv1x1_relu

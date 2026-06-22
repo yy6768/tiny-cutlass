@@ -26,7 +26,7 @@ template <
     typename ThreadblockShape1_ = cutlass::gemm::GemmShape<64, 64, 64>,
     typename WarpShape0_ = cutlass::gemm::GemmShape<32, 64, 64>,
     typename WarpShape1_ = cutlass::gemm::GemmShape<32, 64, 64>>
-struct DefaultConv1x1ReluConv1x1ReluFp8 {
+struct DefaultConv1x1ReluConv1x1Relu {
   using ArchTag = ArchTag_;
   using ElementA = ElementA_;
   using ElementB = ElementB_;

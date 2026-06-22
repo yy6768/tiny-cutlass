@@ -1,8 +1,10 @@
 #include <cmath>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <random>
+#include <string>
 #include <vector>
 
 #include <cuda_runtime.h>
@@ -28,6 +30,8 @@ using Element = typename Op::Element;
 
 struct Options {
   bool error = false;
+  bool reference_check = true;
+  bool profile_once = false;
   int batch_size = 1;
   int image_size = 224;
   int in_channels = 3;
@@ -39,9 +43,23 @@ struct Options {
   float epsilon = 1.0e-5f;
   float abs_tolerance = 2.5e-2f;
   float rel_tolerance = 2.5e-2f;
+  std::string input_file;
+  std::string kernel_file;
+  std::string bias_file;
+  std::string gamma_file;
+  std::string beta_file;
 
   void parse(int argc, char const** args) {
     cutlass::CommandLine cmd(argc, args);
+    auto get_string_arg = [&](char const* name, std::string& value) {
+      std::string prefix = std::string("--") + name + "=";
+      for (int i = 1; i < argc; ++i) {
+        std::string arg(args[i]);
+        if (arg.rfind(prefix, 0) == 0) {
+          value = arg.substr(prefix.size());
+        }
+      }
+    };
     cmd.get_cmd_line_argument("batch_size", batch_size, batch_size);
     cmd.get_cmd_line_argument("image_size", image_size, image_size);
     cmd.get_cmd_line_argument("in_channels", in_channels, in_channels);
@@ -54,6 +72,13 @@ struct Options {
     cmd.get_cmd_line_argument("epsilon", epsilon, epsilon);
     cmd.get_cmd_line_argument("abs_tolerance", abs_tolerance, abs_tolerance);
     cmd.get_cmd_line_argument("rel_tolerance", rel_tolerance, rel_tolerance);
+    cmd.get_cmd_line_argument("reference-check", reference_check, reference_check);
+    cmd.get_cmd_line_argument("profile-once", profile_once, profile_once);
+    get_string_arg("input-file", input_file);
+    get_string_arg("kernel-file", kernel_file);
+    get_string_arg("bias-file", bias_file);
+    get_string_arg("gamma-file", gamma_file);
+    get_string_arg("beta-file", beta_file);
     error = batch_size <= 0 || image_size <= 0 || in_channels <= 0 ||
         input_channels_padded <= 0 || embed_dim <= 0 || patch_size <= 0 ||
         iterations <= 0 || epsilon <= 0.0f;
@@ -78,6 +103,41 @@ void fill_random(std::vector<Element>& data, int seed, float lo, float hi) {
   for (Element& value : data) {
     value = Element(dist(rng));
   }
+}
+
+bool load_float_file(
+    std::string const& path,
+    std::vector<Element>& dst,
+    size_t expected,
+    char const* label) {
+  if (path.empty()) {
+    return true;
+  }
+  std::ifstream file(path, std::ios::binary | std::ios::ate);
+  if (!file) {
+    std::cerr << "Could not open " << label << " file: " << path << "\n";
+    return false;
+  }
+  std::streamsize bytes = file.tellg();
+  std::streamsize expected_bytes =
+      std::streamsize(expected * sizeof(float));
+  if (bytes != expected_bytes) {
+    std::cerr << label << " file size mismatch: " << path
+              << " has " << bytes << " bytes, expected "
+              << expected_bytes << "\n";
+    return false;
+  }
+  file.seekg(0, std::ios::beg);
+  std::vector<float> tmp(expected);
+  if (!file.read(reinterpret_cast<char*>(tmp.data()), bytes)) {
+    std::cerr << "Could not read " << label << " file: " << path << "\n";
+    return false;
+  }
+  dst.resize(expected);
+  for (size_t i = 0; i < expected; ++i) {
+    dst[i] = Element(tmp[i]);
+  }
+  return true;
 }
 
 void patch_embed_reference(
@@ -186,6 +246,33 @@ int run(Options const& options) {
   fill_random(host_bias, options.seed + 2, -0.05f, 0.05f);
   fill_random(host_gamma, options.seed + 3, 0.8f, 1.2f);
   fill_random(host_beta, options.seed + 4, -0.05f, 0.05f);
+  if (!load_float_file(
+          options.input_file,
+          host_input,
+          patch_embed_input_elements(problem),
+          "input") ||
+      !load_float_file(
+          options.kernel_file,
+          host_kernel,
+          patch_embed_kernel_elements(problem),
+          "kernel") ||
+      !load_float_file(
+          options.bias_file,
+          host_bias,
+          problem.embed_dim,
+          "bias") ||
+      !load_float_file(
+          options.gamma_file,
+          host_gamma,
+          problem.embed_dim,
+          "gamma") ||
+      !load_float_file(
+          options.beta_file,
+          host_beta,
+          problem.embed_dim,
+          "beta")) {
+    return -1;
+  }
 
   int64_t workspace_elements =
       patch_embed_output_elements(problem) +
@@ -228,22 +315,32 @@ int run(Options const& options) {
     return -1;
   }
 
-  std::vector<Element> host_output(patch_embed_output_elements(problem));
-  std::vector<Element> host_reference;
-  cutlass::device_memory::copy_to_host(
-      host_output.data(), output.get(), host_output.size());
-  patch_embed_reference(
-      problem,
-      host_input,
-      host_kernel,
-      host_bias,
-      host_gamma,
-      host_beta,
-      host_reference);
+  if (options.reference_check) {
+    std::vector<Element> host_output(patch_embed_output_elements(problem));
+    std::vector<Element> host_reference;
+    cutlass::device_memory::copy_to_host(
+        host_output.data(), output.get(), host_output.size());
+    patch_embed_reference(
+        problem,
+        host_input,
+        host_kernel,
+        host_bias,
+        host_gamma,
+        host_beta,
+        host_reference);
 
-  if (!compare(host_output, host_reference, options.abs_tolerance, options.rel_tolerance)) {
-    std::cout << "\nFailed\n";
-    return -1;
+    if (!compare(host_output, host_reference, options.abs_tolerance, options.rel_tolerance)) {
+      std::cout << "\nFailed\n";
+      return -1;
+    }
+  }
+
+  if (options.profile_once) {
+    std::cout << "\nSwin PatchEmbed profile path:\n"
+              << "====================================================\n"
+              << "    Path: NHWC input -> channel pad -> CUTLASS Conv2d -> BiasLayerNorm -> NHWC output\n"
+              << "\nPassed\n";
+    return 0;
   }
 
   cudaEvent_t start = nullptr;

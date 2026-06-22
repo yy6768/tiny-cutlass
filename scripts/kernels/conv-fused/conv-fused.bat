@@ -16,33 +16,16 @@ if exist "%VSDEVCMD%" (
 cmake -S "%ROOT%" -B "%BUILD_DIR%" -G Ninja -DCMAKE_BUILD_TYPE=%CONFIG% -DCMAKE_CUDA_ARCHITECTURES=89 -DTINY_CUTLASS_BUILD_FLASH_ATTENTION=OFF -DTINY_CUTLASS_BUILD_CONV_FUSED=ON
 if errorlevel 1 exit /b 1
 
-cmake --build "%BUILD_DIR%" --target conv_fused conv_pool conv_relu_pool conv_relu_pool_plugin conv_relu_pool_trt conv1x1_relu_conv1x1_relu conv1x1_relu_conv1x1_relu_trt
+cmake --build "%BUILD_DIR%" --target conv_fused conv_b2b conv_b2b_relu conv_b2b_trt
 if errorlevel 1 exit /b 1
 
-"%BUILD_DIR%\tests\conv-fused\conv_pool.exe"
+"%BUILD_DIR%\tests\conv-fused\conv_b2b.exe"
 if errorlevel 1 exit /b 1
 
-"%BUILD_DIR%\tests\conv-fused\conv_relu_pool.exe"
-if errorlevel 1 exit /b 1
-
-"%BUILD_DIR%\tests\conv-fused\conv_relu_pool_plugin.exe"
-if errorlevel 1 exit /b 1
-
-"%BUILD_DIR%\tests\conv-fused\conv1x1_relu_conv1x1_relu.exe"
+"%BUILD_DIR%\tests\conv-fused\conv_b2b_relu.exe"
 if errorlevel 1 exit /b 1
 
 if /I "%CONV_FUSED_SKIP_BENCH%"=="1" goto done
-
-set "ARTIFACT_DIR=%BUILD_DIR%\reference"
-
-python "%ROOT%\scripts\kernels\conv-fused\export_conv_relu_pool_reference.py" --output-dir "%ARTIFACT_DIR%"
-if errorlevel 1 exit /b 1
-
-python "%ROOT%\scripts\kernels\conv-fused\bench.py" --artifact-dir "%ARTIFACT_DIR%" --build-dir "%BUILD_DIR%"
-if errorlevel 1 exit /b 1
-
-python "%ROOT%\scripts\kernels\conv-fused\verify.py" --artifact-dir "%ARTIFACT_DIR%"
-if errorlevel 1 exit /b 1
 
 if /I "%CONV_FUSED_SKIP_FP8%"=="1" goto done
 
@@ -51,10 +34,13 @@ set "FP8_ARTIFACT_DIR=%BUILD_DIR%\fp8-reference"
 python "%ROOT%\scripts\kernels\conv-fused\export_fp8_reference.py" --output-dir "%FP8_ARTIFACT_DIR%"
 if errorlevel 1 exit /b 1
 
-python "%ROOT%\scripts\kernels\conv-fused\bench.py" --mode fp8 --artifact-dir "%FP8_ARTIFACT_DIR%" --build-dir "%BUILD_DIR%"
+"%BUILD_DIR%\tests\conv-fused\conv_b2b_trt.exe" --artifact-dir "%FP8_ARTIFACT_DIR%"
 if errorlevel 1 exit /b 1
 
 python "%ROOT%\scripts\kernels\conv-fused\verify.py" --mode fp8 --artifact-dir "%FP8_ARTIFACT_DIR%"
+if errorlevel 1 exit /b 1
+
+python "%ROOT%\scripts\kernels\conv-fused\bench.py" --mode fp8 --artifact-dir "%FP8_ARTIFACT_DIR%" --build-dir "%BUILD_DIR%"
 if errorlevel 1 exit /b 1
 
 :done

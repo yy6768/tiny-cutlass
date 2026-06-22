@@ -25,7 +25,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--build-dir", type=Path, default=Path("build"))
     parser.add_argument("--config", default="Release")
-    parser.add_argument("--report-dir", type=Path, default=Path("build/reports/swin"))
+    parser.add_argument("--report-dir", type=Path, default=Path("profile/swin/runtime"))
+    parser.add_argument("--checkpoint-dir", type=Path, default=Path("checkpoint"))
+    parser.add_argument("--official", action="store_true")
     parser.add_argument("--iterations", type=int, default=100)
     parser.add_argument("--patch-iterations", type=int, default=50)
     parser.add_argument("--batch-size", type=int, default=1)
@@ -149,6 +151,77 @@ def cases(batch_size: int, iterations: int, patch_iterations: int) -> list[Case]
     ]
 
 
+def path_arg(name: str, base: Path, file_name: str) -> str:
+    return f"--{name}={base / file_name}"
+
+
+def official_cases(
+    checkpoint_dir: Path,
+    iterations: int,
+    patch_iterations: int,
+) -> list[Case]:
+    manifest_path = checkpoint_dir / "manifest.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"missing official manifest: {manifest_path}")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    patch = manifest["patch_embed"]
+    result = [
+        Case(
+            "patch_embed",
+            "swin_patch_embed",
+            (
+                f"--batch_size={patch['batch_size']}",
+                f"--image_size={patch['image_size']}",
+                f"--in_channels={patch['in_channels']}",
+                f"--input_channels_padded={patch['input_channels_padded']}",
+                f"--embed_dim={patch['embed_dim']}",
+                f"--patch_size={patch['patch_size']}",
+                f"--iterations={patch_iterations}",
+                "--reference-check=false",
+                path_arg("input-file", checkpoint_dir, patch["input"]),
+                path_arg("kernel-file", checkpoint_dir, patch["kernel"]),
+                path_arg("bias-file", checkpoint_dir, patch["bias"]),
+                path_arg("gamma-file", checkpoint_dir, patch["gamma"]),
+                path_arg("beta-file", checkpoint_dir, patch["beta"]),
+            ),
+        )
+    ]
+    for stage in manifest["stages"]:
+        for shift in stage["shifts"]:
+            result.append(
+                Case(
+                    f"stage{stage['stage']}_shift{shift['shift_size']}",
+                    "swin_window",
+                    (
+                        f"--batch_size={manifest['batch_size']}",
+                        f"--image_size={stage['image_size']}",
+                        f"--window_size={stage['window_size']}",
+                        f"--shift_size={shift['shift_size']}",
+                        f"--head_number={stage['head_number']}",
+                        f"--head_size={stage['head_size']}",
+                        "--reference-check=false",
+                        f"--mask={str(bool(shift['use_mask'])).lower()}",
+                        f"--iterations={iterations}",
+                        path_arg("input-file", checkpoint_dir, stage["input"]),
+                        path_arg("qkv-weight-file", checkpoint_dir, shift["qkv_weight"]),
+                        path_arg("qkv-bias-file", checkpoint_dir, shift["qkv_bias"]),
+                        path_arg(
+                            "output-weight-file",
+                            checkpoint_dir,
+                            shift["output_weight"],
+                        ),
+                        path_arg(
+                            "output-bias-file",
+                            checkpoint_dir,
+                            shift["output_bias"],
+                        ),
+                        path_arg("rel-bias-file", checkpoint_dir, shift["rel_bias"]),
+                    ),
+                )
+            )
+    return result
+
+
 def run_capture(command: list[str]) -> str:
     print("+", " ".join(command), flush=True)
     completed = subprocess.run(
@@ -238,7 +311,12 @@ def main() -> None:
     args.report_dir.mkdir(parents=True, exist_ok=True)
 
     rows = []
-    for case in cases(args.batch_size, args.iterations, args.patch_iterations):
+    benchmark_cases = (
+        official_cases(args.checkpoint_dir, args.iterations, args.patch_iterations)
+        if args.official
+        else cases(args.batch_size, args.iterations, args.patch_iterations)
+    )
+    for case in benchmark_cases:
         exe = executable(args.build_dir, args.config, case.target)
         output = run_capture([str(exe), *case.args])
         row = {

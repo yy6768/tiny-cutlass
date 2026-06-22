@@ -9,6 +9,7 @@ PatchEmbed 的输入也按 texture-like NHWC 处理。
 
 - `swin_problem.h`: `SwinProblem`、`SwinTensors` 和 shape/element 计算函数。
 - `PATCH_EMBED.md`: PatchEmbed 的独立设计说明。
+- `WINDOW_PARTITION.md`: WindowPartition / WindowReverse 的独立设计说明。
 - `swin.h`: 对外共享入口，汇总 problem、device、kernel policy 和辅助转换声明。
 - `kernel/default_swin.h`: 模板 policy factory，入口是
   `kernel::DefaultSwin<ArchTag, Element, ...>::Kernel`。

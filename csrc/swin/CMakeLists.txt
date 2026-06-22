@@ -41,6 +41,10 @@ target_include_directories(swin_window PRIVATE
   "${SWIN_TEST_DIR}"
 )
 
+target_compile_options(swin_window PRIVATE
+  $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/bigobj>
+)
+
 target_link_libraries(swin_window PRIVATE
   tiny_cutlass::cudnn
 )

@@ -10,7 +10,7 @@ import numpy as np
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["fp16", "fp8"], default="fp16")
+    parser.add_argument("--mode", choices=["fp8"], default="fp8")
     parser.add_argument("--artifact-dir", type=Path, default=None)
     parser.add_argument("--reference", type=Path, default=None)
     parser.add_argument("--candidate", type=Path, action="append", default=None)
@@ -19,15 +19,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-abs", type=float, default=None)
     args = parser.parse_args()
     if args.artifact_dir is None:
-        args.artifact_dir = Path(
-            "build/conv-fused/fp8-reference"
-            if args.mode == "fp8"
-            else "build/conv-fused/reference"
-        )
+        args.artifact_dir = Path("build/conv-fused/fp8-reference")
     if args.mae is None:
-        args.mae = 5.0e-2 if args.mode == "fp8" else 1.0e-3
+        args.mae = 5.0e-2
     if args.max_abs is None:
-        args.max_abs = 5.0e-1 if args.mode == "fp8" else 2.0e-2
+        args.max_abs = 5.0e-1
     return args
 
 

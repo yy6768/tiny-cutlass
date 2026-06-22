@@ -24,7 +24,6 @@ struct Arguments {
   Problem problem;
   Element const* input = nullptr;
   Element const* weight0 = nullptr;
-  Element* stage0 = nullptr;
   ElementScaleBias const* stage0_scale = nullptr;
   ElementScaleBias const* bias0 = nullptr;
   Element const* weight1 = nullptr;
@@ -41,9 +40,5 @@ template <
     typename ElementCompute = float>
 cutlass::Status conv1x1_relu_conv1x1_relu(
     Arguments<Element, ElementScaleBias, ElementCompute> const& args);
-
-using E4m3Arguments = Arguments<cutlass::float_e4m3_t, float, float>;
-
-cutlass::Status conv1x1_relu_conv1x1_relu_fp8(E4m3Arguments const& args);
 
 }  // namespace tiny_cutlass::conv_fused::fp8::conv1x1_relu_conv1x1_relu

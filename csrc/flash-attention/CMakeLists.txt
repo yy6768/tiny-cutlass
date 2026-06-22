@@ -63,25 +63,13 @@ function(flash_attention_add_test_executable TARGET DEFAULT_KERNEL)
 endfunction()
 
 flash_attention_add_test_executable(flash_attention_test "all")
-flash_attention_add_test_executable(flash_attention_00_naive_attention_test "00-naive")
-flash_attention_add_test_executable(flash_attention_01_online_softmax_attention_test "01-online-softmax")
-flash_attention_add_test_executable(flash_attention_02_tiled_online_attention_test "02-tiled-online")
-
-set_target_properties(flash_attention_00_naive_attention_test PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/00-naive-attention"
-)
-
-set_target_properties(flash_attention_01_online_softmax_attention_test PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/01-online-softmax"
-)
-
-set_target_properties(flash_attention_02_tiled_online_attention_test PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/02-tiled-online-attention"
-)
+flash_attention_add_test_executable(naive_attention "00-naive")
+flash_attention_add_test_executable(online_softmax_attention "01-online-softmax")
+flash_attention_add_test_executable(tiled_online_attention "02-tiled-online")
 
 add_custom_target(flash_attention
   DEPENDS flash_attention_test
-          flash_attention_00_naive_attention_test
-          flash_attention_01_online_softmax_attention_test
-          flash_attention_02_tiled_online_attention_test
+          naive_attention
+          online_softmax_attention
+          tiled_online_attention
 )

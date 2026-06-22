@@ -11,7 +11,7 @@ DEFAULT_TENSORRT_ROOT = Path("C:/Program Files/NVIDIA GPU Computing Toolkit/Tens
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["fp16", "fp8"], default="fp16")
+    parser.add_argument("--mode", choices=["fp8"], default="fp8")
     parser.add_argument("--artifact-dir", type=Path, default=None)
     parser.add_argument("--build-dir", type=Path, default=Path("build/conv-fused"))
     parser.add_argument("--tensorrt-root", type=Path, default=DEFAULT_TENSORRT_ROOT)
@@ -35,11 +35,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip-ours", action="store_true")
     args = parser.parse_args()
     if args.artifact_dir is None:
-        args.artifact_dir = Path(
-            "build/conv-fused/fp8-reference"
-            if args.mode == "fp8"
-            else "build/conv-fused/reference"
-        )
+        args.artifact_dir = Path("build/conv-fused/fp8-reference")
     return args
 
 
@@ -49,12 +45,8 @@ def main() -> None:
     build_dir = args.build_dir.resolve()
     trtexec = args.tensorrt_root / "bin" / "trtexec.exe"
     tensorrt_lib_dir = args.tensorrt_root / "lib"
-    if args.mode == "fp8":
-        ours_exe = build_dir / "tests" / "conv-fused" / "conv1x1_relu_conv1x1_relu_trt.exe"
-        onnx_name = "conv1x1_relu_conv1x1_relu_reference.onnx"
-    else:
-        ours_exe = build_dir / "tests" / "conv-fused" / "conv_relu_pool_trt.exe"
-        onnx_name = "conv_relu_pool_reference.onnx"
+    ours_exe = build_dir / "tests" / "conv-fused" / "conv1x1_relu_conv1x1_relu_trt.exe"
+    onnx_name = "conv1x1_relu_conv1x1_relu_reference.onnx"
 
     onnx_path = artifact_dir / onnx_name
     input_path = artifact_dir / "input_nhwc.bin"
@@ -86,11 +78,8 @@ def main() -> None:
             "--dumpProfile",
         ]
 
-        if args.mode == "fp8":
-            command.append("--fp8")
-            command.append("--fp16")
-        elif not args.fp32:
-            command.append("--fp16")
+        command.append("--fp8")
+        command.append("--fp16")
         if args.skip_inference:
             command.append("--skipInference")
         if not args.skip_output_export:
@@ -111,23 +100,22 @@ def main() -> None:
             "--iterations",
             str(args.ours_iterations),
         ]
-        if args.mode == "fp8":
-            ours_command.extend(
-                [
-                    "--batch",
-                    str(args.batch),
-                    "--height",
-                    str(args.height),
-                    "--width",
-                    str(args.width),
-                    "--channels",
-                    str(args.channels),
-                    "--hidden-channels",
-                    str(args.hidden_channels),
-                    "--output-channels",
-                    str(args.output_channels),
-                ]
-            )
+        ours_command.extend(
+            [
+                "--batch",
+                str(args.batch),
+                "--height",
+                str(args.height),
+                "--width",
+                str(args.width),
+                "--channels",
+                str(args.channels),
+                "--hidden-channels",
+                str(args.hidden_channels),
+                "--output-channels",
+                str(args.output_channels),
+            ]
+        )
         print(" ".join(ours_command))
         subprocess.run(ours_command, cwd=build_dir, env=env, check=True)
 

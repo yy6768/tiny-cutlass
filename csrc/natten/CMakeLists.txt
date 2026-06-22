@@ -4,18 +4,18 @@
 set(NATTEN_TEST_DIR "${PROJECT_SOURCE_DIR}/csrc/tests/natten")
 
 cutlass_example_add_executable(
-  natten_fna_test
+  natten_fna
   "${NATTEN_TEST_DIR}/natten_fna_test.cu"
 )
 
 target_include_directories(
-  natten_fna_test
+  natten_fna
   PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/include"
 )
 
 target_compile_options(
-  natten_fna_test
+  natten_fna
   PRIVATE
   $<$<COMPILE_LANGUAGE:CUDA>:--generate-line-info>
   $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math>
@@ -23,10 +23,10 @@ target_compile_options(
 
 if(MSVC)
   target_compile_options(
-    natten_fna_test
+    natten_fna
     PRIVATE
     $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/bigobj>
   )
 endif()
 
-add_custom_target(natten DEPENDS natten_fna_test)
+add_custom_target(natten DEPENDS natten_fna)

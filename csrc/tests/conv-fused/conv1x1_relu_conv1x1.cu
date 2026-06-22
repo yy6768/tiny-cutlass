@@ -158,7 +158,6 @@ std::vector<float> reference(
 template <typename Element>
 bool run_case(Case const& c) {
   int64_t input_count = int64_t(c.batch) * c.height * c.width * c.channels;
-  int64_t stage0_count = int64_t(c.batch) * c.height * c.width * c.hidden;
   int64_t output_count = int64_t(c.batch) * c.height * c.width * c.output_channels;
   int64_t weight0_count = int64_t(c.hidden) * c.channels;
   int64_t weight1_count = int64_t(c.output_channels) * c.hidden;
@@ -168,7 +167,6 @@ bool run_case(Case const& c) {
   std::vector<Element> weight1(weight1_count);
   std::vector<Element> bias0(c.hidden);
   std::vector<Element> bias1(c.output_channels);
-  std::vector<Element> stage0(stage0_count);
   std::vector<Element> output(output_count);
 
   fill_tensor<Element>(input, 0.12f, 0.11f);
@@ -182,11 +180,10 @@ bool run_case(Case const& c) {
   DeviceBuffer<Element> d_weight1(weight1.size());
   DeviceBuffer<Element> d_bias0(bias0.size());
   DeviceBuffer<Element> d_bias1(bias1.size());
-  DeviceBuffer<Element> d_stage0(stage0.size());
   DeviceBuffer<Element> d_output(output.size());
 
   if (!d_input.get() || !d_weight0.get() || !d_weight1.get() || !d_bias0.get() ||
-      !d_bias1.get() || !d_stage0.get() || !d_output.get()) {
+      !d_bias1.get() || !d_output.get()) {
     return false;
   }
 
@@ -206,7 +203,6 @@ bool run_case(Case const& c) {
       c.output_channels};
   args.input = d_input.get();
   args.weight0 = d_weight0.get();
-  args.stage0 = d_stage0.get();
   args.bias0 = d_bias0.get();
   args.weight1 = d_weight1.get();
   args.bias1 = d_bias1.get();

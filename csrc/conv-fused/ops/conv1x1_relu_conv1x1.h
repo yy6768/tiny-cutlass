@@ -20,7 +20,6 @@ struct Conv1x1ReluConv1x1Arguments {
   Conv1x1ReluConv1x1Problem problem;
   Element const* input = nullptr;
   Element const* weight0 = nullptr;
-  Element* stage0 = nullptr;
   Element const* bias0 = nullptr;
   Element const* weight1 = nullptr;
   Element const* bias1 = nullptr;

@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <random>
@@ -30,6 +31,7 @@ struct Options {
   bool error = false;
   bool reference_check = true;
   bool use_mask = true;
+  bool profile_once = false;
 
   int batch_size = 2;
   int image_size = 14;
@@ -43,9 +45,24 @@ struct Options {
   float mae_tolerance = 2.0e-2f;
   float host_abs_tolerance = 1.6e-1f;
   float host_rel_tolerance = 3.0e-1f;
+  std::string input_file;
+  std::string qkv_weight_file;
+  std::string qkv_bias_file;
+  std::string output_weight_file;
+  std::string output_bias_file;
+  std::string rel_bias_file;
 
   void parse(int argc, char const** args) {
     cutlass::CommandLine cmd(argc, args);
+    auto get_string_arg = [&](char const* name, std::string& value) {
+      std::string prefix = std::string("--") + name + "=";
+      for (int i = 1; i < argc; ++i) {
+        std::string arg(args[i]);
+        if (arg.rfind(prefix, 0) == 0) {
+          value = arg.substr(prefix.size());
+        }
+      }
+    };
 
     if (cmd.check_cmd_line_flag("help")) {
       help = true;
@@ -62,9 +79,16 @@ struct Options {
     cmd.get_cmd_line_argument("seed", seed, seed);
     cmd.get_cmd_line_argument("mask", use_mask, use_mask);
     cmd.get_cmd_line_argument("reference-check", reference_check, reference_check);
+    cmd.get_cmd_line_argument("profile-once", profile_once, profile_once);
     cmd.get_cmd_line_argument("mae-tolerance", mae_tolerance, mae_tolerance);
     cmd.get_cmd_line_argument("host-abs-tolerance", host_abs_tolerance, host_abs_tolerance);
     cmd.get_cmd_line_argument("host-rel-tolerance", host_rel_tolerance, host_rel_tolerance);
+    get_string_arg("input-file", input_file);
+    get_string_arg("qkv-weight-file", qkv_weight_file);
+    get_string_arg("qkv-bias-file", qkv_bias_file);
+    get_string_arg("output-weight-file", output_weight_file);
+    get_string_arg("output-bias-file", output_bias_file);
+    get_string_arg("rel-bias-file", rel_bias_file);
 
     if (batch_size <= 0 || image_size <= 0 || window_size <= 0 ||
         head_number <= 0 || head_size <= 0 || iterations <= 0 ||
@@ -113,6 +137,7 @@ struct Options {
         << "  --head_size=<int>              Per-head dimension (default: 32).\n"
         << "  --mask=<bool>                  Apply shifted-window mask (default: true).\n"
         << "  --reference-check=<bool>       Run cuDNN and host references before timing.\n"
+        << "  --profile-once=<bool>          Launch one checked Swin path and skip timing.\n"
         << "  --mae-tolerance=<float>        cuDNN attention MAE tolerance (default: 2e-2).\n"
         << "  --iterations=<int>             Number of timed iterations (default: 20).\n"
         << "  --seed=<int>                   Random seed base (default: 2026).\n";
@@ -138,6 +163,41 @@ void fill_random_uniform(std::vector<Element>& dst, int seed, float lo, float hi
   for (auto& v : dst) {
     v = Element(dist(rng));
   }
+}
+
+bool load_float_file(
+    std::string const& path,
+    std::vector<Element>& dst,
+    size_t expected,
+    char const* label) {
+  if (path.empty()) {
+    return true;
+  }
+  std::ifstream file(path, std::ios::binary | std::ios::ate);
+  if (!file) {
+    std::cerr << "Could not open " << label << " file: " << path << "\n";
+    return false;
+  }
+  std::streamsize bytes = file.tellg();
+  std::streamsize expected_bytes =
+      std::streamsize(expected * sizeof(float));
+  if (bytes != expected_bytes) {
+    std::cerr << label << " file size mismatch: " << path
+              << " has " << bytes << " bytes, expected "
+              << expected_bytes << "\n";
+    return false;
+  }
+  file.seekg(0, std::ios::beg);
+  std::vector<float> tmp(expected);
+  if (!file.read(reinterpret_cast<char*>(tmp.data()), bytes)) {
+    std::cerr << "Could not read " << label << " file: " << path << "\n";
+    return false;
+  }
+  dst.resize(expected);
+  for (size_t i = 0; i < expected; ++i) {
+    dst[i] = Element(tmp[i]);
+  }
+  return true;
 }
 
 void fill_weights(SwinProblem const& p,
@@ -249,6 +309,36 @@ void build_attention_bias(
   }
 
   build_shift_attention_mask(p, use_mask, attention_mask);
+
+  attention_bias.assign(swin_attention_bias_elements(p), Element(0));
+  for (int batch_window = 0; batch_window < bw; ++batch_window) {
+    int window_id = batch_window % nW;
+    for (int head = 0; head < h; ++head) {
+      for (int i = 0; i < l; ++i) {
+        for (int j = 0; j < l; ++j) {
+          float v = float(rel_bias[(int64_t(head) * l + i) * l + j]);
+          if (use_mask) {
+            v += float(attention_mask[(int64_t(window_id) * l + i) * l + j]);
+          }
+          attention_bias[((int64_t(batch_window) * h + head) * l + i) * lp + j] =
+              Element(v);
+        }
+      }
+    }
+  }
+}
+
+void pack_attention_bias(
+    SwinProblem const& p,
+    bool use_mask,
+    std::vector<Element>& attention_bias,
+    std::vector<Element> const& rel_bias,
+    std::vector<Element> const& attention_mask) {
+  int bw = swin_batched_windows(p);
+  int h = p.head_number;
+  int l = swin_window_len(p);
+  int lp = swin_window_len_padded(p);
+  int nW = swin_num_windows(p);
 
   attention_bias.assign(swin_attention_bias_elements(p), Element(0));
   for (int batch_window = 0; batch_window < bw; ++batch_window) {
@@ -512,6 +602,48 @@ int run_window(Options const& options) {
       host_attention_bias,
       host_rel_bias,
       host_attention_mask);
+  if (!load_float_file(
+          options.input_file,
+          host_input,
+          swin_input_elements(problem),
+          "input") ||
+      !load_float_file(
+          options.qkv_weight_file,
+          host_qkv_weight,
+          swin_qkv_weight_elements(problem),
+          "qkv_weight") ||
+      !load_float_file(
+          options.qkv_bias_file,
+          host_qkv_bias,
+          3 * swin_channels(problem),
+          "qkv_bias") ||
+      !load_float_file(
+          options.output_weight_file,
+          host_output_weight,
+          swin_output_weight_elements(problem),
+          "output_weight") ||
+      !load_float_file(
+          options.output_bias_file,
+          host_output_bias,
+          swin_channels(problem),
+          "output_bias") ||
+      !load_float_file(
+          options.rel_bias_file,
+          host_rel_bias,
+          int64_t(problem.head_number) * swin_window_len(problem) *
+              swin_window_len(problem),
+          "relative_position_bias")) {
+    return -1;
+  }
+  if (!options.rel_bias_file.empty()) {
+    build_shift_attention_mask(problem, options.use_mask, host_attention_mask);
+    pack_attention_bias(
+        problem,
+        options.use_mask,
+        host_attention_bias,
+        host_rel_bias,
+        host_attention_mask);
+  }
 
   cutlass::DeviceAllocation<Element> input(swin_input_elements(problem));
   cutlass::DeviceAllocation<Element> qkv_weight(swin_qkv_weight_elements(problem));
@@ -686,6 +818,18 @@ int run_window(Options const& options) {
       std::cout << "\nFailed\n";
       return -1;
     }
+  }
+
+  if (options.profile_once) {
+    std::cout << "\nSwin CUTLASS profile path:\n"
+              << "====================================================\n"
+              << "    {B, I, window, shift, heads, head_dim} = {"
+              << problem.batch_size << ", " << problem.image_size << ", "
+              << problem.window_size << ", " << problem.shift_size << ", "
+              << problem.head_number << ", " << problem.head_size << "}\n"
+              << "    Path: WindowPartition -> QKV -> WindowAttention -> OutputProjection -> WindowReverse\n"
+              << "\nPassed\n";
+    return 0;
   }
 
   err = Runner::run(problem, tensors, nullptr);

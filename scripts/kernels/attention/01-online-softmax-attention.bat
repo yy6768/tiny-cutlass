@@ -4,8 +4,8 @@ setlocal EnableExtensions EnableDelayedExpansion
 set "ROOT=%~dp0..\..\.."
 set "BUILD_DIR=%ROOT%\build"
 set "CONFIG=Release"
-set "TARGET=flash_attention_01_online_softmax_attention_test"
-set "EXE=%BUILD_DIR%\csrc\flash-attention\01-online-softmax\%CONFIG%\%TARGET%.exe"
+set "TARGET=online_softmax_attention"
+set "EXE=%BUILD_DIR%\csrc\flash-attention\%CONFIG%\%TARGET%.exe"
 
 cmake -S "%ROOT%" -B "%BUILD_DIR%" -DTINY_CUTLASS_BUILD_FLASH_ATTENTION=ON -DTINY_CUTLASS_BUILD_CONV_FUSED=OFF
 if errorlevel 1 exit /b 1

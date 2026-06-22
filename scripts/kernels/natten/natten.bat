@@ -4,7 +4,7 @@ setlocal EnableExtensions EnableDelayedExpansion
 set "ROOT=%~dp0..\..\.."
 set "BUILD_DIR=%ROOT%\build"
 set "CONFIG=Release"
-set "TARGET=natten_fna_test"
+set "TARGET=natten_fna"
 set "EXE=%BUILD_DIR%\csrc\natten\%CONFIG%\%TARGET%.exe"
 set "CUDA_TOOLKIT_DIR=%CUDA_PATH%"
 

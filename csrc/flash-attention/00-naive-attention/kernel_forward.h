@@ -282,10 +282,6 @@ struct AttentionMMKernel {
           (int32_t)p.problem_n, (int32_t)Mma::Shape::kN);
 
       for (int32_t blockN = 0; blockN < nBlockN; ++blockN) {
-        int32_t problem_size_n = cutlass::fast_min(
-            (int32_t)Mma::Shape::kN,
-            p.problem_n - blockN * (int32_t)Mma::Shape::kN);
-
         __syncthreads();
 
         // -- Operand iterators ------------------------------------------------
@@ -301,7 +297,7 @@ struct AttentionMMKernel {
             typename Mma::IteratorB::Params(
                 LayoutB_(p.b_strideM)),
             p.b_ptr,
-            {problem_size_k, problem_size_n},
+            {problem_size_k, p.problem_n},
             my_thread_id,
             {0, blockN * (int)Mma::Shape::kN});
 

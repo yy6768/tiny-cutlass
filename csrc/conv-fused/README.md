@@ -4,21 +4,15 @@
 
 ## 设计
 
+学习和重构文档从 `docs/00-overview.md` 开始，按 `00` 到 `06` 逐步阅读。README
+只记录稳定设计，不记录临时调试状态；具体修改流水见 `STATUS.md`。
+
 稳定目标有两条主线：
 
 ```text
 NHWC input / KRSC weights / NHWC output
   -> raw device pointers + problem descriptors + cudaStream_t
   -> CUTLASS implicit-GEMM conv1x1 -> relu -> conv1x1
-```
-
-```text
-NHWC input / KRSC weights / NHWC output
-  -> raw device pointers + problem descriptors + cudaStream_t
-  -> CUTLASS implicit-GEMM conv3x3 -> relu
-  -> CUTLASS maxpool reduction
-  -> CUTLASS implicit-GEMM conv1x1 -> relu
-  -> CUTLASS maxpool reduction
 ```
 
 默认 runtime 不依赖 PyTorch，也不提供 PyTorch binding。验证入口由 C++ executable 自己持有 host/device allocation，直接调用 core API。参考实现可以来自 PyTorch、TensorRT 或 ModelOpt 导出的外部流程，但不能把 ATen tensor ownership 带进本目录的可运行入口。
@@ -36,7 +30,7 @@ Kernel
 
 - `Kernel` 层决定用哪一个 CUTLASS kernel 组合模板，只产出
   `CutlassKernel`。
-- `Device` 层提供 CUTLASS-style device operator，持有 `Params`，
+- `Device` 层包住 CUTLASS example 13 的 device operator，持有 `Params`，
   负责 `Arguments` 组装、`can_implement`、`initialize/run/operator()`。
 - `CTA` 层决定一个 threadblock 怎么做两段 implicit-GEMM、怎么走 shared memory、怎么串起两次卷积。
 - `Warp` 层只固定 warp 的 tile 形状。
@@ -50,25 +44,20 @@ Kernel
 2. 不写 raw CUDA kernel。
 3. 默认 runtime 不绑定 PyTorch；本目录不再构建 pybind/ATen adapter。
 4. 结构分层必须清楚，职责不能交叉。
-5. 当前构建目标固定 SM89；CMake 配置不是 `CMAKE_CUDA_ARCHITECTURES=89` 时直接失败。kernel policy 仍用模板控制 `ArchTag` 和 element type；默认实例按 family 区分：legacy `conv1x1_relu_conv1x1` 仍是 fp16/Sm80 example-13 policy，`conv_relu_pool` 是 fp16/Sm89 staged policy，FP8 family 是 e4m3/Sm89 policy。
+5. 当前构建目标固定 SM89；CMake 配置不是 `CMAKE_CUDA_ARCHITECTURES=89` 时直接失败。kernel policy 仍用模板控制 `ArchTag` 和 element type；默认实例按 family 区分：legacy `conv1x1_relu_conv1x1` 仍是 fp16/Sm80 example-13 policy，FP8 family 是 e4m3/Sm89 policy。
 6. 不提供 SIMT 或 raw-kernel fallback；SM 或 problem shape 不支持时只允许返回明确错误状态。
 7. 不维护自定义 arch、storage、swizzle helper；如果 CUTLASS 已经有对应类型或函数，直接使用 CUTLASS 的实现。
 
 ### 文件职责
 
 - `ops/conv1x1_relu_conv1x1.{h,cu}`: 默认 core API，接收 raw device pointer、problem descriptor、`cudaStream_t`，调用 device wrapper。
-- `device/implicit_gemm_convolution_fusion.h`: CUTLASS-style back-to-back implicit-GEMM fusion device operator，模板参数是 `ImplicitGemmFusionKernel`，内部通过 `cutlass::Kernel<ImplicitGemmFusionKernel>` 启动。
-- `device/conv1x1_relu_conv1x1.{h,cu}`: device 层，负责把 `Conv2dProblemSize` 和裸指针组装成 `ImplicitGemmConvolutionFusion<...>::Arguments` 并通过 `operator()` 启动。
-- `ops/conv_relu_pool.{h,cu}`: `conv3x3 -> relu -> pool -> conv1x1 -> relu -> pool` 的 raw-pointer core contract，负责 problem/pointer validation。
-- `device/conv_relu_pool.{h,cu}`: staged CUTLASS device class `ConvReluPool<ArchTag, Element>`，持有 `Arguments/Params` 和 `initialize/run/operator()`，在 `run()` 中顺序调用两次 CUTLASS implicit-GEMM conv device operator 和两次 CUTLASS reduction pool device operator。
-- `kernel/conv_relu_pool.h`: kernel policy 层，提供 `DefaultConvRelu<ArchTag, Element, ...>` 与 `DefaultPool<Element, ...>` 模板工厂。
+- `device/conv1x1_relu_conv1x1.{h,cu}`: CUTLASS-style family device operator `Conv1x1ReluConv1x1<ArchTag, Element>`，负责把 `Conv2dProblemSize` 和裸指针组装成 `cutlass::conv::device::B2bImplicitGemmConvolution<...>::Arguments`，并提供 `can_implement`、`initialize`、`run`、`operator()`。
 - `kernel/conv1x1_relu_conv1x1.h`: kernel 层，负责组装 `DefaultB2bConv2dFprop` 的模板参数，包括 CTA/warp shape 默认值。
 - `threads/epilogue_ops.h`: threads 层的 epilogue 别名，只固定逐线程输出算子。
-- `binding/tensorrt/conv_relu_pool.{h,cpp}`: TensorRT IPluginV3 binding 层，只负责 plugin contract、creator 和 TensorRT 接口，不把 TensorRT 依赖反向带进 core。
-- `csrc/tests/conv-fused/conv_relu_pool.cu`: C++ raw-pointer correctness 和错误路径测试。
-- `csrc/tests/conv-fused/conv_relu_pool_plugin.cpp`: 小规模 TensorRT IPluginV3 contract 测试，对比 plugin output 和 direct core output。
-- `csrc/tests/conv-fused/conv_relu_pool_trt.cpp`: full-shape ours runner，读取 scripts 导出的相同输入/权重，跑 TensorRT IPluginV3 并导出输出和计时。
-- `scripts/kernels/conv-fused/`: PyTorch reference 导出、`verify.py` 验证、`bench.py` 性能执行和 family `.bat` 工作流入口。
+- `csrc/tests/conv-fused/conv1x1_relu_conv1x1.cu`: fp16 `conv1x1 -> relu -> conv1x1` raw-pointer correctness 和错误路径测试。
+- `csrc/tests/conv-fused/conv1x1_relu_conv1x1_relu.cu`: FP8 raw-pointer smoke test。
+- `csrc/tests/conv-fused/conv1x1_relu_conv1x1_relu_trt.cpp`: FP8 TensorRT IPluginV3 runner。
+- `scripts/kernels/conv-fused/`: ModelOpt/TensorRT FP8 reference 导出、`verify.py` 验证、`bench.py` 性能执行和 family `.bat` 工作流入口。
 - `fp8/conv1x1_relu_conv1x1_relu_fp8/ops/conv1x1_relu_conv1x1_relu_fp8.{h,cu}`: FP8 core API，接收 e4m3 raw device pointer、scale/bias 指针和 `cudaStream_t`。
 ### 核心结构
 
@@ -86,14 +75,16 @@ Kernel
 - `cutlass::gemm::threadblock::DefaultMmaCore`
 - `cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle`
 - `cutlass::conv::kernel::DefaultB2bConv2dFprop`
-- `cutlass::Kernel<ImplicitGemmFusionKernel>`
+- `cutlass::conv::device::B2bImplicitGemmConvolution`
 - `cutlass::epilogue::thread::LinearCombination`
 - `cutlass::epilogue::thread::LinearCombinationRelu`
 
 ### 现状
 
 - 当前 `float16` 主路径只走 CUTLASS back-to-back TensorOp implicit-GEMM。
-- `conv_relu_pool` 当前是 staged CUTLASS baseline，不是最终 monolithic fusion。它封装为 `device::ConvReluPool<ArchTag, Element>`，用 CUTLASS implicit-GEMM conv 和 CUTLASS reduction pool 串联，先提供和 TensorRT reference 对齐、可计时的 ours 路线。
+- 非 FP8 path 对齐 example 13 的 RF-resident B2B conv；FP8 path 因历史 correctness
+  问题显式走 example 13 的 SMEM-accumulator specialization，不把它伪装成 RF path。
+- `conv_relu_pool` staged baseline 已从正式 core/build/test/plugin 路径删除。后续如果恢复 pool family，必须从 threadblock-level RF/SMEM 设计开始，不允许用 staged global-memory pipeline 冒充融合。
 - 非 FP8 path 要求 `channels`、`hidden_channels`、`output_channels` 满足 TensorOp vector access 对齐；不满足时返回 `kErrorInvalidProblem`，不降级。
 - `fp8/conv1x1_relu_conv1x1_relu_fp8/` 是独立 FP8 family，保持 `ops/device/kernel/threads` 分层；只有出现真实 CTA 或 warp 逻辑时才新增 `threadblock/` 或 `warp/`。
 - FP8 family 当前只支持 CUTLASS `cutlass::float_e4m3_t`，目标硬件是 SM89。
@@ -102,8 +93,5 @@ Kernel
 
 当前测试入口参考 CUTLASS example 41 的方向：C++ executable/testbed 自己持有 host/device allocation、构造 problem descriptors、调用 raw-pointer kernel。Python、PyTorch、TensorRT 或 ModelOpt 可以作为外部 reference/driver，但不是主运行时，也不通过本目录的 binding 进入 kernel。
 
-- `conv_pool`: 覆盖非 FP8 aligned fused conv 正确性，以及 unaligned problem 被明确拒绝。
-- `conv_relu_pool`: 覆盖 staged conv/pool core 的 small correctness、workspace 和 invalid problem 错误路径。
-- `conv_relu_pool_plugin`: 覆盖 TensorRT IPluginV3 小规模构图、序列化/反序列化和 plugin vs direct core 一致性。
-- `conv_relu_pool_trt`: 覆盖目标 full-shape ours TensorRT plugin 路线，默认读取 `build/conv-fused/reference` 下的 PyTorch 导出 artifacts。
+- `conv1x1_relu_conv1x1`: 覆盖非 FP8 aligned fused conv 正确性，以及 unaligned problem 被明确拒绝。
 - `conv1x1_relu_conv1x1_relu`: 覆盖 Element 默认 e4m3 的 raw-pointer smoke case。

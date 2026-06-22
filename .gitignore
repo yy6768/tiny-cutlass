@@ -3,5 +3,7 @@ __pycache__/
 cutlass_library.egg-info/
 /build*
 /cache/
+/checkpoint/
+/profile/
 
 .claude/settings.local.json

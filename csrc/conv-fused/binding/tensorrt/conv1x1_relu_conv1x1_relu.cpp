@@ -55,14 +55,6 @@ core::Problem make_problem(nvinfer1::DynamicPluginTensorDesc const* inputs) {
   };
 }
 
-size_t stage0_workspace_bytes(core::Problem const& problem) {
-  return static_cast<size_t>(problem.batch) *
-         static_cast<size_t>(problem.height) *
-         static_cast<size_t>(problem.width) *
-         static_cast<size_t>(problem.hidden_channels) *
-         sizeof(CoreElement);
-}
-
 bool validate_build_desc(
     nvinfer1::DynamicPluginTensorDesc const* in,
     int32_t nbInputs,
@@ -278,7 +270,7 @@ size_t Plugin::getWorkspaceSize(
   if (!validate_build_desc(inputs, nbInputs, outputs, nbOutputs)) {
     return 0;
   }
-  return stage0_workspace_bytes(make_problem(inputs));
+  return 0;
 }
 
 char const* Plugin::getTimingCacheID() noexcept {
@@ -310,7 +302,7 @@ int32_t Plugin::enqueue(
     void* const* outputs,
     void* workspace,
     cudaStream_t stream) noexcept {
-  if (!inputDesc || !inputs || !outputs || !workspace ||
+  if (!inputDesc || !inputs || !outputs ||
       inputDesc[0].dims.nbDims != 4 || inputDesc[1].dims.nbDims != 4 ||
       inputDesc[4].dims.nbDims != 4) {
     return -1;
@@ -327,7 +319,6 @@ int32_t Plugin::enqueue(
   };
   args.input = reinterpret_cast<CoreElement const*>(inputs[0]);
   args.weight0 = reinterpret_cast<CoreElement const*>(inputs[1]);
-  args.stage0 = reinterpret_cast<CoreElement*>(workspace);
   args.stage0_scale = reinterpret_cast<float const*>(inputs[2]);
   args.bias0 = reinterpret_cast<float const*>(inputs[3]);
   args.weight1 = reinterpret_cast<CoreElement const*>(inputs[4]);

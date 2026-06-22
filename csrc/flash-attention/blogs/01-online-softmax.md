@@ -1,4 +1,4 @@
-# CUTLASS学习记（七）上：Online Softmax
+# CUTLASS学习记（七）：Online Softmax
 
 ## 前言
 - 接着上期naive attention继续学， 代码请参考
@@ -110,206 +110,138 @@ $$
 
 这就是 online softmax。
 
-具体的推理过程可以看：
-
-[From Online Softmax to FlashAttention](https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf)
+具体的推理过程可以看[From Online Softmax to FlashAttention](https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf) 的softmax部分。
 
 
 
-## OnlineSoftmax的并行化实现
+## Online Softmax 的实现
 
+我们把整个Online Softmax的forward pass拆成两个pass，代码参考了这里参考了[LeetCUDA的softmax](https://github.com/xlite-dev/LeetCUDA/tree/main/kernels/softmax)：
 
+### 1st Pass
 
-假设两个 partial state 是：
+Online Softmax需要在行方向遍历中维护 `(m, d)`两个值。每个线程负责维护状态$(m, d)$,  根据stride（CTA的线程数量）读取自己负责元素值，并维护本线程的 `(mi, di)`：
 
-$$
-(m_0, d_0),\quad (m_1, d_1)
-$$
+`01-online-softmax` 里最重要的状态不是单个数，而是一个二元组：
 
-合并后的 max 是：
+```C++
+ struct __align__(8) MD {
+    accum_t m;
+    accum_t d;
+ };
+```
 
-$$
-m = \max(m_0, m_1)
-$$
-
-合并后的 denominator 是：
-
-$$
-d = d_0 \cdot e^{m_0 - m} + d_1 \cdot e^{m_1 - m}
-$$
-
-这就是 `online_merge`：
+CTA 层级的循环（遍历一整行）
 
 ```cpp
-static CUTLASS_DEVICE void online_merge(
-    accum_t& mi,
-    accum_t& di,
-    accum_t mj,
-    accum_t dj) {
+MD state{-FLT_MAX, accum_t{0}}; // Line 446: 初始化状态
 
-  if (di == accum_t(0)) {
-    mi = mj;
-    di = dj;
-    return;
-  }
-  if (dj == accum_t(0)) {
-    return;
-  }
-
-  accum_t m_new = fmaxf(mi, mj);
-  di = di * __expf(mi - m_new) + dj * __expf(mj - m_new);
-  mi = m_new;
-}
-```
-
-这里两个 `if` 不是优化，而是为了处理初始空状态。初始时 `d = 0`，如果硬套公式，很容易把 `-inf` 和 `exp` 搅在一起，最后得到不想要的 NaN。
-
-## 01 的代码结构
-
-这次的实现文件是：
-
-```text
-csrc/flash-attention/01-online-softmax/
-  online_softmax_attention.cu
-  kernel_forward.h
-  CMakeLists.txt
-```
-
-`online_softmax_attention.cu` 里仍然是三段式 testbed：
-
-```cpp
-using MM0 = AttentionMMKernel<...>;
-using Softmax = AttentionSoftmaxKernel<scalar_t, 256>;
-using MM1 = AttentionMMKernel<...>;
-```
-
-设备端 buffer 也没有变化：
-
-```cpp
-block_Q  // [B, Sq, H, d]
-block_K  // [B, Sk, H, d]
-block_V  // [B, Sk, H, dv]
-block_P  // [B, H, Sq, Sk]
-block_O  // [B, Sq, H, dv]
-```
-
-这很重要：`01` 仍然有 `block_P`。
-
-所以它的 launch 顺序还是：
-
-```text
-MM0 -> Softmax -> MM1
-```
-
-这一篇只改 `AttentionSoftmaxKernel`。
-
-## online_warp_reduce
-
-`00` 里有两个不同的 warp reduction：
-
-- `warp_reduce_max`
-- `warp_reduce_sum`
-
-`01` 里变成一个：
-
-```cpp
-static CUTLASS_DEVICE void online_warp_reduce(accum_t& mi, accum_t& di) {
-  CUTLASS_PRAGMA_UNROLL
-  for (int o = kWarpSize / 2; o > 0; o >>= 1) {
-    accum_t mj = __shfl_xor_sync(0xffffffff, mi, o);
-    accum_t dj = __shfl_xor_sync(0xffffffff, di, o);
-    online_merge(mi, di, mj, dj);
-  }
-}
-```
-
-每次 shuffle 需要传两个 float：`m` 和 `d`。
-
-这个代价是有的，但它换掉的是一整趟 global memory 扫描。对于 attention 这种一行 `P` 很长的场景，这个交换是值得的。
-
-## attention_kernel：从 3-pass 到 2-pass
-
-`AttentionSoftmaxKernel::attention_kernel` 现在只做两趟。
-
-第一趟：每个线程 stride 读取自己负责的元素，并在线维护 `(m, d)`：
-
-```cpp
-accum_t mi = -cutlass::platform::numeric_limits<accum_t>::infinity();
-accum_t di = accum_t(0);
-
-for (int j = tid; j < p.num_keys; j += kThreads) {
+for (int j = tid; j < p.num_keys; j += kThreads) { // kThreads是一个CTA的线程数量
   accum_t x = accum_t(row_ptr[j]);
-  online_merge(mi, di, x, accum_t(1));
+  state = online_merge(state, {x, accum_t(1)}};
 }
 ```
 
-然后做 warp 内归约：
+有一个需要注意的点是需要使用-FLT_MAX,  INF会移除生成NAN。
+
+online_merge实际上就是上一个section每一步更新公式：
 
 ```cpp
-online_warp_reduce(mi, di);
+static CUTLASS_DEVICE MD online_merge(MD a, MD b) {
+  bool a_bigger = a.m > b.m;
+  MD big = a_bigger ? a : b;
+  MD small = a_bigger ? b : a;
+
+  big.d = big.d + small.d * cutlass::fast_exp(small.m - big.m);
+  return big;
+}
+```
+
+### warp 内归约
+
+针对于一个CTA（kThreads个线程）内部负责一行的所有元素规约。
+
+```cpp
+state = online_warp_reduce(state);
 if (lane_id == 0) {
-  warp_storage_m[warp_id] = mi;
-  warp_storage_d[warp_id] = di;
+  warp_storage[warp_id] = state;
 }
 __syncthreads();
 ```
 
-再让 warp 0 做 cross-warp reduction：
+`online_warp_reduce()` 本身很简单，就是标准的 `__shfl_xor_sync` butterfly reduce。我们做了一个针对结构体的实现：
+
+```cpp
+static CUTLASS_DEVICE MD online_warp_reduce(MD value) {
+  CUTLASS_PRAGMA_UNROLL
+  for (int o = kWarpSize / 2; o > 0; o >>= 1) {
+    MD other;
+    other.m = __shfl_xor_sync(0xffffffff, value.m, o);
+    other.d = __shfl_xor_sync(0xffffffff, value.d, o);
+    value = online_merge(value, other);
+  }
+  return value;
+}
+```
+
+之后，再做一次规约，把 warp 级状态合并：
 
 ```cpp
 if (warp_id == 0) {
-  mi = (lane_id < kNumWarps)
-      ? warp_storage_m[lane_id]
-      : -cutlass::platform::numeric_limits<accum_t>::infinity();
-  di = (lane_id < kNumWarps) ? warp_storage_d[lane_id] : accum_t(0);
-
-  online_warp_reduce(mi, di);
+  state = (lane_id < kNumWarps) ? warp_storage[lane_id] : empty_state();
+  state = online_warp_reduce(state);
   if (lane_id == 0) {
-    warp_storage_m[0] = mi;
-    warp_storage_d[0] = di;
+    warp_storage[0] = state;
   }
 }
 __syncthreads();
 ```
 
-第二趟：用最终的 `row_max` 和 `inv_sum` 写回归一化结果：
+这就得到整行的最终状态：
 
 ```cpp
-accum_t row_max = warp_storage_m[0];
-accum_t inv_sum = accum_t(1) / warp_storage_d[0];
+MD row_state = warp_storage[0];
+accum_t row_max = row_state.m;
+accum_t inv_sum = accum_t(1) / row_state.d;
+```
 
+### 2nd Pass
+
+第二个pass总的来说就是把规约完的$d$ 作为分母，并且计算当前的$e^{x_i-m_N}$  
+
+```cpp
 for (int j = tid; j < p.num_keys; j += kThreads) {
-  row_ptr[j] = scalar_t(__expf(accum_t(row_ptr[j]) - row_max) * inv_sum);
+  row_ptr[j] =
+      scalar_t(cutlass::fast_exp(accum_t(row_ptr[j]) - row_max) * inv_sum);
 }
 ```
 
-结构上很清楚：
+简单的一次遍历
 
-```text
-Pass 1: read P, online reduce (m, d)
-Pass 2: read P, write normalized P
+
+
+# 后记
+
+## 性能测试
+
+无意中留意到MIT HAN LAB开源了非常好的[NCU SKILL](https://github.com/mit-han-lab/ncu-report-skill/) 。拿过来让AI改造了之后，在RTX 4070 Laptop上输入规模为： 
+
+```
+--batch_size=4 --head_number=32 --head_size=128 --head_size_v=128 --seq_length=2048
 ```
 
-相比 `00`：
+得到了如下结果：
 
-```text
-00: read P -> read/write P -> read/write P
-01: read P -> read/write P
-```
+| 方案                          | Runtime | vs cuDNN |
+| :---------------------------- | :------ | :------- |
+| cuDNN SDPA (fused)            | 10.38ms | 1.00×    |
+| 00-naive (3 kernels)          | 21.62ms | 0.48×    |
+| 01-online-softmax (3 kernels) | 21.72ms | 0.48×    |
 
+## 总结
 
+总的来说也详细的看了看ai profiling的详细报告。 核心关键还是上篇总结的：
 
-
-
-## 当前结论
-
-`01-online-softmax` 的定位应该很明确：
-
-- 它不是 FlashAttention
-- 它没有消除完整 `P`
-- 它只把 softmax 从 3-pass 改成 2-pass
-- 它的核心价值是验证 online softmax 的数值递推和并行归约
-
-下一篇真正重要的事情，是把 `P` 从 global memory 里拿掉。
-
-这才是 `02-tiled-online-attention` 要解决的问题。
+- mm0 kernel/mm1 还是访存瓶颈（我拆除Online Softmax又要存储和读一遍Attention Map矩阵P，导致存取压力更大）
+- 下一篇也很明显了，应该按照原文的方法。把整个问题分成Tile， 一个SM负责一整个pipeline。
+- 代码会不定期的更新到[yy6768/tiny-cutlass](https://github.com/yy6768/tiny-cutlass)

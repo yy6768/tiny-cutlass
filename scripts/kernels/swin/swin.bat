@@ -19,7 +19,7 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%CONFIG%" --target swin
 if errorlevel 1 exit /b 1
 
-%PYTHON% "%ROOT%\scripts\kernels\swin\verify.py" --build-dir "%BUILD_DIR%" --config "%CONFIG%"
+%PYTHON% "%ROOT%\scripts\kernels\swin\verify.py" --build-dir "%BUILD_DIR%" --config "%CONFIG%" --official --checkpoint-dir "%ROOT%\checkpoint"
 if errorlevel 1 exit /b 1
 
 if /I "%CUTLASS_PROFILE%"=="1" goto profile
@@ -31,6 +31,9 @@ goto end
 
 :profile
 %PYTHON% "%ROOT%\scripts\kernels\swin\bench.py" --build-dir "%BUILD_DIR%" --config "%CONFIG%" --batch-size 1 --nsys
+if errorlevel 1 exit /b 1
+
+%PYTHON% "%ROOT%\scripts\kernels\swin\profile_ncu.py" --build-dir "%BUILD_DIR%" --config "%CONFIG%" --checkpoint-dir "%ROOT%\checkpoint" --profile-dir "%ROOT%\profile\swin"
 if errorlevel 1 exit /b 1
 
 :end

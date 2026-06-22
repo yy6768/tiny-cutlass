@@ -37,6 +37,7 @@
 
 #pragma once
 
+#include <cfloat>
 #include <cmath>
 #include <cinttypes>
 
@@ -282,10 +283,6 @@ struct AttentionMMKernel {
           (int32_t)p.problem_n, (int32_t)Mma::Shape::kN);
 
       for (int32_t blockN = 0; blockN < nBlockN; ++blockN) {
-        int32_t problem_size_n = cutlass::fast_min(
-            (int32_t)Mma::Shape::kN,
-            p.problem_n - blockN * (int32_t)Mma::Shape::kN);
-
         __syncthreads();
 
         // -- Operand iterators ------------------------------------------------
@@ -301,7 +298,7 @@ struct AttentionMMKernel {
             typename Mma::IteratorB::Params(
                 LayoutB_(p.b_strideM)),
             p.b_ptr,
-            {problem_size_k, problem_size_n},
+            {problem_size_k, p.problem_n},
             my_thread_id,
             {0, blockN * (int)Mma::Shape::kN});
 
@@ -379,6 +376,11 @@ struct AttentionSoftmaxKernel {
   static constexpr int kNumThreads     = kThreads;
   static constexpr int kMinBlocksPerSm = 1;
 
+  struct __align__(8) MD {
+    accum_t m;
+    accum_t d;
+  };
+
   struct Params {
     scalar_t* p_ptr       = nullptr; // [B, H, Sq, Sk]
     int32_t   num_queries = 0;
@@ -407,44 +409,33 @@ struct AttentionSoftmaxKernel {
       return dim3(kThreads, 1, 1);
     }
     CUTLASS_HOST int getSmemBytes() const {
-      return 2 * kNumWarps * sizeof(accum_t);
+      return kNumWarps * sizeof(MD);
     }
   };
 
-  static CUTLASS_DEVICE void online_merge(
-      accum_t& mi,
-      accum_t& di,
-      accum_t mj,
-      accum_t dj) {
+  static CUTLASS_DEVICE MD online_merge(MD a, MD b) {
+    bool a_bigger = a.m > b.m;
+    MD big = a_bigger ? a : b;
+    MD small = a_bigger ? b : a;
 
-    if (di == accum_t(0)) {
-      mi = mj;
-      di = dj;
-      return;
-    }
-    if (dj == accum_t(0)) {
-      return;
-    }
-
-    accum_t m_new = cutlass::fast_max(mi, mj);
-    di = di * cutlass::fast_exp(mi - m_new) +
-         dj * cutlass::fast_exp(mj - m_new);
-    mi = m_new;
+    big.d = big.d + small.d * cutlass::fast_exp(small.m - big.m);
+    return big;
   }
 
-  static CUTLASS_DEVICE void online_warp_reduce(accum_t& mi, accum_t& di) {
+  static CUTLASS_DEVICE MD online_warp_reduce(MD value) {
     CUTLASS_PRAGMA_UNROLL
     for (int o = kWarpSize / 2; o > 0; o >>= 1) {
-      accum_t mj = __shfl_xor_sync(0xffffffff, mi, o);
-      accum_t dj = __shfl_xor_sync(0xffffffff, di, o);
-      online_merge(mi, di, mj, dj);
+      MD other;
+      other.m = __shfl_xor_sync(0xffffffff, value.m, o);
+      other.d = __shfl_xor_sync(0xffffffff, value.d, o);
+      value = online_merge(value, other);
     }
+    return value;
   }
 
   static CUTLASS_DEVICE void attention_kernel(Params& p) {
     extern __shared__ char smem_buffer[];
-    accum_t* warp_storage_m = reinterpret_cast<accum_t*>(smem_buffer);
-    accum_t* warp_storage_d = warp_storage_m + kNumWarps;
+    MD* warp_storage = reinterpret_cast<MD*>(smem_buffer);
 
     int tid     = threadIdx.x;
     int lane_id = tid & (kWarpSize - 1);
@@ -452,37 +443,36 @@ struct AttentionSoftmaxKernel {
     scalar_t* row_ptr = p.p_ptr;
 
     // ---------- Pass 1: online row max and row sum ----------
-    accum_t mi = -cutlass::platform::numeric_limits<accum_t>::infinity();
-    accum_t di = accum_t(0);
+    MD state{-FLT_MAX, accum_t(0)};
 
     for (int j = tid; j < p.num_keys; j += kThreads) {
       accum_t x = accum_t(row_ptr[j]);
-      online_merge(mi, di, x, accum_t(1));
+      state = online_merge(state, {x, accum_t(1)});
     }
 
-    online_warp_reduce(mi, di);
+    state = online_warp_reduce(state);
     if (lane_id == 0) {
-      warp_storage_m[warp_id] = mi;
-      warp_storage_d[warp_id] = di;
+      warp_storage[warp_id] = state;
     }
     __syncthreads();
 
     if (warp_id == 0) {
-      mi = (lane_id < kNumWarps)
-          ? warp_storage_m[lane_id]
-          : -cutlass::platform::numeric_limits<accum_t>::infinity();
-      di = (lane_id < kNumWarps) ? warp_storage_d[lane_id] : accum_t(0);
+      if (lane_id < kNumWarps) {
+        state = warp_storage[lane_id];
+      } else {
+        state = {-FLT_MAX, accum_t(0)};
+      }
 
-      online_warp_reduce(mi, di);
+      state = online_warp_reduce(state);
       if (lane_id == 0) {
-        warp_storage_m[0] = mi;
-        warp_storage_d[0] = di;
+        warp_storage[0] = state;
       }
     }
     __syncthreads();
 
-    accum_t row_max = warp_storage_m[0];
-    accum_t inv_sum = accum_t(1) / warp_storage_d[0];
+    MD row_state = warp_storage[0];
+    accum_t row_max = row_state.m;
+    accum_t inv_sum = accum_t(1) / row_state.d;
 
     // ---------- Pass 2: normalize ----------
     for (int j = tid; j < p.num_keys; j += kThreads) {

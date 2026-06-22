@@ -183,6 +183,20 @@ bool can_run(Problem const& problem, std::string& reason) {
     reason = "all problem dimensions must be positive";
     return false;
   }
+
+  // The aligned GEMM path issues 128-bit vectorized loads/stores, so every
+  // contiguous extent must be a multiple of the vector width. seq_length (the
+  // GEMM M / row dimension) is exempt because it only scales row strides, not
+  // the contiguous access. Unaligned shapes are rejected rather than silently
+  // falling back to a slower min-alignment path.
+  constexpr int kAlignment = 128 / cutlass::sizeof_bits<scalar_t>::value;
+  if (problem.head_size % kAlignment != 0 ||
+      problem.head_size_v % kAlignment != 0 ||
+      problem.seq_length_kv % kAlignment != 0) {
+    reason = "head_size, head_size_v and seq_length_kv must be multiples of "
+             + std::to_string(kAlignment) + " for the aligned GEMM path";
+    return false;
+  }
   return true;
 }
 

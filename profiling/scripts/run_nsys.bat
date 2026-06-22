@@ -12,8 +12,8 @@ rem 1. Build target
 rem -----------------------------------------------------------------------------
 set "BUILD_DIR=%REPO_ROOT%\build"
 set "CONFIG=Release"
-set "TARGET=flash_attention_00_naive_attention_test"
-set "TARGET_EXE=%BUILD_DIR%\csrc\flash-attention\00-naive-attention\%CONFIG%\%TARGET%.exe"
+set "TARGET=naive_attention"
+set "TARGET_EXE=%BUILD_DIR%\csrc\flash-attention\%CONFIG%\%TARGET%.exe"
 
 if /I "%TINY_CUTLASS_PROFILE_SKIP_BUILD%"=="1" goto verify
 

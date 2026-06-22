@@ -1,5 +1,6 @@
 #include "ops/conv1x1_relu_conv1x1.h"
 
+#include "cutlass/arch/arch.h"
 #include "device/conv1x1_relu_conv1x1.h"
 
 #include "cutlass/conv/conv2d_problem_size.h"
@@ -34,8 +35,8 @@ cutlass::Status validate(Conv1x1ReluConv1x1Arguments<Element> const& args) {
     return cutlass::Status::kErrorInvalidProblem;
   }
 
-  if (!args.input || !args.weight0 || !args.stage0 || !args.bias0 ||
-      !args.weight1 || !args.bias1 || !args.output) {
+  if (!args.input || !args.weight0 || !args.bias0 || !args.weight1 ||
+      !args.bias1 || !args.output) {
     return cutlass::Status::kErrorInvalidProblem;
   }
 
@@ -66,17 +67,21 @@ cutlass::Status conv1x1_relu_conv1x1(
       p.hidden_channels,
       p.output_channels);
 
-  return device::run_conv1x1_relu_conv1x1(
-      problem0,
-      problem1,
-      args.input,
-      args.weight0,
-      args.stage0,
-      args.bias0,
-      args.weight1,
-      args.bias1,
-      args.output,
-      args.stream);
+  using Operation =
+      device::Conv1x1ReluConv1x1<cutlass::arch::Sm80, Element>;
+
+  typename Operation::Arguments device_args;
+  device_args.problem_size_0 = problem0;
+  device_args.problem_size_1 = problem1;
+  device_args.input = args.input;
+  device_args.weight0 = args.weight0;
+  device_args.bias0 = args.bias0;
+  device_args.weight1 = args.weight1;
+  device_args.bias1 = args.bias1;
+  device_args.output = args.output;
+
+  Operation op;
+  return op(device_args, nullptr, args.stream);
 }
 
 template cutlass::Status conv1x1_relu_conv1x1<cutlass::half_t>(

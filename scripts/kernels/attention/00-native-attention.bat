@@ -4,8 +4,8 @@ setlocal EnableExtensions EnableDelayedExpansion
 set "ROOT=%~dp0..\..\.."
 set "BUILD_DIR=%ROOT%\build"
 set "CONFIG=Release"
-set "TARGET=flash_attention_00_naive_attention_test"
-set "EXE=%BUILD_DIR%\csrc\flash-attention\00-naive-attention\%CONFIG%\%TARGET%.exe"
+set "TARGET=naive_attention"
+set "EXE=%BUILD_DIR%\csrc\flash-attention\%CONFIG%\%TARGET%.exe"
 
 cmake -S "%ROOT%" -B "%BUILD_DIR%" -DTINY_CUTLASS_BUILD_FLASH_ATTENTION=ON -DTINY_CUTLASS_BUILD_CONV_FUSED=OFF
 if errorlevel 1 exit /b 1
