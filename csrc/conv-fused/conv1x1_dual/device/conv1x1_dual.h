@@ -12,16 +12,16 @@
 #include "cutlass/tensor_ref.h"
 
 #include "device/b2b_implicit_gemm_convolution.h"
-#include "kernel/conv1x1_relu_conv1x1.h"
+#include "conv1x1_dual/kernel/conv1x1_dual.h"
 
 namespace tiny_cutlass::conv_fused::device {
 
 template <
     typename ArchTag = cutlass::arch::Sm80,
     typename Element = cutlass::half_t>
-class Conv1x1ReluConv1x1 {
+class Conv1x1Dual {
  public:
-  using KernelConfig = kernel::DefaultConv1x1ReluConv1x1<ArchTag, Element>;
+  using KernelConfig = kernel::DefaultConv1x1Dual<ArchTag, Element>;
   using Operation = cutlass::conv::device::B2bImplicitGemmConvolution<
       typename KernelConfig::CutlassKernel>;
   using CutlassArguments = typename Operation::Arguments;
@@ -42,7 +42,7 @@ class Conv1x1ReluConv1x1 {
   CutlassArguments cutlass_args_;
 
  public:
-  Conv1x1ReluConv1x1() = default;
+  Conv1x1Dual() = default;
 
   static cutlass::Status can_implement(Arguments const& args);
 

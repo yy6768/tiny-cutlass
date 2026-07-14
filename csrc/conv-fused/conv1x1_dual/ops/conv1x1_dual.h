@@ -6,7 +6,7 @@
 
 namespace tiny_cutlass::conv_fused {
 
-struct Conv1x1ReluConv1x1Problem {
+struct Conv1x1DualProblem {
   int batch = 0;
   int height = 0;
   int width = 0;
@@ -16,8 +16,8 @@ struct Conv1x1ReluConv1x1Problem {
 };
 
 template <typename Element>
-struct Conv1x1ReluConv1x1Arguments {
-  Conv1x1ReluConv1x1Problem problem;
+struct Conv1x1DualArguments {
+  Conv1x1DualProblem problem;
   Element const* input = nullptr;
   Element const* weight0 = nullptr;
   Element const* bias0 = nullptr;
@@ -28,7 +28,7 @@ struct Conv1x1ReluConv1x1Arguments {
 };
 
 template <typename Element>
-cutlass::Status conv1x1_relu_conv1x1(
-    Conv1x1ReluConv1x1Arguments<Element> const& args);
+cutlass::Status conv1x1_dual(
+    Conv1x1DualArguments<Element> const& args);
 
 }  // namespace tiny_cutlass::conv_fused

@@ -13,10 +13,10 @@ if exist "%VSDEVCMD%" (
 cmake -S "%ROOT%" -B "%BUILD_DIR%" -G Ninja -DCMAKE_BUILD_TYPE=%CONFIG% -DCMAKE_CUDA_ARCHITECTURES=89 -DTINY_CUTLASS_BUILD_FLASH_ATTENTION=OFF -DTINY_CUTLASS_BUILD_CONV_FUSED=ON
 if errorlevel 1 exit /b 1
 
-cmake --build "%BUILD_DIR%" --target conv_fused conv_b2b
+cmake --build "%BUILD_DIR%" --target conv1x1_dual_core conv1x1_dual
 if errorlevel 1 exit /b 1
 
-"%BUILD_DIR%\tests\conv-fused\conv_b2b.exe"
+"%BUILD_DIR%\tests\conv-fused\conv1x1_dual.exe"
 if errorlevel 1 exit /b 1
 
 endlocal

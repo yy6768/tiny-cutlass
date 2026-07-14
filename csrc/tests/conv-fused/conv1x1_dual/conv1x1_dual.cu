@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "ops/conv1x1_relu_conv1x1.h"
+#include "conv1x1_dual/ops/conv1x1_dual.h"
 #include "cutlass/half.h"
 
 namespace {
@@ -193,8 +193,8 @@ bool run_case(Case const& c) {
     return false;
   }
 
-  conv::Conv1x1ReluConv1x1Arguments<Element> args;
-  args.problem = conv::Conv1x1ReluConv1x1Problem{
+  conv::Conv1x1DualArguments<Element> args;
+  args.problem = conv::Conv1x1DualProblem{
       c.batch,
       c.height,
       c.width,
@@ -208,7 +208,7 @@ bool run_case(Case const& c) {
   args.bias1 = d_bias1.get();
   args.output = d_output.get();
 
-  cutlass::Status status = conv::conv1x1_relu_conv1x1(args);
+  cutlass::Status status = conv::conv1x1_dual(args);
   if (status != c.expected_status) {
     std::cerr << "case " << c.name << " returned "
               << cutlassGetStatusString(status) << ", expected "

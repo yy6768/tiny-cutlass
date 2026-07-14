@@ -1,7 +1,7 @@
-#include "ops/conv1x1_relu_conv1x1.h"
+#include "conv1x1_dual/ops/conv1x1_dual.h"
 
 #include "cutlass/arch/arch.h"
-#include "device/conv1x1_relu_conv1x1.h"
+#include "conv1x1_dual/device/conv1x1_dual.h"
 
 #include "cutlass/conv/conv2d_problem_size.h"
 #include "cutlass/half.h"
@@ -28,7 +28,7 @@ cutlass::conv::Conv2dProblemSize make_problem(
 }
 
 template <typename Element>
-cutlass::Status validate(Conv1x1ReluConv1x1Arguments<Element> const& args) {
+cutlass::Status validate(Conv1x1DualArguments<Element> const& args) {
   auto const& p = args.problem;
   if (p.batch <= 0 || p.height <= 0 || p.width <= 0 ||
       p.channels <= 0 || p.hidden_channels <= 0 || p.output_channels <= 0) {
@@ -46,8 +46,8 @@ cutlass::Status validate(Conv1x1ReluConv1x1Arguments<Element> const& args) {
 }  // namespace
 
 template <typename Element>
-cutlass::Status conv1x1_relu_conv1x1(
-    Conv1x1ReluConv1x1Arguments<Element> const& args) {
+cutlass::Status conv1x1_dual(
+    Conv1x1DualArguments<Element> const& args) {
   cutlass::Status status = validate(args);
   if (status != cutlass::Status::kSuccess) {
     return status;
@@ -68,7 +68,7 @@ cutlass::Status conv1x1_relu_conv1x1(
       p.output_channels);
 
   using Operation =
-      device::Conv1x1ReluConv1x1<cutlass::arch::Sm80, Element>;
+      device::Conv1x1Dual<cutlass::arch::Sm80, Element>;
 
   typename Operation::Arguments device_args;
   device_args.problem_size_0 = problem0;
@@ -84,7 +84,7 @@ cutlass::Status conv1x1_relu_conv1x1(
   return op(device_args, nullptr, args.stream);
 }
 
-template cutlass::Status conv1x1_relu_conv1x1<cutlass::half_t>(
-    Conv1x1ReluConv1x1Arguments<cutlass::half_t> const&);
+template cutlass::Status conv1x1_dual<cutlass::half_t>(
+    Conv1x1DualArguments<cutlass::half_t> const&);
 
 }  // namespace tiny_cutlass::conv_fused

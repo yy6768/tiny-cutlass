@@ -1,4 +1,4 @@
-#include "device/conv1x1_relu_conv1x1.h"
+#include "conv1x1_dual/device/conv1x1_dual.h"
 
 #include "cutlass/half.h"
 
@@ -11,10 +11,10 @@ bool is_conv1x1(
 }
 
 template <typename ArchTag, typename Element>
-typename Conv1x1ReluConv1x1<ArchTag, Element>::CutlassArguments
+typename Conv1x1Dual<ArchTag, Element>::CutlassArguments
 make_cutlass_arguments(
-    typename Conv1x1ReluConv1x1<ArchTag, Element>::Arguments const& arguments) {
-  using Conv = Conv1x1ReluConv1x1<ArchTag, Element>;
+    typename Conv1x1Dual<ArchTag, Element>::Arguments const& arguments) {
+  using Conv = Conv1x1Dual<ArchTag, Element>;
   using TensorRef = cutlass::TensorRef<Element, cutlass::layout::TensorNHWC>;
   using VectorRef = cutlass::TensorRef<Element, cutlass::layout::RowMajor>;
 
@@ -61,7 +61,7 @@ make_cutlass_arguments(
 }  // namespace
 
 template <typename ArchTag, typename Element>
-cutlass::Status Conv1x1ReluConv1x1<ArchTag, Element>::can_implement(
+cutlass::Status Conv1x1Dual<ArchTag, Element>::can_implement(
     Arguments const& args) {
   if (!is_conv1x1(args.problem_size_0) ||
       !is_conv1x1(args.problem_size_1)) {
@@ -74,7 +74,7 @@ cutlass::Status Conv1x1ReluConv1x1<ArchTag, Element>::can_implement(
 }
 
 template <typename ArchTag, typename Element>
-size_t Conv1x1ReluConv1x1<ArchTag, Element>::get_workspace_size(
+size_t Conv1x1Dual<ArchTag, Element>::get_workspace_size(
     Arguments const& args) {
   if (can_implement(args) != cutlass::Status::kSuccess) {
     return 0;
@@ -86,7 +86,7 @@ size_t Conv1x1ReluConv1x1<ArchTag, Element>::get_workspace_size(
 }
 
 template <typename ArchTag, typename Element>
-cutlass::Status Conv1x1ReluConv1x1<ArchTag, Element>::initialize(
+cutlass::Status Conv1x1Dual<ArchTag, Element>::initialize(
     Arguments const& args,
     void* workspace,
     cudaStream_t stream) {
@@ -105,11 +105,11 @@ cutlass::Status Conv1x1ReluConv1x1<ArchTag, Element>::initialize(
 }
 
 template <typename ArchTag, typename Element>
-cutlass::Status Conv1x1ReluConv1x1<ArchTag, Element>::run(
+cutlass::Status Conv1x1Dual<ArchTag, Element>::run(
     cudaStream_t stream) {
   return operation_.run(stream);
 }
 
-template class Conv1x1ReluConv1x1<cutlass::arch::Sm80, cutlass::half_t>;
+template class Conv1x1Dual<cutlass::arch::Sm80, cutlass::half_t>;
 
 }  // namespace tiny_cutlass::conv_fused::device

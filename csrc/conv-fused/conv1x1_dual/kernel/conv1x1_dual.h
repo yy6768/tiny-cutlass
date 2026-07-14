@@ -8,7 +8,7 @@
 
 #include "kernel/default_b2b_conv2d_fprop_sm80.h"
 
-#include "threads/epilogue_ops.h"
+#include "conv1x1_dual/threads/epilogue_ops.h"
 
 namespace tiny_cutlass::conv_fused::kernel {
 
@@ -19,7 +19,7 @@ template <
     typename ThreadblockShape1_ = cutlass::gemm::GemmShape<64, 128, 32>,
     typename WarpShape0_ = cutlass::gemm::GemmShape<32, 64, 32>,
     typename WarpShape1_ = cutlass::gemm::GemmShape<32, 128, 32>>
-struct DefaultConv1x1ReluConv1x1 {
+struct DefaultConv1x1Dual {
   using ArchTag = ArchTag_;
   using ElementA = Element_;
   using ElementB = Element_;
