@@ -1,6 +1,3 @@
-# Copyright (c) 2026 tiny-cutlass contributors.
-# SPDX-License-Identifier: BSD-3-Clause
-
 set(NATTEN_TEST_DIR "${PROJECT_SOURCE_DIR}/csrc/tests/natten")
 
 cutlass_example_add_executable(

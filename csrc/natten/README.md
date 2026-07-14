@@ -22,8 +22,6 @@
   1D non-causal host reference 冒烟 case。
 - `CMakeLists.txt`: 只构建 `natten_fna_test`。
 - `AGENTS.md`: NATTEN 子工作区后续修改约束。
-- `PAPERS.md`: NATTEN/NAT/FNA 相关论文导读，以及和 Swin 的对照。
-- `ROADMAP.md`: 从接口骨架推进到 correctness、benchmark、profiling 的实现路线图。
 
 ## 当前接口
 
@@ -51,7 +49,7 @@
 脚本入口：
 
 ```bat
-scripts\kernels\natten\natten.bat
+scripts\kernels\natten\run.bat
 ```
 
 当前脚本仍遵守 `cutlass-kernel` 的顺序约束：
@@ -73,7 +71,7 @@ scripts\kernels\natten\natten.bat
 
 NATTEN 后续要和 `csrc/swin` 保持相近风格：
 
-- 一个 kernel family 一个脚本入口：`scripts/kernels/natten/natten.bat`。
+- 一个 kernel family 一个脚本入口：`scripts/kernels/natten/run.bat`。
 - 测试放在 `csrc/tests/natten`，不要散在 kernel 目录里。
 - 文档先说明主路径、接口对照、reference gate、当前约束。
 - 真实 device 层必须调用 CUTLASS TensorOp/FMHA 级别能力，不新增 raw CUDA fallback。

@@ -398,9 +398,9 @@ int run(Options const& options) {
   return 0;
 }
 
-} // namespace
-} // namespace natten
-} // namespace tiny_cutlass
+}
+}
+}
 
 int main(int argc, char const** args) {
   tiny_cutlass::natten::Options options;

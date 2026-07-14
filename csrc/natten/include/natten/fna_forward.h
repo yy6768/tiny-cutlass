@@ -1,9 +1,3 @@
-/***************************************************************************************************
- * Copyright (c) 2026 tiny-cutlass contributors.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- **************************************************************************************************/
-
 #pragma once
 
 #include <cutlass/arch/arch.h>
@@ -51,5 +45,5 @@ struct FnaForwardProblem {
   float scale = 1.0f;
 };
 
-} // namespace natten
-} // namespace tiny_cutlass
+}
+}

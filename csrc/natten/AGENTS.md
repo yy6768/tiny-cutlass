@@ -12,7 +12,7 @@
   运行时路径。
 - 只有在真实 CUTLASS 原生 TensorOp kernel 存在后，才添加启动/支持性检查。
 - 测试入口是 `csrc/tests/natten/natten_fna_test.cu`。
-- 脚本入口是 `scripts/kernels/natten/natten.bat`，当前只做 build + 接口冒烟测试；
+- 脚本入口是 `scripts/kernels/natten/run.bat`，当前只做 build + 接口冒烟测试；
   真实 kernel 完成并通过 reference parity 前不要 benchmark。
 
 ## 命名和分层
