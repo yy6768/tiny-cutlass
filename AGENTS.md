@@ -9,6 +9,7 @@
 - `csrc/conv-fused/AGENTS.md`
 - `csrc/conv-fused/fp8/conv1x1_relu_conv1x1_relu_fp8/AGENTS.md`
 - `csrc/natten/AGENTS.md`
+- `csrc/swin/AGENTS.md`
 
 ## 全局规则
 

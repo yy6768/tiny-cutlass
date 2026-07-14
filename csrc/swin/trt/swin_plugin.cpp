@@ -42,7 +42,7 @@ std::size_t align_up(std::size_t value, std::size_t alignment) {
 
 std::size_t workspace_bytes(
     SwinPluginConfig const& config) {
-  SwinProblem problem;
+  SwinAttentionProblem problem;
   problem.batch_size = config.batch_size;
   problem.image_size = config.image_size;
   problem.window_size = config.window_size;
@@ -73,8 +73,8 @@ cutlass::half_t* take_workspace(char*& ptr, std::int64_t elements) {
   return reinterpret_cast<cutlass::half_t*>(address);
 }
 
-SwinProblem make_problem(SwinPluginConfig const& config) {
-  SwinProblem problem;
+SwinAttentionProblem make_problem(SwinPluginConfig const& config) {
+  SwinAttentionProblem problem;
   problem.batch_size = config.batch_size;
   problem.image_size = config.image_size;
   problem.window_size = config.window_size;
@@ -182,7 +182,7 @@ int32_t SwinPlugin::enqueue(
     return 1;
   }
 
-  SwinProblem problem = make_problem(config_);
+  SwinAttentionProblem problem = make_problem(config_);
   char* workspace_ptr = static_cast<char*>(workspace);
 
   if (input_desc[0].type != nvinfer1::DataType::kHALF ||
@@ -192,28 +192,26 @@ int32_t SwinPlugin::enqueue(
     return 1;
   }
 
-  SwinTensors<cutlass::half_t> tensors;
+  SwinAttentionTensors<cutlass::half_t> tensors;
   tensors.input = static_cast<cutlass::half_t const*>(inputs[0]);
-  tensors.qkv_weight = static_cast<cutlass::half_t const*>(inputs[1]);
-  tensors.qkv_bias = static_cast<cutlass::half_t const*>(inputs[2]);
-  tensors.output_weight = static_cast<cutlass::half_t const*>(inputs[3]);
-  tensors.output_bias = static_cast<cutlass::half_t const*>(inputs[4]);
-  tensors.attention_bias = static_cast<cutlass::half_t const*>(inputs[5]);
-  tensors.windows = take_workspace(workspace_ptr, swin_window_elements(problem));
-  tensors.qkv = take_workspace(workspace_ptr, swin_qkv_elements(problem));
-  tensors.query = take_workspace(workspace_ptr, swin_window_elements(problem));
-  tensors.key = take_workspace(workspace_ptr, swin_window_elements(problem));
-  tensors.value = take_workspace(workspace_ptr, swin_window_elements(problem));
-  tensors.attention_output = take_workspace(workspace_ptr, swin_window_elements(problem));
-  tensors.projected = take_workspace(workspace_ptr, swin_window_elements(problem));
+  tensors.attention.qkv_weight = static_cast<cutlass::half_t const*>(inputs[1]);
+  tensors.attention.qkv_bias = static_cast<cutlass::half_t const*>(inputs[2]);
+  tensors.attention.output_weight = static_cast<cutlass::half_t const*>(inputs[3]);
+  tensors.attention.output_bias = static_cast<cutlass::half_t const*>(inputs[4]);
+  tensors.attention.attention_bias = static_cast<cutlass::half_t const*>(inputs[5]);
+  tensors.attention.windows = take_workspace(workspace_ptr, swin_window_elements(problem));
+  tensors.attention.qkv = take_workspace(workspace_ptr, swin_qkv_elements(problem));
+  tensors.attention.query = take_workspace(workspace_ptr, swin_window_elements(problem));
+  tensors.attention.key = take_workspace(workspace_ptr, swin_window_elements(problem));
+  tensors.attention.value = take_workspace(workspace_ptr, swin_window_elements(problem));
+  tensors.attention.attention_output = take_workspace(workspace_ptr, swin_window_elements(problem));
+  tensors.attention.projected = take_workspace(workspace_ptr, swin_window_elements(problem));
   tensors.output = static_cast<cutlass::half_t*>(outputs[0]);
-  tensors.patch_merged = nullptr;
 
-  using Kernel = typename kernel::DefaultSwin<
+  cutlass::Status status = device::SwinAttention<
       cutlass::arch::Sm80,
-      cutlass::half_t>::Kernel;
-  cudaError_t err = device::Swin<Kernel>::run(problem, tensors, stream);
-  if (err != cudaSuccess) {
+      cutlass::half_t>::run(problem, tensors, stream);
+  if (status != cutlass::Status::kSuccess) {
     return 1;
   }
   return 0;

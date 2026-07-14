@@ -14,7 +14,8 @@
 
 #include "kernel/default_patch_embed.h"
 #include "kernel/swin.h"
-#include "threadblock/layout.h"
+#include "threadblock/normalization.h"
+#include "threadblock/patch_embed.h"
 
 namespace tiny_cutlass {
 namespace swin {
@@ -115,17 +116,16 @@ cutlass::conv::Conv2dProblemSize make_conv_problem(
       1);
 }
 
-template <typename Kernel>
+template <typename KernelConfig>
 cutlass::Status run_conv(
     PatchEmbedProblem const& problem,
-    typename Kernel::Element const* activation,
-    typename Kernel::Element const* filter,
-    typename Kernel::Element* output,
+    typename KernelConfig::Element const* activation,
+    typename KernelConfig::Element const* filter,
+    typename KernelConfig::Element* output,
     cudaStream_t stream) {
-  using Element = typename Kernel::Element;
-  using Policy = typename Kernel::Policy;
+  using Element = typename KernelConfig::Element;
   using Conv = cutlass::conv::device::ImplicitGemmConvolution<
-      typename Policy::Conv2dFpropKernel>;
+      typename KernelConfig::Conv2dFpropKernel>;
   using TensorRef = cutlass::TensorRef<Element, cutlass::layout::TensorNHWC>;
 
   auto conv_problem = make_conv_problem(problem);
@@ -139,7 +139,7 @@ cutlass::Status run_conv(
           cutlass::layout::TensorNHWC::packed(conv_problem.filter_extent())},
       TensorRef{output, cutlass::layout::TensorNHWC::packed(conv_problem.output_extent())},
       TensorRef{output, cutlass::layout::TensorNHWC::packed(conv_problem.output_extent())},
-      {typename Policy::ElementCompute(1), typename Policy::ElementCompute(0)});
+      {typename KernelConfig::ElementCompute(1), typename KernelConfig::ElementCompute(0)});
 
   cutlass::Status status = Conv::can_implement(args);
   if (status != cutlass::Status::kSuccess) {
@@ -150,58 +150,52 @@ cutlass::Status run_conv(
   return op(args, nullptr, stream);
 }
 
-template <typename Kernel>
+template <typename ArchTag, typename Element>
 bool supported_type() {
-  using Policy = typename Kernel::Policy;
-  return std::is_same<typename Policy::ArchTag, cutlass::arch::Sm80>::value &&
-      std::is_same<typename Policy::Element, cutlass::half_t>::value;
+  return std::is_same<ArchTag, cutlass::arch::Sm80>::value &&
+      std::is_same<Element, cutlass::half_t>::value;
 }
 
-template <typename Kernel>
-char const* validate_problem(PatchEmbedProblem const& problem) {
-  if (!supported_type<Kernel>()) {
-    return "only the explicitly instantiated TensorOp policy is available";
+template <typename ArchTag, typename Element>
+cutlass::Status validate_problem(PatchEmbedProblem const& problem) {
+  if (!supported_type<ArchTag, Element>()) {
+    return cutlass::Status::kErrorNotSupported;
   }
   if (problem.batch_size <= 0 || problem.image_size <= 0 ||
       problem.in_channels <= 0 || problem.input_channels_padded <= 0 ||
       problem.embed_dim <= 0 || problem.patch_size <= 0 ||
       problem.layernorm_eps <= 0.0f) {
-    return "all dimensions and layernorm epsilon must be positive";
+    return cutlass::Status::kErrorInvalidProblem;
   }
   if ((problem.image_size % problem.patch_size) != 0) {
-    return "image_size must be divisible by patch_size";
+    return cutlass::Status::kErrorInvalidProblem;
   }
   if (problem.input_channels_padded < problem.in_channels) {
-    return "input_channels_padded must be >= in_channels";
+    return cutlass::Status::kErrorInvalidProblem;
   }
   if ((problem.input_channels_padded % 8) != 0 || (problem.embed_dim % 8) != 0) {
-    return "TensorOp NHWC conv requires padded input channels and embed_dim to be multiples of 8";
+    return cutlass::Status::kErrorInvalidProblem;
   }
-  return nullptr;
+  return cutlass::Status::kSuccess;
 }
 
 } // namespace
 
-template <typename Kernel>
-bool PatchEmbed<Kernel>::can_implement(
-    PatchEmbedProblem const& problem,
-    char const** reason) {
-  char const* local_reason = validate_problem<Kernel>(problem);
-  if (reason != nullptr) {
-    *reason = local_reason;
-  }
-  return local_reason == nullptr;
+template <typename ArchTag, typename Element>
+cutlass::Status PatchEmbed<ArchTag, Element>::can_implement(
+    PatchEmbedProblem const& problem) {
+  return validate_problem<ArchTag, Element>(problem);
 }
 
-template <typename Kernel>
-cutlass::Status PatchEmbed<Kernel>::run(
+template <typename ArchTag, typename Element>
+cutlass::Status PatchEmbed<ArchTag, Element>::run(
     PatchEmbedProblem const& problem,
     Tensors const& tensors,
     cudaStream_t stream) {
-  char const* reason = nullptr;
-  if (!can_implement(problem, &reason)) {
-    (void)reason;
-    return cutlass::Status::kErrorInvalidProblem;
+  using KernelConfig = kernel::DefaultPatchEmbed<ArchTag, Element>;
+  cutlass::Status status = can_implement(problem);
+  if (status != cutlass::Status::kSuccess) {
+    return status;
   }
   if (tensors.input == nullptr || tensors.kernel == nullptr ||
       tensors.conv_output == nullptr || tensors.output == nullptr) {
@@ -222,8 +216,8 @@ cutlass::Status PatchEmbed<Kernel>::run(
     return cutlass::Status::kErrorInternal;
   }
 
-  cutlass::Status status =
-      run_conv<Kernel>(problem, activation, filter, tensors.conv_output, stream);
+  status = run_conv<KernelConfig>(
+      problem, activation, filter, tensors.conv_output, stream);
   if (status != cutlass::Status::kSuccess) {
     return status;
   }
@@ -240,9 +234,7 @@ cutlass::Status PatchEmbed<Kernel>::run(
                             : cutlass::Status::kErrorInternal;
 }
 
-template class PatchEmbed<typename kernel::DefaultPatchEmbed<
-    cutlass::arch::Sm80,
-    cutlass::half_t>::Kernel>;
+template class PatchEmbed<cutlass::arch::Sm80, cutlass::half_t>;
 
 } // namespace device
 } // namespace swin

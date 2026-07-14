@@ -16,12 +16,6 @@ namespace tiny_cutlass {
 namespace swin {
 namespace kernel {
 
-template <typename Policy_>
-struct PatchEmbed {
-  using Policy = Policy_;
-  using Element = typename Policy::Element;
-};
-
 template <
     typename ArchTag_,
     typename Element_,
@@ -76,8 +70,6 @@ struct DefaultPatchEmbed {
       cutlass::arch::OpMultiplyAdd,
       kIteratorAlgorithm,
       kStrideSupport>::Kernel;
-
-  using Kernel = PatchEmbed<DefaultPatchEmbed>;
 };
 
 } // namespace kernel

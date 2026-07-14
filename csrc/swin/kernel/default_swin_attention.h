@@ -1,5 +1,5 @@
 /*
-  CUTLASS-style Swin kernel policy factory.
+  CUTLASS-style factory for the Swin attention path.
 */
 
 #pragma once
@@ -12,12 +12,6 @@
 namespace tiny_cutlass {
 namespace swin {
 namespace kernel {
-
-template <typename Policy_>
-struct Swin {
-  using Policy = Policy_;
-  using Element = typename Policy::Element;
-};
 
 template <
     typename ArchTag_,
@@ -32,7 +26,7 @@ template <
     int kAttentionQueriesPerBlock_ = 64,
     int kAttentionKeysPerBlock_ = 64,
     int kAttentionMaxHeadDim_ = 64>
-struct DefaultSwin {
+struct DefaultSwinAttention {
   using ArchTag = ArchTag_;
   using Element = Element_;
   using ThreadblockShape = ThreadblockShape_;
@@ -49,8 +43,6 @@ struct DefaultSwin {
   static constexpr bool kAttentionSupportsBias = true;
   static constexpr bool kAttentionIsCausal = false;
   static constexpr bool kAttentionIsAligned = true;
-
-  using Kernel = Swin<DefaultSwin>;
 };
 
 } // namespace kernel

@@ -13,7 +13,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", default="Release")
     parser.add_argument("--checkpoint-dir", type=Path, default=Path("checkpoint"))
     parser.add_argument("--official", action="store_true")
-    parser.add_argument("--skip-prepare", action="store_true")
     return parser.parse_args()
 
 
@@ -37,21 +36,7 @@ def add_file_args(base_dir: Path, files: dict[str, str | int | bool]) -> list[st
     return args
 
 
-def prepare_official(checkpoint_dir: Path) -> None:
-    run(
-        [
-            sys.executable,
-            "scripts/kernels/swin/prepare_official.py",
-            "--checkpoint-dir",
-            str(checkpoint_dir),
-        ]
-    )
-
-
 def run_official_cases(args: argparse.Namespace, patch_embed: Path, window: Path) -> None:
-    if not args.skip_prepare:
-        prepare_official(args.checkpoint_dir)
-
     manifest_path = args.checkpoint_dir / "manifest.json"
     if not manifest_path.exists():
         raise FileNotFoundError(f"missing official manifest: {manifest_path}")
@@ -115,6 +100,7 @@ def main() -> None:
     args = parse_args()
     window = executable(args.build_dir, args.config, "swin_window")
     patch_embed = executable(args.build_dir, args.config, "swin_patch_embed")
+    block = executable(args.build_dir, args.config, "swin_block")
 
     run(
         [
@@ -142,6 +128,25 @@ def main() -> None:
             "--reference-check=true",
         ]
     )
+
+    block_common = [
+        str(block),
+        "--window_size=7",
+        "--head_number=3",
+        "--head_size=32",
+        "--iterations=1",
+    ]
+    run([*block_common, "--batch_size=2", "--image_size=14", "--shift_size=3"])
+    run(
+        [
+            *block_common,
+            "--batch_size=2",
+            "--image_size=14",
+            "--shift_size=0",
+            "--mask=false",
+        ]
+    )
+    run([*block_common, "--batch_size=1", "--image_size=56", "--shift_size=3"])
 
     run(
         [

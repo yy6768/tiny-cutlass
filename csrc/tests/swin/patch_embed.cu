@@ -22,10 +22,7 @@ namespace tiny_cutlass {
 namespace swin {
 namespace {
 
-using Kernel = typename kernel::DefaultPatchEmbed<
-    cutlass::arch::Sm80,
-    cutlass::half_t>::Kernel;
-using Op = device::PatchEmbed<Kernel>;
+using Op = device::PatchEmbed<cutlass::arch::Sm80, cutlass::half_t>;
 using Element = typename Op::Element;
 
 struct Options {
@@ -230,9 +227,10 @@ bool compare(
 
 int run(Options const& options) {
   PatchEmbedProblem problem = options.problem();
-  char const* reason = nullptr;
-  if (!Op::can_implement(problem, &reason)) {
-    std::cerr << "Unsupported PatchEmbed problem: " << reason << "\n";
+  cutlass::Status status = Op::can_implement(problem);
+  if (status != cutlass::Status::kSuccess) {
+    std::cerr << "Unsupported PatchEmbed problem: "
+              << cutlassGetStatusString(status) << "\n";
     return -1;
   }
 
@@ -303,7 +301,7 @@ int run(Options const& options) {
   tensors.conv_output = workspace.get();
   tensors.output = output.get();
 
-  cutlass::Status status = Op::run(problem, tensors, nullptr);
+  status = Op::run(problem, tensors, nullptr);
   if (status != cutlass::Status::kSuccess) {
     std::cerr << "PatchEmbed run failed: "
               << cutlassGetStatusString(status) << "\n";

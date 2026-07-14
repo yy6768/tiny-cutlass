@@ -9,7 +9,7 @@
 namespace tiny_cutlass {
 namespace swin {
 
-struct SwinProblem {
+struct SwinAttentionProblem {
   int batch_size = 2;
   int image_size = 14;
   int window_size = 7;
@@ -17,6 +17,11 @@ struct SwinProblem {
   int head_number = 3;
   int head_size = 32;
   float scale = 0.0f;
+};
+
+struct SwinBlockProblem : SwinAttentionProblem {
+  int mlp_ratio = 4;
+  float layernorm_eps = 1.0e-5f;
 };
 
 struct PatchEmbedProblem {
@@ -30,10 +35,9 @@ struct PatchEmbedProblem {
 };
 
 template <typename Element_>
-struct SwinTensors {
+struct WindowAttentionTensors {
   using Element = Element_;
 
-  Element const* input = nullptr;          // activation [B, H, W, C], NHWC
   Element const* qkv_weight = nullptr;     // [C, 3C]
   Element const* qkv_bias = nullptr;       // [3C]
   Element const* output_weight = nullptr;  // [C, C]
@@ -47,8 +51,38 @@ struct SwinTensors {
   Element* value = nullptr;                // [BW, L, heads, D]
   Element* attention_output = nullptr;     // [BW, L, C]
   Element* projected = nullptr;            // [BW, L, C]
+};
+
+template <typename Element_>
+struct SwinAttentionTensors {
+  using Element = Element_;
+
+  Element const* input = nullptr;          // activation [B, H, W, C], NHWC
   Element* output = nullptr;               // activation [B, H, W, C], NHWC
-  Element* patch_merged = nullptr;         // [B, H/2, W/2, 4C], optional
+  WindowAttentionTensors<Element> attention;
+};
+
+template <typename Element_>
+struct SwinBlockTensors {
+  using Element = Element_;
+
+  Element const* input = nullptr;          // activation [B, H, W, C], NHWC
+  Element* output = nullptr;               // activation [B, H, W, C], NHWC
+  WindowAttentionTensors<Element> attention;
+
+  Element const* gamma1 = nullptr;         // norm1 scale [C]
+  Element const* beta1 = nullptr;          // norm1 shift [C]
+  Element const* gamma2 = nullptr;         // norm2 scale [C]
+  Element const* beta2 = nullptr;          // norm2 shift [C]
+  Element const* fc1_weight = nullptr;     // [C, mlp_hidden]
+  Element const* fc1_bias = nullptr;       // [mlp_hidden]
+  Element const* fc2_weight = nullptr;     // [mlp_hidden, C]
+  Element const* fc2_bias = nullptr;       // [C]
+
+  Element* residual = nullptr;             // shortcut + attn  [B, H, W, C]
+  Element* normed2 = nullptr;              // norm2(residual)  [B, H, W, C]
+  Element* mlp_hidden = nullptr;           // GELU(fc1)        [B*H*W, mlp_hidden]
+  Element* mlp_output = nullptr;           // fc2(hidden)      [B, H, W, C]
 };
 
 template <typename Element_>
@@ -69,62 +103,75 @@ struct PatchEmbedTensors {
   Element* output = nullptr;           // activation [B, H/4, W/4, K], NHWC
 };
 
-inline int swin_channels(SwinProblem const& p) {
+inline int swin_channels(SwinAttentionProblem const& p) {
   return p.head_number * p.head_size;
 }
 
-inline int swin_window_len(SwinProblem const& p) {
+inline int swin_window_len(SwinAttentionProblem const& p) {
   return p.window_size * p.window_size;
 }
 
-inline int swin_window_len_padded(SwinProblem const& p) {
+inline int swin_window_len_padded(SwinAttentionProblem const& p) {
   int l = swin_window_len(p);
   return ((l + 7) / 8) * 8;
 }
 
-inline int swin_num_windows(SwinProblem const& p) {
+inline int swin_num_windows(SwinAttentionProblem const& p) {
   int windows_per_side = p.image_size / p.window_size;
   return windows_per_side * windows_per_side;
 }
 
-inline int swin_batched_windows(SwinProblem const& p) {
+inline int swin_batched_windows(SwinAttentionProblem const& p) {
   return p.batch_size * swin_num_windows(p);
 }
 
-inline int swin_rows(SwinProblem const& p) {
+inline int swin_rows(SwinAttentionProblem const& p) {
   return swin_batched_windows(p) * swin_window_len(p);
 }
 
-inline int64_t swin_input_elements(SwinProblem const& p) {
+inline int64_t swin_input_elements(SwinAttentionProblem const& p) {
   return int64_t(p.batch_size) * p.image_size * p.image_size * swin_channels(p);
 }
 
-inline int64_t swin_window_elements(SwinProblem const& p) {
+inline int64_t swin_window_elements(SwinAttentionProblem const& p) {
   return int64_t(swin_batched_windows(p)) * swin_window_len(p) * swin_channels(p);
 }
 
-inline int64_t swin_qkv_elements(SwinProblem const& p) {
+inline int64_t swin_qkv_elements(SwinAttentionProblem const& p) {
   return int64_t(swin_rows(p)) * 3 * swin_channels(p);
 }
 
-inline int64_t swin_qkv_weight_elements(SwinProblem const& p) {
+inline int64_t swin_qkv_weight_elements(SwinAttentionProblem const& p) {
   int c = swin_channels(p);
   return int64_t(c) * 3 * c;
 }
 
-inline int64_t swin_output_weight_elements(SwinProblem const& p) {
+inline int64_t swin_output_weight_elements(SwinAttentionProblem const& p) {
   int c = swin_channels(p);
   return int64_t(c) * c;
 }
 
-inline int64_t swin_attention_bias_elements(SwinProblem const& p) {
+inline int64_t swin_attention_bias_elements(SwinAttentionProblem const& p) {
   return int64_t(swin_batched_windows(p)) * p.head_number
        * swin_window_len(p) * swin_window_len_padded(p);
 }
 
-inline int64_t swin_patch_merged_elements(SwinProblem const& p) {
+inline int swin_mlp_hidden(SwinBlockProblem const& p) {
+  return swin_channels(p) * p.mlp_ratio;
+}
+
+inline int64_t swin_mlp_weight1_elements(SwinBlockProblem const& p) {
   int c = swin_channels(p);
-  return int64_t(p.batch_size) * (p.image_size / 2) * (p.image_size / 2) * (4 * c);
+  return int64_t(c) * swin_mlp_hidden(p);
+}
+
+inline int64_t swin_mlp_weight2_elements(SwinBlockProblem const& p) {
+  int c = swin_channels(p);
+  return int64_t(swin_mlp_hidden(p)) * c;
+}
+
+inline int64_t swin_mlp_hidden_elements(SwinBlockProblem const& p) {
+  return int64_t(swin_rows(p)) * swin_mlp_hidden(p);
 }
 
 inline int patch_embed_output_size(PatchEmbedProblem const& p) {

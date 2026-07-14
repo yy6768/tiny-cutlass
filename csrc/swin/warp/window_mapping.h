@@ -1,5 +1,5 @@
 /*
-  Warp-level Swin layout coordinate helpers.
+  Warp-level Swin window coordinate helpers.
 */
 
 #pragma once
@@ -48,26 +48,6 @@ CUTLASS_DEVICE WindowMapping window_mapping(
                        + int64_t(window_idx) * window_size * window_size
                        + idx_in_window;
   return mapping;
-}
-
-CUTLASS_DEVICE int64_t patch_merge_input_token(
-    int64_t output_pixel,
-    int height,
-    int width,
-    int channels,
-    int column) {
-  int out_h = height / 2;
-  int out_w = width / 2;
-  int ow = int(output_pixel % out_w);
-  int oh = int((output_pixel / out_w) % out_h);
-  int b = int(output_pixel / (int64_t(out_h) * out_w));
-  int part = column / channels;
-  int c = column - part * channels;
-  int offset_w = part / 2;
-  int offset_h = part % 2;
-  int y = 2 * oh + offset_h;
-  int x = 2 * ow + offset_w;
-  return ((int64_t(b) * height * width + y * width + x) * channels) + c;
 }
 
 } // namespace warp

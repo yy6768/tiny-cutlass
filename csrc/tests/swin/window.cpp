@@ -13,16 +13,13 @@
 #include "cutlass/util/device_memory.h"
 
 #include "../../swin/swin.h"
-#include "cudnn_swin_reference.h"
+#include "reference.h"
 
 namespace tiny_cutlass {
 namespace swin {
 namespace {
 
-using Kernel = typename kernel::DefaultSwin<
-    cutlass::arch::Sm80,
-    cutlass::half_t>::Kernel;
-using Runner = device::Swin<Kernel>;
+using Runner = device::SwinAttention<cutlass::arch::Sm80, cutlass::half_t>;
 using Element = typename Runner::Element;
 using Tensors = typename Runner::Tensors;
 
@@ -98,8 +95,8 @@ struct Options {
     }
   }
 
-  SwinProblem problem() const {
-    SwinProblem p;
+  SwinAttentionProblem problem() const {
+    SwinAttentionProblem p;
     p.batch_size = batch_size;
     p.image_size = image_size;
     p.window_size = window_size;
@@ -111,7 +108,7 @@ struct Options {
   }
 
   double gflops(double runtime_s) const {
-    SwinProblem p = problem();
+    SwinAttentionProblem p = problem();
     int64_t rows = swin_rows(p);
     int64_t c = swin_channels(p);
     int64_t bw = swin_batched_windows(p);
@@ -200,7 +197,7 @@ bool load_float_file(
   return true;
 }
 
-void fill_weights(SwinProblem const& p,
+void fill_weights(SwinAttentionProblem const& p,
                   std::vector<Element>& qkv_weight,
                   std::vector<Element>& qkv_bias,
                   std::vector<Element>& output_weight,
@@ -230,7 +227,7 @@ void fill_weights(SwinProblem const& p,
 }
 
 void build_shift_attention_mask(
-    SwinProblem const& p,
+    SwinAttentionProblem const& p,
     bool use_mask,
     std::vector<Element>& mask) {
   int image = p.image_size;
@@ -287,7 +284,7 @@ void build_shift_attention_mask(
 }
 
 void build_attention_bias(
-    SwinProblem const& p,
+    SwinAttentionProblem const& p,
     bool use_mask,
     std::vector<Element>& attention_bias,
     std::vector<Element>& rel_bias,
@@ -329,7 +326,7 @@ void build_attention_bias(
 }
 
 void pack_attention_bias(
-    SwinProblem const& p,
+    SwinAttentionProblem const& p,
     bool use_mask,
     std::vector<Element>& attention_bias,
     std::vector<Element> const& rel_bias,
@@ -359,7 +356,7 @@ void pack_attention_bias(
 }
 
 void window_partition_host(
-    SwinProblem const& p,
+    SwinAttentionProblem const& p,
     std::vector<Element> const& input,
     std::vector<Element>& output) {
   int bsz = p.batch_size;
@@ -394,7 +391,7 @@ void window_partition_host(
 }
 
 void window_reverse_host(
-    SwinProblem const& p,
+    SwinAttentionProblem const& p,
     std::vector<Element> const& input,
     std::vector<Element>& output) {
   int bsz = p.batch_size;
@@ -428,42 +425,8 @@ void window_reverse_host(
   }
 }
 
-void patch_merge_host(
-    SwinProblem const& p,
-    std::vector<Element> const& input,
-    std::vector<Element>& output) {
-  int bsz = p.batch_size;
-  int image = p.image_size;
-  int c = swin_channels(p);
-  int out_h = image / 2;
-  int out_w = image / 2;
-
-  output.assign(swin_patch_merged_elements(p), Element(0));
-  for (int b = 0; b < bsz; ++b) {
-    for (int oh = 0; oh < out_h; ++oh) {
-      for (int ow = 0; ow < out_w; ++ow) {
-        for (int col = 0; col < 4 * c; ++col) {
-          int part = col / c;
-          int ch = col - part * c;
-          int offset_w = part / 2;
-          int offset_h = part % 2;
-          int y = 2 * oh + offset_h;
-          int x = 2 * ow + offset_w;
-          int64_t input_idx = ((int64_t(b) * image * image + y * image + x) * c) + ch;
-          int64_t output_idx = ((int64_t(b) * out_h * out_w + oh * out_w + ow) * (4 * c)) + col;
-          output[output_idx] = input[input_idx];
-        }
-      }
-    }
-  }
-}
-
-bool uses_patch_merge(SwinProblem const& p) {
-  return p.image_size % 2 == 0;
-}
-
 void qkv_projection_host(
-    SwinProblem const& p,
+    SwinAttentionProblem const& p,
     std::vector<Element> const& windows,
     std::vector<Element> const& weight,
     std::vector<Element> const& bias,
@@ -496,7 +459,7 @@ void qkv_projection_host(
 }
 
 void output_projection_host(
-    SwinProblem const& p,
+    SwinAttentionProblem const& p,
     std::vector<Element> const& input,
     std::vector<Element> const& weight,
     std::vector<Element> const& bias,
@@ -578,10 +541,11 @@ bool compare_host(
 }
 
 int run_window(Options const& options) {
-  SwinProblem problem = options.problem();
-  char const* unsupported_reason = nullptr;
-  if (!Runner::can_implement(problem, &unsupported_reason)) {
-    std::cerr << "Unsupported Swin problem: " << unsupported_reason << "\n";
+  SwinAttentionProblem problem = options.problem();
+  cutlass::Status status = Runner::can_implement(problem);
+  if (status != cutlass::Status::kSuccess) {
+    std::cerr << "Unsupported Swin attention problem: "
+              << cutlassGetStatusString(status) << "\n";
     return -1;
   }
 
@@ -659,8 +623,6 @@ int run_window(Options const& options) {
   cutlass::DeviceAllocation<Element> attention_output(swin_window_elements(problem));
   cutlass::DeviceAllocation<Element> projected(swin_window_elements(problem));
   cutlass::DeviceAllocation<Element> output(swin_input_elements(problem));
-  cutlass::DeviceAllocation<Element> patch_merged(
-      uses_patch_merge(problem) ? swin_patch_merged_elements(problem) : 0);
   cutlass::DeviceAllocation<Element> cudnn_attention_output(swin_window_elements(problem));
 
   copy_to_device(input, host_input);
@@ -678,34 +640,31 @@ int run_window(Options const& options) {
   cudaMemset(attention_output.get(), 0, swin_window_elements(problem) * sizeof(Element));
   cudaMemset(projected.get(), 0, swin_window_elements(problem) * sizeof(Element));
   cudaMemset(output.get(), 0, swin_input_elements(problem) * sizeof(Element));
-  if (uses_patch_merge(problem)) {
-    cudaMemset(patch_merged.get(), 0, swin_patch_merged_elements(problem) * sizeof(Element));
-  }
   cudaMemset(cudnn_attention_output.get(), 0, swin_window_elements(problem) * sizeof(Element));
 
   Tensors tensors;
   tensors.input = input.get();
-  tensors.qkv_weight = qkv_weight.get();
-  tensors.qkv_bias = qkv_bias.get();
-  tensors.output_weight = output_weight.get();
-  tensors.output_bias = output_bias.get();
-  tensors.attention_bias = attention_bias.get();
-  tensors.windows = windows.get();
-  tensors.qkv = qkv.get();
-  tensors.query = query.get();
-  tensors.key = key.get();
-  tensors.value = value.get();
-  tensors.attention_output = attention_output.get();
-  tensors.projected = projected.get();
+  tensors.attention.qkv_weight = qkv_weight.get();
+  tensors.attention.qkv_bias = qkv_bias.get();
+  tensors.attention.output_weight = output_weight.get();
+  tensors.attention.output_bias = output_bias.get();
+  tensors.attention.attention_bias = attention_bias.get();
+  tensors.attention.windows = windows.get();
+  tensors.attention.qkv = qkv.get();
+  tensors.attention.query = query.get();
+  tensors.attention.key = key.get();
+  tensors.attention.value = value.get();
+  tensors.attention.attention_output = attention_output.get();
+  tensors.attention.projected = projected.get();
   tensors.output = output.get();
-  tensors.patch_merged = uses_patch_merge(problem) ? patch_merged.get() : nullptr;
 
-  cudaError_t err = Runner::run(problem, tensors, nullptr);
-  if (err != cudaSuccess) {
-    std::cerr << "Swin kernel launch failed: " << cudaGetErrorString(err) << "\n";
+  status = Runner::run(problem, tensors, nullptr);
+  if (status != cutlass::Status::kSuccess) {
+    std::cerr << "Swin attention launch failed: "
+              << cutlassGetStatusString(status) << "\n";
     return -1;
   }
-  err = cudaDeviceSynchronize();
+  cudaError_t err = cudaDeviceSynchronize();
   if (err != cudaSuccess) {
     std::cerr << "Swin kernel sync failed: " << cudaGetErrorString(err) << "\n";
     return -1;
@@ -755,7 +714,6 @@ int run_window(Options const& options) {
     std::vector<Element> host_value(swin_window_elements(problem));
     std::vector<Element> host_projected(swin_window_elements(problem));
     std::vector<Element> host_output(swin_input_elements(problem));
-    std::vector<Element> host_patch;
 
     cutlass::device_memory::copy_to_host(host_windows.data(), windows.get(), host_windows.size());
     cutlass::device_memory::copy_to_host(host_query.data(), query.get(), host_query.size());
@@ -763,10 +721,6 @@ int run_window(Options const& options) {
     cutlass::device_memory::copy_to_host(host_value.data(), value.get(), host_value.size());
     cutlass::device_memory::copy_to_host(host_projected.data(), projected.get(), host_projected.size());
     cutlass::device_memory::copy_to_host(host_output.data(), output.get(), host_output.size());
-    if (uses_patch_merge(problem)) {
-      host_patch.resize(swin_patch_merged_elements(problem));
-      cutlass::device_memory::copy_to_host(host_patch.data(), patch_merged.get(), host_patch.size());
-    }
 
     std::vector<Element> ref_windows;
     std::vector<Element> ref_query;
@@ -774,7 +728,6 @@ int run_window(Options const& options) {
     std::vector<Element> ref_value;
     std::vector<Element> ref_projected;
     std::vector<Element> ref_output;
-    std::vector<Element> ref_patch;
 
     window_partition_host(problem, host_input, ref_windows);
     qkv_projection_host(
@@ -798,9 +751,6 @@ int run_window(Options const& options) {
         host_output_bias,
         ref_projected);
     window_reverse_host(problem, ref_projected, ref_output);
-    if (uses_patch_merge(problem)) {
-      patch_merge_host(problem, host_input, ref_patch);
-    }
 
     bool host_passed =
         compare_host(host_windows, ref_windows, "WindowPartition", 0.0f, 0.0f) &&
@@ -809,11 +759,6 @@ int run_window(Options const& options) {
         compare_host(host_value, ref_value, "V", options.host_abs_tolerance, options.host_rel_tolerance) &&
         compare_host(host_projected, ref_projected, "OutputProjection", options.host_abs_tolerance, options.host_rel_tolerance) &&
         compare_host(host_output, ref_output, "WindowReverse", options.host_abs_tolerance, options.host_rel_tolerance);
-    if (uses_patch_merge(problem)) {
-      host_passed =
-          host_passed && compare_host(host_patch, ref_patch, "PatchMerge", 0.0f, 0.0f);
-    }
-
     if (!host_passed) {
       std::cout << "\nFailed\n";
       return -1;
@@ -832,9 +777,9 @@ int run_window(Options const& options) {
     return 0;
   }
 
-  err = Runner::run(problem, tensors, nullptr);
-  if (err != cudaSuccess) {
-    std::cerr << "Warmup failed: " << cudaGetErrorString(err) << "\n";
+  status = Runner::run(problem, tensors, nullptr);
+  if (status != cutlass::Status::kSuccess) {
+    std::cerr << "Warmup failed: " << cutlassGetStatusString(status) << "\n";
     return -1;
   }
   err = cudaDeviceSynchronize();
@@ -850,9 +795,10 @@ int run_window(Options const& options) {
 
   cudaEventRecord(start);
   for (int i = 0; i < options.iterations; ++i) {
-    err = Runner::run(problem, tensors, nullptr);
-    if (err != cudaSuccess) {
-      std::cerr << "Timed launch failed: " << cudaGetErrorString(err) << "\n";
+    status = Runner::run(problem, tensors, nullptr);
+    if (status != cutlass::Status::kSuccess) {
+      std::cerr << "Timed launch failed: "
+                << cutlassGetStatusString(status) << "\n";
       cudaEventDestroy(start);
       cudaEventDestroy(stop);
       return -1;

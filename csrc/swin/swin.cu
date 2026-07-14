@@ -5,338 +5,287 @@
 #include <cuda_runtime.h>
 
 #include "cutlass/arch/mma.h"
-#include "cutlass/epilogue/thread/linear_combination.h"
-#include "cutlass/gemm/device/gemm.h"
-#include "cutlass/layout/matrix.h"
 
-#include "../flash-attention/02-tiled-online-attention/kernel_forward.h"
+#include "device/swin_block.h"
+#include "device/window_attention.h"
+#include "device/window_partition.h"
+#include "kernel/default_swin_attention.h"
+#include "kernel/default_swin_block.h"
 #include "kernel/swin.h"
-#include "threadblock/layout.h"
+#include "threadblock/attention_glue.h"
+#include "threadblock/normalization.h"
 
 namespace tiny_cutlass {
 namespace swin {
 namespace {
 
-template <typename Threadblock>
-cudaError_t launch_threadblock(
-    typename Threadblock::Params const& params,
-    cudaStream_t stream,
-    int shared_storage_bytes = 0) {
-  kernel::swin_threadblock_kernel<Threadblock>
-      <<<params.getBlocksGrid(),
-         params.getThreadsGrid(),
-         shared_storage_bytes,
-         stream>>>(params);
-  return cudaGetLastError();
-}
-
-template <typename Kernel>
-cutlass::Status launch_projection(
-    int rows,
-    int k,
-    int n,
-    typename Kernel::Element const* input,
-    typename Kernel::Element const* weight,
-    typename Kernel::Element* output,
-    cudaStream_t stream) {
-  using Policy = typename Kernel::Policy;
-  using Element = typename Policy::Element;
-  using Gemm = cutlass::gemm::device::Gemm<
-      Element,
-      typename Policy::MatrixLayout,
-      Element,
-      typename Policy::MatrixLayout,
-      Element,
-      typename Policy::MatrixLayout,
-      typename Policy::ElementAccumulator,
-      cutlass::arch::OpClassTensorOp,
-      typename Policy::ArchTag,
-      typename Policy::ThreadblockShape,
-      typename Policy::WarpShape,
-      typename Policy::InstructionShape,
-      cutlass::epilogue::thread::LinearCombination<
-          Element,
-          128 / cutlass::sizeof_bits<Element>::value,
-          typename Policy::ElementAccumulator,
-          typename Policy::ElementCompute>>;
-
-  typename Gemm::Arguments args(
-      {rows, n, k},
-      {input, k},
-      {weight, n},
-      {output, n},
-      {output, n},
-      {typename Policy::ElementCompute(1), typename Policy::ElementCompute(0)});
-
-  cutlass::Status status = Gemm::can_implement(args);
-  if (status != cutlass::Status::kSuccess) {
-    return status;
-  }
-
-  Gemm op;
-  return op(args, nullptr, stream);
-}
-
-template <typename Kernel>
-cudaError_t launch_attention(
-    SwinProblem const& problem,
-    SwinTensors<typename Kernel::Element> const& tensors,
-    cudaStream_t stream) {
-  using Policy = typename Kernel::Policy;
-  using Element = typename Policy::Element;
-  using Attention = AttentionKernel<
-      Element,
-      typename Policy::ArchTag,
-      Policy::kAttentionIsAligned,
-      Policy::kAttentionQueriesPerBlock,
-      Policy::kAttentionKeysPerBlock,
-      Policy::kAttentionMaxHeadDim,
-      false,
-      Policy::kAttentionSupportsBias>;
-
-  int bw = swin_batched_windows(problem);
-  int l = swin_window_len(problem);
-  int lp = swin_window_len_padded(problem);
-  int c = swin_channels(problem);
-
-  typename Attention::Params params;
-  params.query_ptr = const_cast<Element*>(tensors.query);
-  params.key_ptr = const_cast<Element*>(tensors.key);
-  params.value_ptr = const_cast<Element*>(tensors.value);
-  params.attn_bias_ptr = const_cast<Element*>(tensors.attention_bias);
-  params.output_ptr = tensors.attention_output;
-  params.output_accum_ptr = nullptr;
-  params.logsumexp_ptr = nullptr;
-  params.scale = problem.scale;
-  params.num_queries = l;
-  params.num_keys = l;
-  params.head_dim = problem.head_size;
-  params.head_dim_value = problem.head_size;
-  params.num_heads = problem.head_number;
-  params.num_batches = bw;
-  params.q_strideM = c;
-  params.k_strideM = c;
-  params.v_strideM = c;
-  params.bias_strideM = lp;
-  params.o_strideM = c;
-  params.q_strideH = problem.head_size;
-  params.k_strideH = problem.head_size;
-  params.v_strideH = problem.head_size;
-  params.bias_strideH = int64_t(l) * lp;
-  params.q_strideB = int64_t(l) * c;
-  params.k_strideB = int64_t(l) * c;
-  params.v_strideB = int64_t(l) * c;
-  params.bias_strideB = int64_t(problem.head_number) * l * lp;
-  params.custom_mask_type = Attention::NoCustomMask;
-
-  constexpr auto kernel_fn = kernel::swin_attention_kernel<Attention>;
-  int smem_bytes = int(sizeof(typename Attention::SharedStorage));
-  if (smem_bytes > 0xc000) {
-    cudaError_t err = cudaFuncSetAttribute(
-        kernel_fn,
-        cudaFuncAttributeMaxDynamicSharedMemorySize,
-        smem_bytes);
-    if (err != cudaSuccess) {
-      return err;
-    }
-  }
-
-  if (!Attention::check_supported(params)) {
-    return cudaErrorInvalidValue;
-  }
-
-  kernel_fn<<<params.getBlocksGrid(), params.getThreadsGrid(), smem_bytes, stream>>>(
-      params);
-  return cudaGetLastError();
-}
-
-template <typename Kernel>
+template <typename ArchTag, typename Element>
 bool supported_type() {
-  using Policy = typename Kernel::Policy;
-  return std::is_same<typename Policy::ArchTag, cutlass::arch::Sm80>::value &&
-      std::is_same<typename Policy::Element, cutlass::half_t>::value;
+  return std::is_same<ArchTag, cutlass::arch::Sm80>::value &&
+      std::is_same<Element, cutlass::half_t>::value;
 }
 
-template <typename Kernel>
-char const* validate_problem(SwinProblem const& problem) {
-  if (!supported_type<Kernel>()) {
-    return "only the explicitly instantiated TensorOp policy is available";
+template <typename ArchTag, typename Element>
+cutlass::Status validate_problem(SwinAttentionProblem const& problem) {
+  if (!supported_type<ArchTag, Element>()) {
+    return cutlass::Status::kErrorNotSupported;
   }
   if (problem.batch_size <= 0 || problem.image_size <= 0 ||
       problem.window_size <= 0 || problem.head_number <= 0 ||
       problem.head_size <= 0) {
-    return "all dimensions must be positive";
+    return cutlass::Status::kErrorInvalidProblem;
   }
   if ((problem.image_size % problem.window_size) != 0) {
-    return "image_size must be divisible by window_size";
+    return cutlass::Status::kErrorInvalidProblem;
   }
   if (problem.shift_size < 0 || problem.shift_size >= problem.window_size) {
-    return "shift_size must satisfy 0 <= shift_size < window_size";
+    return cutlass::Status::kErrorInvalidProblem;
   }
   if ((swin_channels(problem) % 8) != 0 || (problem.head_size % 8) != 0) {
-    return "TensorOp path requires channels and head_size to be multiples of 8";
+    return cutlass::Status::kErrorInvalidProblem;
   }
   if (swin_window_len(problem) > 64) {
-    return "WindowAttention path currently supports window_len <= 64";
+    return cutlass::Status::kErrorInvalidProblem;
   }
   if (problem.scale <= 0.0f) {
-    return "attention scale must be positive";
+    return cutlass::Status::kErrorInvalidProblem;
   }
-  return nullptr;
+  return cutlass::Status::kSuccess;
+}
+
+cutlass::Status from_cuda(cudaError_t status) {
+  return status == cudaSuccess
+      ? cutlass::Status::kSuccess
+      : cutlass::Status::kErrorInternal;
 }
 
 } // namespace
 
 namespace device {
 
-template <typename Kernel>
-bool Swin<Kernel>::can_implement(
-    SwinProblem const& problem,
-    char const** reason) {
-  char const* local_reason = validate_problem<Kernel>(problem);
-  if (reason != nullptr) {
-    *reason = local_reason;
-  }
-  return local_reason == nullptr;
+template <typename ArchTag, typename Element>
+cutlass::Status SwinAttention<ArchTag, Element>::can_implement(
+    SwinAttentionProblem const& problem) {
+  return validate_problem<ArchTag, Element>(problem);
 }
 
-template <typename Kernel>
-cudaError_t Swin<Kernel>::run(
-    SwinProblem const& problem,
+template <typename ArchTag, typename Element>
+cutlass::Status SwinAttention<ArchTag, Element>::run(
+    SwinAttentionProblem const& problem,
     Tensors const& tensors,
     cudaStream_t stream) {
-  char const* reason = nullptr;
-  if (!can_implement(problem, &reason)) {
-    (void)reason;
-    return cudaErrorInvalidValue;
-  }
-  if (tensors.input == nullptr || tensors.qkv_weight == nullptr ||
-      tensors.output_weight == nullptr || tensors.attention_bias == nullptr ||
-      tensors.windows == nullptr || tensors.qkv == nullptr ||
-      tensors.query == nullptr || tensors.key == nullptr ||
-      tensors.value == nullptr || tensors.attention_output == nullptr ||
-      tensors.projected == nullptr || tensors.output == nullptr) {
-    return cudaErrorInvalidValue;
-  }
-
-  using Element = typename Kernel::Element;
-
-  {
-    using Threadblock = threadblock::WindowPartition<Element, 256>;
-    typename Threadblock::Params params;
-    params.input = tensors.input;
-    params.output = tensors.windows;
-    params.batch = problem.batch_size;
-    params.height = problem.image_size;
-    params.width = problem.image_size;
-    params.channels = swin_channels(problem);
-    params.shift_size = problem.shift_size;
-    params.window_size = problem.window_size;
-    cudaError_t err = launch_threadblock<Threadblock>(params, stream);
-    if (err != cudaSuccess) {
-      return err;
-    }
-  }
-
-  cutlass::Status status = launch_projection<Kernel>(
-      swin_rows(problem),
-      swin_channels(problem),
-      3 * swin_channels(problem),
-      tensors.windows,
-      tensors.qkv_weight,
-      tensors.qkv,
-      stream);
+  using KernelConfig = kernel::DefaultSwinAttention<ArchTag, Element>;
+  cutlass::Status status = can_implement(problem);
   if (status != cutlass::Status::kSuccess) {
-    return cudaErrorInvalidValue;
+    return status;
+  }
+  auto const& attention = tensors.attention;
+  if (tensors.input == nullptr || attention.qkv_weight == nullptr ||
+      attention.output_weight == nullptr || attention.attention_bias == nullptr ||
+      attention.windows == nullptr || attention.qkv == nullptr ||
+      attention.query == nullptr || attention.key == nullptr ||
+      attention.value == nullptr || attention.attention_output == nullptr ||
+      attention.projected == nullptr || tensors.output == nullptr) {
+    return cutlass::Status::kErrorInvalidProblem;
   }
 
-  {
-    using Threadblock = threadblock::AddQkvBiasSplit<Element, 256>;
-    typename Threadblock::Params params;
-    params.qkv = tensors.qkv;
-    params.bias = tensors.qkv_bias;
-    params.q = tensors.query;
-    params.k = tensors.key;
-    params.v = tensors.value;
-    params.elements = swin_rows(problem) * swin_channels(problem);
-    params.channels = swin_channels(problem);
-    cudaError_t err = launch_threadblock<Threadblock>(params, stream);
-    if (err != cudaSuccess) {
-      return err;
-    }
-  }
-
-  cudaError_t err = launch_attention<Kernel>(problem, tensors, stream);
+  cudaError_t err = detail::launch_window_partition<Element, KernelConfig::kThreads>(
+      problem, tensors, stream);
   if (err != cudaSuccess) {
-    return err;
+    return from_cuda(err);
   }
 
-  status = launch_projection<Kernel>(
-      swin_rows(problem),
-      swin_channels(problem),
-      swin_channels(problem),
-      tensors.attention_output,
-      tensors.output_weight,
-      tensors.projected,
-      stream);
-  if (status != cutlass::Status::kSuccess) {
-    return cudaErrorInvalidValue;
+  err = WindowAttention<KernelConfig>::run(problem, attention, stream);
+  if (err != cudaSuccess) {
+    return from_cuda(err);
   }
 
-  {
-    using Threadblock = threadblock::AddBias<Element, 256>;
-    typename Threadblock::Params params;
-    params.output = tensors.projected;
-    params.bias = tensors.output_bias;
-    params.elements = swin_rows(problem) * swin_channels(problem);
-    params.channels = swin_channels(problem);
-    err = launch_threadblock<Threadblock>(params, stream);
-    if (err != cudaSuccess) {
-      return err;
-    }
+  err = detail::launch_window_reverse<Element, KernelConfig::kThreads>(
+      problem, tensors, stream);
+  if (err != cudaSuccess) {
+    return from_cuda(err);
   }
 
-  {
-    using Threadblock = threadblock::WindowReverse<Element, 256>;
-    typename Threadblock::Params params;
-    params.input = tensors.projected;
-    params.output = tensors.output;
-    params.batch = problem.batch_size;
-    params.height = problem.image_size;
-    params.width = problem.image_size;
-    params.channels = swin_channels(problem);
-    params.shift_size = problem.shift_size;
-    params.window_size = problem.window_size;
-    err = launch_threadblock<Threadblock>(params, stream);
-    if (err != cudaSuccess) {
-      return err;
-    }
-  }
-
-  if (tensors.patch_merged != nullptr) {
-    if ((problem.image_size % 2) != 0) {
-      return cudaErrorInvalidValue;
-    }
-    using Threadblock = threadblock::PatchMerge<Element, 256>;
-    typename Threadblock::Params params;
-    params.input = tensors.input;
-    params.output = tensors.patch_merged;
-    params.batch = problem.batch_size;
-    params.height = problem.image_size;
-    params.width = problem.image_size;
-    params.channels = swin_channels(problem);
-    err = launch_threadblock<Threadblock>(params, stream);
-    if (err != cudaSuccess) {
-      return err;
-    }
-  }
-
-  return cudaSuccess;
+  return cutlass::Status::kSuccess;
 }
 
-template class Swin<typename kernel::DefaultSwin<
-    cutlass::arch::Sm80,
-    cutlass::half_t>::Kernel>;
+template class SwinAttention<cutlass::arch::Sm80, cutlass::half_t>;
+
+// ---------------------------------------------------------------------------
+// Full fused SwinBlock (norm1 + attention + residual1 + norm2 + MLP + residual2)
+// ---------------------------------------------------------------------------
+
+template <typename ArchTag, typename Element>
+cutlass::Status SwinBlock<ArchTag, Element>::can_implement(
+    SwinBlockProblem const& problem) {
+  cutlass::Status status = validate_problem<ArchTag, Element>(problem);
+  if (status != cutlass::Status::kSuccess) {
+    return status;
+  }
+  if (problem.mlp_ratio <= 0 || problem.layernorm_eps <= 0.0f) {
+    return cutlass::Status::kErrorInvalidProblem;
+  }
+  return cutlass::Status::kSuccess;
+}
+
+template <typename ArchTag, typename Element>
+cutlass::Status SwinBlock<ArchTag, Element>::run(
+    SwinBlockProblem const& problem,
+    Tensors const& tensors,
+    cudaStream_t stream) {
+  using KernelConfig = kernel::DefaultSwinBlock<ArchTag, Element>;
+  cutlass::Status status = can_implement(problem);
+  if (status != cutlass::Status::kSuccess) {
+    return status;
+  }
+  auto const& attention = tensors.attention;
+  if (tensors.input == nullptr || attention.qkv_weight == nullptr ||
+      attention.output_weight == nullptr || attention.attention_bias == nullptr ||
+      attention.windows == nullptr || attention.qkv == nullptr ||
+      attention.query == nullptr || attention.key == nullptr ||
+      attention.value == nullptr || attention.attention_output == nullptr ||
+      attention.projected == nullptr || tensors.output == nullptr ||
+      tensors.gamma1 == nullptr || tensors.gamma2 == nullptr ||
+      tensors.fc1_weight == nullptr || tensors.fc1_bias == nullptr ||
+      tensors.fc2_weight == nullptr || tensors.fc2_bias == nullptr ||
+      tensors.residual == nullptr || tensors.normed2 == nullptr ||
+      tensors.mlp_hidden == nullptr || tensors.mlp_output == nullptr) {
+    return cutlass::Status::kErrorInvalidProblem;
+  }
+
+  int c = swin_channels(problem);
+  int image_tokens =
+      problem.batch_size * problem.image_size * problem.image_size;
+  int mlp_hidden = swin_mlp_hidden(problem);
+  int smem_bytes = int(2 * KernelConfig::kThreads * sizeof(float));
+
+  // --- Launch 1: LayerNormShiftPartition (norm1 + shift + partition) ---
+  {
+    using Threadblock =
+        threadblock::LayerNormShiftPartition<Element, KernelConfig::kThreads>;
+    typename Threadblock::Params params;
+    params.input = tensors.input;
+    params.gamma = tensors.gamma1;
+    params.beta = tensors.beta1;
+    params.output = attention.windows;
+    params.batch = problem.batch_size;
+    params.height = problem.image_size;
+    params.width = problem.image_size;
+    params.channels = c;
+    params.shift_size = problem.shift_size;
+    params.window_size = problem.window_size;
+    params.epsilon = problem.layernorm_eps;
+
+    kernel::swin_threadblock_kernel<Threadblock>
+        <<<params.getBlocksGrid(), params.getThreadsGrid(), smem_bytes, stream>>>(
+            params);
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+      return from_cuda(err);
+    }
+  }
+
+  // --- Launches 2-5: WindowAttention (QKV GEMM, bias/split, attn, proj) ---
+  {
+    cudaError_t err = WindowAttention<typename KernelConfig::AttentionConfig>::run(
+        problem, attention, stream);
+    if (err != cudaSuccess) {
+      return from_cuda(err);
+    }
+  }
+
+  // --- Launch 6: ReverseAddResidualLayerNorm (reverse + res1 + norm2) ---
+  {
+    using Threadblock =
+        threadblock::ReverseAddResidualLayerNorm<Element, KernelConfig::kThreads>;
+    typename Threadblock::Params params;
+    params.projected = attention.projected;
+    params.shortcut = tensors.input;
+    params.gamma = tensors.gamma2;
+    params.beta = tensors.beta2;
+    params.residual = tensors.residual;
+    params.normed = tensors.normed2;
+    params.batch = problem.batch_size;
+    params.height = problem.image_size;
+    params.width = problem.image_size;
+    params.channels = c;
+    params.shift_size = problem.shift_size;
+    params.window_size = problem.window_size;
+    params.epsilon = problem.layernorm_eps;
+
+    kernel::swin_threadblock_kernel<Threadblock>
+        <<<params.getBlocksGrid(), params.getThreadsGrid(), smem_bytes, stream>>>(
+            params);
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+      return from_cuda(err);
+    }
+  }
+
+  // --- Launch 7: fc1 GEMM (C -> mlp_hidden) ---
+  {
+    status = detail::launch_projection<KernelConfig>(
+        image_tokens,
+        c,
+        mlp_hidden,
+        tensors.normed2,
+        tensors.fc1_weight,
+        tensors.mlp_hidden,
+        stream);
+    if (status != cutlass::Status::kSuccess) {
+      return status;
+    }
+  }
+
+  // --- Launch 8: AddBiasGelu ---
+  {
+    using Threadblock = threadblock::AddBiasGelu<Element, KernelConfig::kThreads>;
+    typename Threadblock::Params params;
+    params.output = tensors.mlp_hidden;
+    params.bias = tensors.fc1_bias;
+    params.elements = image_tokens * mlp_hidden;
+    params.channels = mlp_hidden;
+    cudaError_t err = detail::launch_threadblock<Threadblock>(params, stream);
+    if (err != cudaSuccess) {
+      return from_cuda(err);
+    }
+  }
+
+  // --- Launch 9: fc2 GEMM (mlp_hidden -> C) ---
+  {
+    status = detail::launch_projection<KernelConfig>(
+        image_tokens,
+        mlp_hidden,
+        c,
+        tensors.mlp_hidden,
+        tensors.fc2_weight,
+        tensors.mlp_output,
+        stream);
+    if (status != cutlass::Status::kSuccess) {
+      return status;
+    }
+  }
+
+  // --- Launch 10: AddBiasResidual (fc2 bias + residual 2) ---
+  {
+    using Threadblock = threadblock::AddBiasResidual<Element, KernelConfig::kThreads>;
+    typename Threadblock::Params params;
+    params.input = tensors.mlp_output;
+    params.bias = tensors.fc2_bias;
+    params.residual = tensors.residual;
+    params.output = tensors.output;
+    params.elements = image_tokens * c;
+    params.channels = c;
+    cudaError_t err = detail::launch_threadblock<Threadblock>(params, stream);
+    if (err != cudaSuccess) {
+      return from_cuda(err);
+    }
+  }
+
+  return cutlass::Status::kSuccess;
+}
+
+template class SwinBlock<cutlass::arch::Sm80, cutlass::half_t>;
 
 } // namespace device
 

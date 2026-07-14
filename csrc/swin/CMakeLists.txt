@@ -30,6 +30,7 @@ target_compile_options(swin_device PRIVATE
 cutlass_example_add_executable(
   swin_window
   "${SWIN_TEST_DIR}/window.cpp"
+  "${SWIN_TEST_DIR}/reference.cpp"
   $<TARGET_OBJECTS:swin_device>
 )
 
@@ -64,7 +65,25 @@ target_include_directories(swin_patch_embed PRIVATE
   "${SWIN_TEST_DIR}"
 )
 
-add_custom_target(swin DEPENDS swin_window swin_patch_embed)
+cutlass_example_add_executable(
+  swin_block
+  "${SWIN_TEST_DIR}/block.cpp"
+  $<TARGET_OBJECTS:swin_device>
+)
+
+target_include_directories(swin_block PRIVATE
+  "${PROJECT_SOURCE_DIR}"
+  "${PROJECT_SOURCE_DIR}/csrc"
+  "${CMAKE_CURRENT_LIST_DIR}"
+  "${CMAKE_CURRENT_LIST_DIR}/../flash-attention"
+  "${SWIN_TEST_DIR}"
+)
+
+target_compile_options(swin_block PRIVATE
+  $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/bigobj>
+)
+
+add_custom_target(swin DEPENDS swin_window swin_patch_embed swin_block)
 
 add_library(swin_plugin SHARED
   trt/swin_plugin.cpp
