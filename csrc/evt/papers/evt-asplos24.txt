@@ -1,0 +1,1179 @@
+EVT: Accelerating Deep Learning Training with
+                  Epilogue Visitor Tree
+
+  Zhaodong Chen        Andrew Kerr                                                Richard Cai
+
+   UC Santa Barbara         NVIDIA                                                    NVIDIA
+      United States      United States                                             United States
+                      akerr@nvidia.com                                           ricai@nvidia.com
+chenzd15thu@ucsb.edu
+
+   Jack Kosaian          Haicheng Wu                                                Yufei Ding
+
+        NVIDIA                 NVIDIA                                                UC San Diego
+     United States          United States                                            United States
+jkosaian@nvidia.com   haichengw@nvidia.com                                       yufeiding@ucsd.edu
+
+                        Yuan Xie
+
+                           HKUST
+                            China
+                      yuanxie@ust.hk
+
+Abstract                                                                         novel integer linear programming-based partitioner that effi-
+                                                                                 ciently solves the optimal and feasible partitions in complex
+As deep learning models become increasingly complex, the                         joint forward-backward graphs. Moreover, we present the
+deep learning compilers are critical for enhancing the system                    Epilogue Visitor Abstraction and introduce the EVT operator
+efficiency and unlocking hidden optimization opportunities.                      compiler that automatically generates flexible epilogues that
+Although excellent speedups have been achieved in inference                      can be integrated with high-performance main loop imple-
+workloads, existing compilers face significant limitations in                    mentations from CUTLASS and other SOTA libraries. EVT
+training. Firstly, the training computation graph involves in-                   is evaluated on diverse training workloads across domains
+tricate operations challenging to fuse, such as normalization,                   and achieves 1.263.1× speedup.
+loss functions, and reductions, which limit optimization op-
+portunities like kernel fusion. Secondly, the training graph's                   ACM Reference Format:
+additional edges connecting forward and backward operators                       Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng
+pose challenges in finding optimal and feasible partitions for                   Wu, Yufei Ding, and Yuan Xie. 2024. EVT: Accelerating Deep Learn-
+kernel fusion. More importantly, existing compilers cannot                       ing Training with Epilogue Visitor Tree. In 29th ACM Interna-
+either generate kernels with state-of-the-art performance on                     tional Conference on Architectural Support for Programming Lan-
+modern GPUs or accommodate diverse fusion patterns.                              guages and Operating Systems, Volume 3 (ASPLOS '24), April 27-May
+                                                                                 1, 2024, La Jolla, CA, USA. ACM, New York, NY, USA, 16 pages.
+   In this paper, we introduce Epilogue Visitor Tree (EVT), a                    https://doi.org/10.1145/3620666.3651369
+novel compiler that overcomes these limitations. EVT em-
+ploys novel graph-level compilation passes to unlock hidden                      1 Introduction
+fusion and optimization opportunities. It also incorporates a
+                                                                                 The rapid evolution of deep learning has led to a surge in
+Work partially done during the internship at NVIDIA                              the complexity and quantity of deep learning models. These
+The source code to reproduce the results is publically available at https:       models, often implemented through deep learning frame-
+//github.com/apuaaChen/EVT_AE. The CUDA templates of EVT are ac-                 works like PyTorch [22] that target flexible programming,
+tively maintained under the official CUTLASS repository https://github.          face suboptimal performance as they cannot efficiently uti-
+com/NVIDIA/cutlass.                                                              lize the resources provided by hardware like GPUs. Manual
+                                                                                 optimization of these models demands a high degree of engi-
+This work is licensed under a Creative Commons Attribution International         neering effort and expertise, and even experts may overlook
+4.0 License.                                                                     hidden optimization opportunities within intricate models.
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA
+© 2024 Copyright held by the owner/author(s).                                       Deep learning (DL) compilers play a critical role in ad-
+ACM ISBN 979-8-4007-0386-7/24/04.                                                dressing this challenge. A typical DL compiler optimizes the
+https://doi.org/10.1145/3620666.3651369                                          user-defined model through three major steps [16]: graph-
+                                                                                 level optimization, partition, and operator-level optimization.
+                                                                                 In detail, the input model is first traced into a graph represen-
+                                                                                 tation, with nodes representing operators and edges denoting
+                                                                                 dataflow. Graph-level optimization simplifies the graph by
+
+                                                                            301
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng Wu, Yufei Ding, and Yuan Xie
+
+folding constants or eliminating common sub-expressions.              Frameworks   ...
+Subsequently, the partitioner divides the graph into indi-
+vidual partitions, and each partition is further optimized by         Joint Forward- Backward Graph       CSE
+operator-level optimization, such as replacement by a fused                                           Const Prop
+kernel generated by the operator compiler [28].                       §3: Graph-level Optimization
+                                                                                 Loss Elimination            ...
+   While considerable progress [4, 22, 26] has been made in                       Decomposition
+optimizing models for inference efficiency, three key limita-
+tions remain in optimizing the training workload.                             Reduction Elimination
+
+   Limitation 1. Existing operator compilers are inadequate           §4: ILP-based Partitioner
+to generate fused kernels that deliver state-of-the-art perfor-
+mance while accommodating diverse fusion patterns. Loop-              Operator-level Optimization
+based compilers, like TVM [4], represent operators as nested
+loops. They face challenges in abstracting dedicated optimiza-        Nvfuser ...                  §5: EVT Operator Compiler
+tions and leveraging the accelerator features and datapaths
+in modern GPUs for core operators like matrix multiplica-                          Deployable Module
+tion (GEMM) and convolutions. On the other hand, template
+metaprogramming (TMP)-based compilers [29, 30] that lever-            Figure 1. Overview of the EVT System Design.
+age expert-developed template libraries lack the flexibility
+to support diverse fusion patterns in the training graphs.               Although the Epilogue Visitor Tree abstraction offers strong
+                                                                      flexibility, it still imposes constraints on fusible patterns. For
+   Limitation 2:. While existing studies focus on the forward         instance, only supported epilogue operators can be fused.
+and backward passes, few optimizations for loss functions             The fusion between reductions and their consumers in the
+have been proposed. However, in scenarios such as extreme             epilogue is also challenging and sometimes not beneficial.
+classification [17], the loss functions and their corresponding       These constraints are mitigated by the co-designed graph-
+backward pass can become performance bottlenecks.                     level optimizations and partitioning algorithm.
+
+   Limitation 3. Existing paritioning algorithms cannot find             Figure 1 provides an overview of EVT. It directly takes
+feasible and optimal partitions in the training graph. Un-            models from frameworks like PyTorch [22] and converts
+like inference, which contains a stream of operators and              them into a joint forward-backward graph, where training
+can be partitioned with simple heuristics, the training graph         samples and model parameters serve as inputs, and gradients
+includes additional edges passing saved activations to back-          are computed as outputs.
+ward operators for gradient computation. Heuristically par-
+titioning them can easily lead to an infeasible result that              Graph-level Optimization. To address Limitation 2, EVT
+contains cycles. While arbitrarily separating the forward             optimizes the loss function and its backward pass through
+and backward graph obscures opportunities for fusing op-              "Loss Elimination". This approach unlocks the opportunity
+erators from both forward and backward parts. Moreover,               to fuse the loss function and its backward pass by recog-
+existing partitioning algorithms are tailored to specific oper-       nizing the loss value doesn't participate in the backward
+ator compilers, lacking extensibility to integrate additional         computation.
+optimization targets, heuristics, and constraints.
+                                                                         To mitigate the constraints of EVT abstraction, "Decom-
+1.1 Our Approach                                                      position" is employed to break down complex, non-fusible
+                                                                      operators like batch_norm into operators that are fusible
+We present Epilogue Visitor Tree (EVT), a novel compiler              under the EVT abstraction. Additionally, "Reduction Elim-
+designed to address all the aforementioned limitations.               ination" helps alleviate the reduction fusion constraint by
+                                                                      identifying instances where the reduction result can be ex-
+   The core of this paper is the Epilogue Visitor Tree ab-            pressed equivalently as a series fusible operators.
+straction, designed to tackle limitation 1. The key idea is
+composing fused kernels via mainloop-epilogue fusion, akin               Partitioning. Limitation 3 is addressed by our ILP-based
+to TMP-based compilers, while addressing the scalability of           partitioner. It models the partitioning as an ILP problem to
+the epilogue in TMP-based compiler through a visitor design           find the feasible global optimal solution. This formulation
+allowing epilogue operators to be developed, optimized, and           also allows for the integration of additional optimization
+verified individually, and then assembled under the tree struc-       targets, heuristics, and constraints. This flexibility enables
+ture by compiler. With this abstraction, the expert-designed          the encoding of EVT abstraction constraints unsolved by the
+mainloop ensures state-of-the-art performance as all the              graph-level optimization into the ILP solver's constraints,
+dedicated optimizations written in CUDA are automatically             ensuring all the solved partitions can be fused.
+incorporated, the compiler assembled epilogues offer strong
+flexibility to handle diverse fusion patterns in training.
+
+                                                                 302
+EVT: Accelerating Deep Learning Training with Epilogue Visitor Tree                                 ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA
+
+   As the acyclic partitioning problem is NP-Hard [21], we                be directly used when solving large-scale neural networks
+propose several simplification techniques to reduce the com-              with thousands of nodes, and their lower bound obtained
+plexity, and large-scale neural networks with millions of                 from Kernighan's solution [13] is not valid when additional
+decision variables can be solved in minutes.                              constraints are involved. In Section 4, we develop a novel
+                                                                          approach dividing the computation graph into smaller ones
+   Operator Compiler. Each partition involving heavy op-                  so that they can be solved in a reasonable amount of time.
+erators like GEMM will be dispatched to our EVT Operator
+Compiler. It is flexible enough to support diverse fusion pat-            2.3 Operator-level Optimization
+terns in training while generating fused kernels that deliver
+state-of-the-art performance.                                             Kernel fusion is the key optimization applied in operator-
+                                                                          level optimization. During kernel fusion, multiple operators
+   Finally, EVT returns a deployable model to the user, which             under the producer-consumer relationship are fused into a
+is compatible with other optimization techniques such as                  single one. The intermediate result can be directly cached in
+CUDA graph to perform further optimizations orthogonal                    the register or shared memory to reduce memory access. The
+to ours. Our EVT can be used as a backend for torch.compile               performance of the fused kernel is determined by the quality
+that optimizes a model with a single line of code.                        of the implementation of each operator, while the flexibility
+                                                                          is determined by the ability of the operator compiler to align
+2 Related Work                                                            the loop structure of different operators.
+
+2.1 Graph-level Optimization                                                 Template meta-programming (TMP)-based compilers, such
+                                                                          as AITemplate [30] and Bolt [29], use expert-developed tem-
+Existing DL compilers have adopted various graph-level op-                plate libraries [5, 10, 25] like CUTLASS to achieve optimal
+timizations to improve the efficiency of Deep Learning Sys-               performance. However, existing TMP-based compilers lack
+tems. TVM [4] optimizes its graph-level IR, relay, with passes            the flexibility to cover the diverse fusion patterns encoun-
+like constant-folding, decomposition, and data layout trans-              tered in the training workloads. They only support a limited
+formation.                                                                set of patterns defined by the template library, posing chal-
+                                                                          lenges for scalability.
+   However, few optimizations have been proposed for the
+loss function and its backward pass, which could be a per-                   Loop-based compilers, such as TVM [4], Tiramisu [1],
+formance bottleneck in many cases. Additionally, existing                 Nvfuser, and Tensor Comprehensions [27], represent op-
+graph-level optimizations, such as decomposition, are typi-               erations as loops and apply schedules, such as loop fission,
+cally designed independently with the underlying operator-                fusion, parallel, and vectorization, to map them to GPUs. The
+level optimization. This approach misses the opportunity to               loop-based compilers have demonstrated remarkable success
+address certain limitations of operator-level optimization at             in inference tasks and outperform state-of-the-art libraries
+the graph level.                                                          crafted by experts. The loop-based abstraction can easily
+                                                                          divide the workload under small problem size to adequate
+2.2 Partitioning Algorithms                                               threadblocks, addressing the low utilization of streaming
+                                                                          multiprocessors (SMs) of GPU.
+Most existing studies employ simple heuristics when parti-
+tioning computation graphs. TVM[4], for instance, classifies                 In contrast, the training workloads have sufficiently large
+the operators into four types: injective (element-wise), re-              batch sizes to saturate the SMs, and the kernels' performance
+duction, complex out-fusible (can fuse element-wise map to                is bounded by computation and memory utilization. Improv-
+output), and opaque (cannot be fused). They define heuristic              ing these utilization requires dedicated and sometimes case-
+rules such as reduction can be fused with input injective                 by-case optimizations with CUDA, which are challenging to
+operators and complex out-fusible nodes like GEMM can                     express as transformations on IRs.
+fuse element-wise operators to its output. However, as we
+will illustrate in Section 4, these heuristics would lead to                 Therefore, existing approaches like inductor of PyTorch
+infeasible partitions with cycles or suboptimal solutions. Ad-            [22] still rely on kernels from cuDNN or templates from
+ditionally, existing partitioning algorithms lack the flexibility         CUTLASS [25] for heavy operators like GEMM, despite their
+to incorporate additional optimization objectives, heuristics,            ability to generate kernels.
+and constraints.
+                                                                          3 Graph-level Optimizations
+   There are also studies on the acyclic partitioning problem
+beyond the Deep Learning System community [9]. Our ILP-                   In this section, we first discuss the major optimizations ex-
+based partitioner takes inspiration from Nosack and Pesch                 ploited and then provide a running example to illustrate how
+[19] which formulates the acyclic partitioning problem as                 these optimizations simplify the computation graph, partic-
+ILP. The ILP-based formulation provides great extensibil-                 ularly the loss function and its backward pass, and expose
+ity to encode new constraints and heuristics through ILP                  new fusion opportunities.
+constraints. However, the high complexity of the approach
+developed by Nosack and Pesch [19] makes it impractical to
+
+                                                                     303
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng Wu, Yufei Ding, and Yuan Xie
+
+3.1 Optimizations                                                     Table 1. Decomposition Examples in EVT
+
+Loss Elimination. Despite it sounding counter-intuitive,                       Pattern              Decomposition
+we found that the loss value can be eliminated as a dead node                 ( )
+from the joint forward-backward graph for two reasons: the                 (,  )                    (   ( ))
+backward pass can be performed without computing the loss                 (,  )
+value, and the loss value is not required for every iteration.               (, )                   - 1  ( )
+                                                                        (, , )
+   For the first reason, the loss value does not participate in             (,  )                         
+the computation of the backward pass. For example, with                   (, , )
+batch size , in the widely used softmax cross-entropy loss                                    -    ( ) 
+function, the gradient of logits  under target  can be                      (, , )[12]
+simplified to                                                                                         (_ ( ) > )
+                                                                        (, , , , )[12]
+                                                                                                                     1-
+                                                                                                                    
+
+                                                                                                                     1-
+
+                                                                                                             ( >= 0)
+
+                                                                                                           (, ) + 
+
+        1                   1    ( ).                                                         =  /, 2 =  2/
+         
+  =  -             (  )  +                                                                                  = 2 - 2
+
+                                       (1)                                                              ( - ) + 
+
+                                                                                                        
+
+With this equation, the gradient can be directly computed                                          =  , ^ =  -
+with higher numerical stability without the loss value.
+                                                                                                                                
+   For the second reason, the loss value is required only when
+the users need to observe it to assess the training process.                                         = (  ^ )
+However, the training process can take millions of iterations,
+and it is not necessary to check the loss of each iteration.                                  =  ( -  ) - ^
+Therefore, we can compute the loss only when it is required                                                                
+and use the accelerated version for the remaining iterations.
+                                                                         Besides these registered decomposition rules, we also pro-
+   With this domain knowledge, we propose loss elimination            vide a simple interface for users to register custom rules by
+that eliminates the loss value as a dead node. However, ex-           declaring the pattern and replacement as normal Python
+isting DNN frameworks like PyTorch still use the loss value           functions. We provide an example as follows:
+to trigger the backpropagation, so we achieve this by simply
+replacing the loss value with a constant scalar tensor. Under         def pattern(bias, x, weight):
+the hood, loss elimination bypasses the reduction that calcu-               return torch.ops.aten.addmm(bias, x, weight)
+lates the scalar loss. It transforms both forward and backward
+passes of loss function into element-wise operations, thereby         def replacement(bias, x, weight):
+creating new fusion opportunities and improving numerical                   mm = torch.ops.aten.mm(x, weight)
+stability.                                                                  return torch.ops.aten.add(mm, bias)
+
+   Decomposition. The deep learning frameworks contain                   Reduction Elimination. Similar to existing operator
+many non-fusible operations like logSoftmax, addmm, de-               compilers, our EVT operator compiler faces challenges in
+signed to simplify programming and leverage existing fused            fusing reductions with their consumers, thereby limiting
+kernels. However, these operations also become the major              fusion opportunities. This limitation arises from the need
+obstacle for kernel fusion, as each of them may require spe-          for special parallelization, which requires all elements to
+cial epilogue operators to handle. To tackle this issue, we           be reduced to be partitioned to the same threadblock. This
+register decomposition rules for these operations, breaking           parallelization is typically incompatible with the mainloop
+them down into basic fusible operations like element-wise             tiling of operators like GEMM.
+operations and reductions through pattern matching and
+rewriting. Table 1 provides examples of these decomposition              In certain scenarios, a reduction operation can be trans-
+rules.                                                                formed into a sequence of fusible element-wise operators
+                                                                      when it involves operators with a constant reduction value.
+   One different of these decomposition rules with existing           For instance, with integers 0  [0, ) and a scalar 
+studies is that they are designed by taking the fusion con-
+straints of the EVT operator compiler (Section 5.2) into con-          - 1                   0                  1
+sideration. On one hand, the decomposition results are com-                                  ...                
+posed of operators supported by the EVT operator compiler                                         
+when possible. On the other hand, the dependency of reduc-                                                      ...
+tion results are tried to avoided. For instance, the decomposi-                         (           ):,    =           .          (2)
+tion of Batch Normalization (BN) [11], inspired by Jung et al.
+(2019)[12], leverages the equation  =   2/ - (  /)2                    =0                                         1  
+to decouple the two reductions, enabling more fusion oppor-                                                          
+tunities.
+                                                                                                                
+
+                                                                      We introduce reduction elimination that automatically iden-
+
+                                                                      tifies these opportunities and rewrites the graph to unlock
+
+                                                                      additional fusion opportunities. A major challenge is that op-
+
+                                                                      erations with constant reduction values may not always be
+
+                                                                      the direct input to the reduction. There could be a sequence
+
+                                                                      of associable arithmetic operations (+,-,×,÷) between them.
+
+                                                                      Following existing approaches in algebraic reassociation of
+
+                                                                      expression, we address this challenge with 3 steps:
+
+                                                                 304
+EVT: Accelerating Deep Learning Training with Epilogue Visitor Tree                    ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA
+
+(A)                                  label                                        Forward Pass
+
+              logits                                    loss                 ...  mm1           relu  mm2  tanh   mm3 ...
+                                                                                                      mm5  dtanh  mm4 ...
+Forward               logSoftmax     nllLoss
+
+                                                                                                 >0
+
+Backward              logSoftmax BP         nllLoss BP                       ...
+
+(B)                                                                               mm6            ×
+
+              logits  logSoftmax                                                  Backward Pass
+                        softmax
+Forward                              ln          nllLoss
+
+                      logSoftmax BP         nllLoss BP                            Figure 3. Illustrative Example for Partition.
+
+Backward              -×                    /-n         one-hot  label
+
+(C)           grad
+              logits
+                                                                             Networks (GCNs) [14] on ogbn-mag dataset, the loss and
+     Forward          softmax               1                                its backward pass contribute over 13% of the total iteration
+                                                                             time. This inefficiency comes from that large reduction along
+Backward              -× ×                  /-n                              the batch dimension, which is unfriendly to mixed precision
+                                                                             training due to numerical stability concerns.
+(D)            grad   /-n            one-hot              label
+   Forward    logits                                    label                   Figure 2 illustrates the traced computation graph. It con-
+                      softmax Fused                                          tains four non-fusible nodes. After our decomposition with
+                                    Softmax                                  patterns in Table 1, these non-fusible nodes are broken down
+                                                                             into fundamental fusible nodes. Then, our loss elimination
+Backward              ×-             one-hot                                 eliminates the nllLoss as a dead node. While the node, de-
+                                                                             composed from logSoftmax BP, initially hinders fusion with
+              grad                                                           the decomposed ops from nllLossBP, our reduction elimina-
+                                                                             tion pass folds it to basic element-wise operations. Finally,
+                      /-n                                                    the other graph simplification passes clean up the computa-
+                                                                             tion graph, eventually enabling it to be fused by our operator
+Figure 2. Optimization of Softmax Cross-Entropy Loss.                        compiler. As the optimized computation graph has no reduc-
+                                                                             tions, and all the intermediate results are stored in registers
+· Extract the subgraph generating the reduction, contain-                    with full precision, it has much better numerical stability
+  ing only operators associable with the reduction. When                     compared with the original version.
+  encountering a non-associable node, replace it with a place-
+  holder and annotate it if it has constant reduction value.                 4 Partitioner
+
+· Perform expression reassociation following Briggs et al.                   With the optimized graph in place, the next step is dividing
+  (1994) [2], assigning rank -1 to reduction nodes such that                 it into disjoint partitions for fusion. We first use a simple ex-
+  they have the lowest rank. After reassociation, the reduc-                 ample in Figure 3 to demonstrate heuristics used by existing
+  tions always take a placeholder as input. If the placeholder               studies may fail to find feasible and optimal partitions.
+  has a constant reduction value, fold it to a static tensor.
+                                                                                Example. Figure 3 shows the joint forward-backward
+· Conduct constant propagation, if the subgraph contains no                  graph of two layers. The element-wise operators are colored
+  reduction nodes, substitute it back to the original graph.                 green, mms stand for matrix multiplications that can fuse
+                                                                             element-wise operators to its output. For feasibility, {mm2,
+   Other Graph Simplifications. In addition to the special-                  tanh, dtanh} is valid under TVM[4]'s rule, yet it is infeasible
+ized optimizations discussed earlier, we also included a set                 due to the cycle. In terms of optimum, while {mm1, relu} and
+of standard graph-level optimizations to further simplify the                {mm5", > 0, ×} forms a valid partition, it is suboptimal as
+computation graph. These include conventional techniques                     partition {mm1, relu, > 0} and {mm5, ×} saves more memory
+such as constant propagation with expression reassociation,                  access with the output of "> 0" stored under bitmask.
+common factor extraction, common sub-expression elimina-
+tion, and dead code elimination.                                                Our Method. We present a novel algorithm that formu-
+                                                                             lates partitioning as an integer linear programming problem
+3.2 Example                                                                  that offers three key benefits:
+
+To illustrate how aforementioned optimizations simplify the                  · Feasibility: The requirements including acyclic are en-
+computation graph and uncover new fusion opportunities,                         coded as ILP constraints.
+we present a running example here that shows how the soft-
+max_cross_entropy and its backward operations can be sim-                    · Optimum: The objective function maximizes saved mem-
+plified to a single fused softmax that not only enhances nu-                    ory access through fusion in each partition.
+merical stability but also improves the overall performance.
+                                                                             · Extensibility: Additional requirements and heuristics can
+   The softmax_cross_entropy is a standard loss function                        be easily encoded as constraints.
+widely adopted by the deep learning community. It can be a
+performance bottleneck in many cases. For instance, our pro-
+filing shows that when training Graph Convolutional Neural
+
+                                                                        305
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng Wu, Yufei Ding, and Yuan Xie
+
+With the "Extensibility", the partitioner can easily incorpo-          Algorithm 1: Dividing Node Set
+rate constraints and heuristics from the EVT abstraction and
+custom objectives.                                                        Input: Computation Directed Acyclic Graph  = ( , ).
+
+   In this section, we first discuss the ILP formulation fol-             A list of edges    such that  (,  )   ,  cannot be
+lowing Nossack and Pesch [19], then present our novel tech-
+niques to reduce its solving time.                                        fused into  .
+
+4.1 Integer Linear Programming Formulation                                A list of nodes pairs  , (,  )   indicates  and  cannot
+
+Let  = ( , ) be the topological sorted computation graph                  be fused
+with node set  = {1, ...,  } and edge set   {(,   )|,   
+ }. The objective is to find disjoint partitions {1, ...,  } of          Output: Disjoint components {1, ...,  }.
+under certain constraints and heuristics, such that each par-          1 Create the directed graph ¯ = ( , / )
+tition can be fused. The benefit is the sum of memory access
+caused by the internal edges within each partition. Therefore,         2 Construct a dict  that maps each node    to all the nodes it
+we assign each edge an edge weight    N+ describing the
+size of the tensor passed long it. Following Nossack et al.               can reach through directed edges in .
+[19], four types of decision variables are defined:
+                                                                       3 for    do
+·   {0, 1}:  = 1 when node    in cluster  .
+·    {0, 1}:   = 1 indicates both nodes ,                              4  Unfusible Set  = { }
+
+  belong to cluster  .                                                 5  for    [ ] & (,  )   do
+·   {0, 1}:  = 1 identifies there is an edge between the
+                                                                       6             =   { }   [ ]
+  nodes of cluster  and  .
+·   Z: auxiliary variable used to formulate the Miller-                7  for    do
+
+  Tucker-Zemlin(MTZ) subtour elimination constraints that              8            remove edge (,  ) from ¯ if exists
+  ensure acyclic partitioning [18].
+                                                                       9 {1, ...,  } = weakly_connected_components(¯ )
+The ILP problem can be formulated as follows. The object
+function (3a) maximizes the sum of edge weights internal to                         Component 1        Component 2
+each partition. Constraint (3b) ensures that each node is ex-
+clusively partitioned to a partition. Constraints (3c) and (3d)           ...       mm1          relu  mm2          tanh  mm3 ...
+encode additional constraints and heuristics. Constraints
+(3e) and (3f) connect the decision variables , , and . Con-                                      >0
+straint (3g) formulates the acyclic constraint. Constraint (3h)
+reduces the symmetry of the solutions. At last, Constraints                                                         Component 3
+(3i) and (3j) are the bounds of each decision variable.
+                                                                          ...       mm6          ×     mm5  dtanh         mm4 ...
+
+                                                                          Figure 4. Motivating examples for Dividing Node Set.
+
+                                                                       4.2 Reduce the Complexity
+
+               (  +   ) ·       (3a)                                   While formulation (3) offers feasibility, optimum, and high ex-
+                                                                       tendability, solving it directly is impractical. The four types of
+     1  1                                                              variables introduce  (3) decision variables, and the branch
+                                                                       and bound method further takes exponential time in the
+                                                                       worst case to find the optimal solution. To address this chal-
+                                                                       lenge, inspired by the fact that neural networks are con-
+                                                                       structed by stacking similar layers, we divide  to disjoint
+                                                                       components and solve Equation (3) separately in each com-
+. .  = 1, 1                     (3b)                                   ponent. Additionally, we cache the solutions to avoid solving
+                                                                       the same ILP problem twice for components with similar
+      =1                                                               structures. The major challenge is ensuring that the com-
+                                                                       bined solution from each component remains both feasible
+ +    1, 1    ,  cannot fuse with   (3c)                               and optimal. We present a two-step solution as follows:
+
+                                                                       · Divide node set  to disjoint components {1, ...,  } with-
+                                                                         out hurting optimum.
+
+                                                                       · Reconstruct the edges in each component that ensures the
+       = 1,  must fuse with     (3d)                                     feasibility of the solution and solve Equation (3).
+
+ =1                                                                       Dividing Node Set. We divide the node set with Algo-
+                                                                       rithm 1. Our insight is that in the optimal solution, nodes
+   ,     , 1   <   , 1          (3e)                                   belong to the same partition only if they are weakly con-
+                                                                       nected by fusible edges. Thus, we cut all non-fusible edges in
+ +   - 1   , (,   )  , 1        (3f )                                   and divide it into weakly connected components. Figure
+                                                                       4 shows that this approach divides  into multiple small
+ -  +  ·    - 11                (3g)
+
+          
+
+ 
+
+       ,-12                     (3h)
+
+ =1        =1
+
+,  ,   {0, 1}1   <   , 1       (3i)
+
+  Z, 1                          (3j)
+
+                                                                  306
+EVT: Accelerating Deep Learning Training with Epilogue Visitor Tree  ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA
+
+Algorithm 2: Reconstructing Edges and Solving ILP                    (A) '! !    (B) '! !           (C)'! !
+
+of Each Component                                                             "  %         "  %         "
+                                                                         '                       (  '
+    Input: Computation Graph  = ( , ). ¯ = ( , ¯) and                                  '
+                                                                             #                &         #
+            components {1, ...,  } from Algorithm 1.                             &         #
+                                                                         '$ $
+  Output: Partitions {1, ...,  }, Bool indicator _                                     '$ $         '$ $
+1 Create graph ~ = ( ,  + ¯ ).
+
+2 Partitions = { }, _ = true                                         (D) '! !     (E)  '!     * ) (F) '! !
+                                                                                 (
+3 for   {1, ...,  } do                                                        "            !
+                                                                         '
+4   Get the directed graph ~\ that excludes nodes in  .                          %         "  %         "
+                                                                             #                & (   '
+5   Get the one-hop ancestors   and descendants                                        '
+                                                                         '$ $                           #
+
+        =    { |     ,           , ( ,  )           }                            &         #        '$ $
+
+      
+
+        =    { |     ,           , ( ,  )           } .                          ) '$ $
+
+      
+
+6   Extract  the  subgraph      containing      =                :
+
+                                                                                                    Simplified
+             { ,                                            } }                                     Graph '
+        =           =   { (,  ) | (,  )     , ,                      Original Graph 
+                                                              
+
+7   for             do
+
+                 
+
+8     for                       do
+
+                      
+
+9              if has_path(~\ ,  ,  ) then                           Figure 6. Adding edges from descendants to ancestors.
+
+10                  if not  path    in  including nodes
+
+                    from at least two components then
+
+11                         add_edge( , ( ,  ))                       ensure the feasibility before solving the ILP. Theorem 4.1 be-
+                                                                     low guarantees its solutions are always feasible, and they are
+12                         if !has_path(\ ,  ,  ) then               optimal under an easily verifiable condition, which always
+                                                                     holds during our evaluation of various DL models.
+13                              _ = false
+                                                                     Theorem 4.1. Algorithm 2 returns the global optimal and
+14 Solve Equation (3) with additional constraint that each node in   feasible solution when _ is true. Otherwise, it returns
+                                                                     a feasible solution. (Proof: See Supplemental Material).
+      and   form a partition with size 1.
+                                                                        Figure 5 uses component 1 from Figure 4 as an illustrative
+                                                                     example. A node is a descendant if it has an incoming edge
+15  for   [1, | | ] do                                               from the component (e.g. "mm2"), and it is an ancestor if it
+                                                                     has an outgoing edge to the component (e.g. "dtanh"). We
+16     = { | == 1}                                                   construct the edges in 3 steps:
+
+17    if    then                                                     · Identify all the ancestors and descendants of the current
+                                                                       component (line 5,6).
+18             Partitions.append( )
+                                                                     · Modify  by replacing any edges that can be fused with
+      Component 1                                                      bidirectional edges (line 4, 10).
+
+           mm1          relu    mm2                                  · Add edges from any descendants to any ancestors if a path
+                                mm5                                    exists in the modified graph between them(line 11), e.g.
+                        >0                               Ancestor      the edge mm2dtanh in Figure 5.
+                                                         Descendant
+                                                                        The intuition is that the solutions from Figure 5 are feasible
+           mm6          ×                   dtanh                    and optimal if the acyclic constraint is neither loosened nor
+                                                                     tightened. In other words, a cycle exists in Figure 4 involving
+Figure 5. Example of Reconstructing Edges for Feasibility.           nodes in component 1 is a sufficient and necessary condition
+                                                                     for a cycle exists in Figure 5.
+components with few nodes while leaving the partition of
+component 1 to the ILP solver.                                          Ancestors and descendants serve as auxiliary nodes. If a
+                                                                     fusion in component 1 creates a cycle involving nodes outside
+   Two types of edges are identified as non-fusible in Algo-         the component, the cycle must contain pairs of descendants
+rithm 1. The first (line 1) includes edges directly connecting       and ancestors. We then use these as boundaries to break
+two non-fusible nodes, such as the incoming edges to mms.            the cycle into paths within and outside the component. The
+The second type (line 2-8) involves edges that, if fused, would      condition becomes: a path exists in Figure 4 between any pair
+create cycles. We leverage a necessary condition from Theo-          of descendants and ancestors is a sufficient and necessary
+rem 3.3 in Nossack et al. [19]: if a directed path from  to          condition for a path to exist in Figure 5 with the same source
+  exists in  and ,   belong to different partitions, then            and target.
+all nodes that can be reached from node   cannot be in the
+same partition with  . In Figure 4, the edge between "tanh"             Internal paths from ancestors to descendants are ensured
+and "dtanh" is cut based on this rule, as "tanh" cannot be           sufficient and necessary by preserving all internal edges.
+fused with "mm3" while "mm3" can reach "tanh".
+
+   Reconstructing Edges and Solving ILP. With Algo-
+rithm 2, for each component, we reconstruct the edges to
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng Wu, Yufei Ding, and Yuan Xie
+
+However, external paths from descendants to ancestors can         (A) T accum[M][N] = {0}                     (B) parallel_for ...
+be influenced by fusion in other components. In detail, while           // Producer                                 for ...
+fusion does not remove paths, it creates new ones equivalent            for (int m=0; m<M; ++m)                      T accum[TM][TN] = {0}
+to changing fused edges to bidirectional. For example, fusing            for (int n=0; n<N; ++n)                     // Mainloop
+ and  in Figure 6 (B) creates a path from   (, )                           for (int k=0; k<K; ++k)                   parallel_for ...
+ equivalent to adding the red arrow. To ensure feasibility,                 accum[m][n]+=A[m][k]*B[k][n]               for ...
+we add edges from any descendant to any ancestor in Figure                                                               accum[...] += A[...] * B[...]
+5 when a path could exist between them. Figure 6 illustrates            // Consumer                                  // Epilogue
+four different scenarios. Figure 6 (A,B) shows scenarios when           for (int m=0; m<M; ++m)                      parallel_for ...
+the edge should be added. In (A), there is a natural path                for (int n=0; n<N; ++n)                       for ...
+  . In (B),  and  belong to the same component and                                                                       fn(accum[...], *args)
+could be fused, which creates the path   (, )  .                           fn(accum[m][n], *args)
+Oppositely, Figure 6 (D,E) shows cases when the edge is not                                                   (D)
+needed. In (D),  and  belong to different components, so          (C) template <...>                               template <
+they cannot be fused. In (E), although  and  belong to                  class Mainloop {                            class Mainloop, class Epilogue
+the same component, fusing them is infeasible as it creates a            void operator()(&accum, A, B) {           >
+cycle (, )   . While this method ensures the condition                     parallel_for ...                        class Kernel {
+is necessary, it can also be sufficient (optimal) if whenever a             for ...                                 void operator()(A, B, args) {
+path exists in the modified graph, there is always a path that                 accum[...] += A[...] * B[...]         Mainloop mainloop;
+exists in the original graph. Line 12-13 checks this condition          }};                                          Epilogue epilogue;
+and returns indicator is_optimal.                                                                                    parallel_for ...
+                                                                        template <...>                                 for ...
+   Caching the Solutions. We store the ILP solutions in a               class Epilogue {                                T accum[TM][TN] = {0}
+database so that they can be retrieved for components with               void operator()(const &accum) {                mainloop(accum, A, B)
+isomorphic structures. Particularly, keys are created with the                                                          epilogue(accum, *args)
+Weisfeiler Lehman graph hashing [24] so that isomorphic                    parallel_for ...                        };
+components will have identical hash.                                        for ...                                }
+
+5 Operator-level Optimization                                                  fn(accum[...], *args)
+                                                                        }};
+In this section, we first explain the key abstraction under our
+operator compiler, "Epilogue Visitor". This abstraction allows    Figure 7. Mainloop-Epilogue Abstraction
+fusing operators under the producer-consumer relationship
+by directly leveraging expert-designed implementations for        the mainloop and the consumer as the epilogue. As shown in
+the producer part and ensuring optimal performance while          Figure 7(C), different mainloops and epilogues are developed
+assembling the consumer part at compile time to accom-            separately as different C++ classes, and a universal kernel
+modate to different fusion patterns. Under the abstraction,       template in Figure 7 (D) takes the mainloop and epilogue as
+we present our EVT operator compiler, which automatically         template arguments. This modular approach allows assem-
+generates fused kernels with state-of-the-art performance         bling different mainloop-epilogue pairs at compilation time
+while supporting diverse patterns.                                and supports |mainloop| × |epilogue| patterns.
+
+5.1 Epilogue Visitor Abstraction                                     However, the "Epilogue" of the Mainloop-Epilogue abstrac-
+                                                                  tion is not scalable as the number of consumer operators
+The Epilogue Visitor abstraction originates from the Mainloop-    grows rapidly. It is impractical to implement all potential
+Epilogue abstraction widely adopted by existing template          epilogues manually, optimizing and verifying intricate epi-
+libraries and TMP-based compilers [25].                           logues also poses significant challenges.
+
+   Mainloop-Epilogue Abstraction and Its Limitation.                 Epilogue Visitor Abstraction. Our EVT abstraction pre-
+As shown in Figure 7(A), the Mainloop-Epilogue abstraction        serves the mainloops and further modularizes the epilogue
+fuses operators under the producer-consumer relationship. It      to address its scalability issue. As shown in Figure 8 (A,B),
+requires the consumer to have the same set of spatial loops as    We model the consumer as a computation graph instead of
+the producer so that they can be fused by injecting the state-    a single operator, our key insight is that the rapid growth
+ment of the consumer into the end of the producer's spatial       of potential consumer operators occurs on the edge set in-
+loops. Subsequently, As shown in Figure 7(B), the loops are       stead of the node set, i.e. different consumers have different
+restructured to achieve optimal performance through tech-         combinations of the same set of basic operators. This insight
+niques such as tiling, parallelization, and software pipelining.  motivates us to manage a library of high-performance im-
+The Mainloop-Epilogue abstraction takes the producer as           plementation of basic operators decoupled from each other,
+                                                                  and develop a compiler to assemble them at compile time for
+                                                                  different consumers. The detailed explanation is as follows.
+
+                                                                     Supported Patterns. EVT supports any consumers that
+                                                                  can be written as a perfectly nested loop, where all the state-
+                                                                  ments are in the spatial loops of the producer (Figure 8 (A)).
+                                                                  This structural constraint has proven to be key in simplifying
+                                                                  transformations and has been widely adopted by many state-
+                                                                  of-the-art compilers like the linalg dialect of MLIR [15]. This
+                                                                  requirement is loose enough to capture most scenarios in
+
+308
+EVT: Accelerating Deep Learning Training with Epilogue Visitor Tree                                             ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA
+
+(A) // Consumer                    (B) ! "      (C) !                     (A) Element-wise Load                              (B) Per-column Reduction
+      for (int m=0; m<M; ++m)
+       for (int n=0; n<N; ++n)               !  ! V "                     for (int m=0; m<M; ++m)                              for (int m=0; m<M; ++m)
+        fn(accum[m][n], *args)                                             for (int n=0; n<N; ++n)                              for (int n=0; n<N; ++n)
+                                        " !                                 ! = ![m][n]                                           ![0][n] += !
+      // Consumer
+      for (int m=0; m<M; ++m)                #  " V !                     parallel_for (int "=0; m<M/#; ++ ")                parallel_for (int "=0; m<M/#; ++ ")
+       for (int n=0; n<N; ++n)                                             parallel_for (int $=0; n<N/%; ++ $)                parallel_for (int $=0; n<N/%; ++ $)
+                                           "    #      "                    /* begin_epilogue */                               /* begin_epilogue */
+        ! = ![m][n]                                                         for (int s=0; s<#/8; ++s) {                        &'([&] % ={0}
+        " = "[m][n]                      Load          V                                                                       for (int s=0; s<#/8; ++s) {
+        ! = !(!, ")                                                           /* begin_step */
+        ![m][n] = !                    Compute V Tree Visitor                 &'( 8 % ={0}                                       /* begin_step */
+        " = "(!)                                                              parallel_copy(&'(, ![...][...])                    parallel_for (int )=0; )<&;++))
+        # = #(", !)                    Store    V Topo Visitor                parallel_for (int )=0; )<&;++))                     for (int r=0; r<8/&; ++r) {
+        "[m][n] = #                                                            for (int r=0; r<8/&; ++r) {
+                                                                                                                                   /* begin_row */
+(D)               (E)              0                                            /* begin_row */                                    parallel_for(int )=0; )<*;++))
+                                                                                parallel_for(int )=0; )<*;++))                       for (int c=0; c<%/*/; ++c) {
+                                   V  0: {} T[3]={0}                              for (int c=0; c<%/*/; ++c) {
+                                                                                                                                      /* visit */
+    ! V "                       1     2 1: {0},  0 =                               /* visit */                                        vector_for(int v=0; v<; ++v)
+                                                                                   vector_for(int v=0; v<; ++v)                         &'([...] +_= !
+      ret (!, ")                " V ! 2: {0},  1 = "  0                                                                              }
+                                3     3: {1,2}  2 = !  0                              ! = &'([...][...]                              /* end_row */
+                                                                                  }                                               }
+                                #               ret #( 1 ,  2 )                   /* end_row */                                  /* end_step */
+                                                                               }                                               }
+                                                                              /* end_step */                                   /* end_epilogue */
+                                                                            }                                                  parallel_then_atomic_reduce(S!, &'()
+                                                                            /* end_epilogue */
+
+Figure 8. Epilogue Visitor Tree Abstraction                               template <...>                                     template <...>
+                                                                          class ElementWiseLoadImpl: ImplBase {              class PerRowReduceImpl: ImplBase {
+                                                                                                                              void begin_epilogue(...){...}
+                                                                           void begin_step(...){...}                          T visit(...) {...}
+                                                                           T visit(...) {...}                                 void end_epilogue(...){...}
+                                                                          };                                                 };
+
+neural networks, including element-wise load/store, broad-                Figure 9. Implementation of Epilogue Operators
+cast, reduction (atomic), and element-wise computations.
+                                                                          Partition  Python Function                         Optimization & Lowering
+   Decouple Epilogue Operators with Visitor. Figure 8                                                                           Shape/Type Propagation
+shows the perfectly nested loop representation of the epi-                           def example_epilogue(accum, alpha, C):     Layout Node Elimination
+logue, where the original function can be decomposed into                              F = alpha * accum + (beta * C + aux)        Get Implementation
+a series of load, store, and compute operators. We visualize                           E = relu(F + 1) + bias                           Get Visitors
+it as a graph in Figure 8(B). Notably, the store is modeled as                         D=E+F
+a transparent node that forwards its input. To decouple the                            return D, F                                Lowered
+implementation of each node, we introduce the "visitor" and                                                                       Graph IR
+rewrite the graph to Figure 8(C), where all nodes become                                    Graph IR
+leaves. Two types of visitors are introduced. The tree visitor
+in Figure 8 (D) handles non-leaf nodes with output degree                 Frontend
+1. The topological visitor in Figure 8 (E) takes other general
+cases. It sorts the inputs in topological order and creates               Epilogue Template                     C++ Emitter
+an edge list describing the dependency between them. At
+runtime, the topological visitor holds intermediate results                  template <...>
+from each input node with a temporary register buffer.                       class Epilogue {
+                                                                               void operator()(const &accum) {
+   Implementation of Epilogue Operators. Figure 9 illus-
+trates how the decoupled operators can be optimized and                         parallel_for ...
+implemented separately. The original loop structure of all                        for ...
+the operators is reconstructed into the same nested loops for
+optimal performance, with parallel_for tied to GPU thread                           fn(accum[...], *args)
+hierarchies and vector_for vectorized. For convenience, we                   }};
+name the code blocks at the start of the sequential loops as
+begin_xxx, and those at the end as end_xxx. The code block                Figure 10. Overview of the EVT Operator Compiler
+of the innermost sequential loop is called visit.
+                                                                          This ensures coalesced memory access and minimized ad-
+   While all operators can be implemented by only filling                 dress/predicate arithmetic. In Figure 9 (B), the per-column
+the visit code block because of the perfectly nested loop con-            reduction can be accelerated by initiating a temporary buffer
+straint, better performance can be achieved by leveraging                 at begin_epilogue to store partial results accumulated during
+other blocks. For instance, in Figure 9 (A), the element-wise             visit, then perform the parallel reduction in end_epilogue be-
+load can be optimized by first copying a matrix fraction                  fore atomically reducing the result to global memory. Finally,
+into registers at begin_step and then accessing them in visit.            as shown at the bottom of Figure 9, each operator can be im-
+                                                                          plemented as a template class providing member functions
+                                                                          defining the non-empty code blocks. These functions will be
+                                                                          called by the visitors at runtime.
+
+                                                                          5.2 EVT Operator Compiler
+
+                                                                          With the Epilogue Visitor abstraction, we present a novel
+                                                                          operator compiler Epilogue Visitor Tree (EVT). The "Tree"
+
+                                                                     309
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng Wu, Yufei Ding, and Yuan Xie
+
+             Name    Load: element-wise load, broadcasts, fetch accumulator                     def example_epilogue(accum, bias):
+             Shape   Compute: element-wise N-ary computation                                          add = reshape(accum, new_shape=(128, 4, 64) + bias
+             Stride  Store: element-wise store, reduction                                             permute_1 = permute(add, indices=(2,1,0))
+             dtype   Layout: reshape, permutation                                                     reduce = sum(permute_1, dim=[0, 1])
+                                                                                                      out = relu(add) * permute(permute_1, indices=(2,1,0))
+(A)                   bias       (B)                 bias      (C)                bias                return reduce, out
+        accum        (4, 64)            accum    (128, 4, 64)        accum     (128, 256)
+                     (64, 1)                                                                    tensors = {
+     (128, 256)                      (128, 256)   (0, 64, 1)       (128, 256)     (0, 1)           "accum": Tensor(torch.float32, shape=(128, 256)),
+       (256, 1)      float16           (256, 1)                      (256, 1)                      "bias": Tensor(torch.float16, shape=(4, 64)),
+       float32                         float32     float16           float32    float16            "reduce": Tensor(torch.float32, shape=(128,)),
+                                                                                                   "out": Tensor(torch.float16, shape=(128, 4, 64))}
+ reshape               add        reshape            add                          add
+(128, 4, 64)         float32     (128, 4, 64)    (128, 4, 64)                  (128, 256)       epilogue = python_ast.trace(example_epilogue, tensors)
+                                 (256,64,1)      (256,64,1)
+                                                                                (256, 1)           Shape Type Propagation. This pass takes two stages.
+                                   float32         float32                                      The first stage visits the nodes in topological order to fill in
+                                                                                float32         missing strides, shapes, and data types. The second stage, in
+                                                                                                reversed topological order, updates the shape and stride to
+   relu              permute         relu         permute         relu          reduce          remove implicit broadcast. For example, the shape and stride
+                     (64,4,128)  (128, 4, 64)    (64,4,128)    (128, 256)      (128, 256)       of bias are updated from (4,64):(64,1) to (128,4,64):(0,64,1),
+ float32                         (256,64,1)      (1,64,256)                                     with the first dimension broadcasted.
+    mul               reduce                                    (256, 1)         (1, 0)
+                       (128,)      float32         float32      float32         float32            Layout Node Elimination. This pass aims to canonical-
+  float32                                                                                       ize the IR by removing layout nodes. In the context of the
+    out                 (1,)          mul          reduce          mul                          epilogue visitor abstraction, all operators must align with
+                      float32    (128, 4, 64)    (64,4,128)    (128, 256)                       the spacial loops of the producer, which can be translated to
+(128,4,64)                        (256,64,1)                                                    all the nodes having the same shape with the accum node
+(256,64,1)           permute                       (0,0,1)       (256, 1)                       with our IR. However, as shown in Figure 11 (B), layout
+                     (128,4,64)    float32        float32        float32                        nodes alter shapes and violate this requirement. We remove
+ float16                                                                                        layout nodes by propagating them away from the accum
+                                      out         permute          out                          through swapping with its neighbors. These layout nodes
+                                 (128,4,64)      (128,4,64)    (128, 256)                       will eventually merge into a load or store node by updating
+                                 (256,64,1)      (256,64,1)                                     their shape and stride. The result is shown in Figure 11 (D),
+                                                                (256, 1)                        all the operators now share the same shape.
+                                   float16         float32       float16
+                                                                                                   Get Implementation and Visitor. This pass lowers the
+(D)                   RowBC      Elem(relu)      ColReduce     Elem(mul)       ElemStore        canonical IR to specific implementations. While our IR only
+     FetchAcc        (128, 256)  (128, 256)      (128, 256)    (128, 256)      (128, 256)       has four types of nodes for simplicity, each type can have
+     (128, 256)                                                                                 multiple underlying implementations for different strides.
+      (256, 1)          (0, 1)    (256, 1)          (1, 0)      (256, 1)        (256, 1)        For instance, the reduce has stride (1, 0) that reduces the
+       float32                                     float32                      float16         matrix into a column vector, while the out has stride (256, 1)
+                      float16      float32                      float32                         that stores the matrix to memory in row-major. In this pass,
+                                                                                                we infer the implementation of each node based on its stride
+Elem(add)             Tree                       Topo                           Tree            and inject the visitors for each non-leaf node based on its
+(128, 256)           Visitor                     Visitor                       Visitor          output degree. The result is shown in Figure 11 (D).
+
+ (256, 1)                                                                                          C++ Emitter. Our compiler provides a high-performance
+                                                                                                operator library including popular epilogue operators. The
+ float32                                                                                        C++ Emitter emits the template class of the epilogue by
+                                                                                                simply traversing the IR in Figure 11 (D) and emitting each
+Figure 11. Example of EVT transformations.                                                      node in post-order. Notably, for operators not covered by
+                                                                                                our library, with our epilogue visitor abstraction, they can
+comes from the fact that the transformed graph in Figure 8                                      be implemented easily or generated by compiler techniques.
+(C) becomes a tree whose root is the last visitor. The overview
+of the compiler is shown in Figure 10.                                                          5.3 Additional Features
+
+   The core of the compiler is a graph intermediate repre-                                      This section summarizes additional features EVT provides
+sentation (IR) shown in Figure 11. It models the epilogue                                       to improve flexibility and performance.
+as a graph, where each node represents an operator. The
+nodes are classified into four types: load, compute, store, and
+layout. Each node also has four fields: name, shape, stride,
+and data type. The shape and stride are tuples following the
+cute library of CUTLASS 1. For instance, shape (, ) and
+stride (, 1) represent a  × matrix stored in the row-major
+layout. The index to the storage of the tensors in memory
+can be computed via inner product between shape and stride.
+
+   To support different input formats, the IR is constructed
+with minimum information and constraints by frontends.
+Then, the optimization and lowering schedules passes that
+fill in missing information and canonicalize the IR to meet the
+epilogue visitor abstraction. The C++ emitter then traverses
+the IR and emits the template class for the epilogue. This
+design allows adding new frontends for other compilation
+workflows easily while reusing the rest of the logic.
+
+   Frontend. EVT supports diverse user inputs from parti-
+tions generated by the previous section to Python functions.
+An example of the Python frontend is shown below, which
+defines the epilogue in Figure 11 (A).
+
+1https://github.com/NVIDIA/cutlass/blob/main/media/docs/cute/01_
+layout.md
+
+                                                                                           310
+EVT: Accelerating Deep Learning Training with Epilogue Visitor Tree                  ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA
+
+     BERT-large              VIT                                     ResNet-50       XML-CNN                  GCN
+
+1.5                 1.25     1.23x  2                                1.95x      3.5                        2
+             1.39x                                                                           3.10x                    1.53x
+                    1.2             1.8
+1.4                                                                               3                      1.5
+                    1.15            1.6
+1.3                                                                             2.5
+
+1.2                 1.1             1.4                                         2                        1
+
+1.1                 1.05            1.2                                         1.5
+
+1                   1               1                                           1                        0.5
+
+     inductor       nvfuser  EVT torch channel-last (ResNet-50)                 EVT w/o Loss Elimination EVT w/o Decomposition
+
+                    EVT w/o Reduction Elimination EVT w/o ILP Partitioner EVT w/o EVT Operator Compiler
+
+                    Figure 12. End-to-end Training Speedup over the PyTorch Implementation.
+
+   Dynamic Shapes. Our epilogue operators take the shape                       ResNet-50 [8] is one of the most popular backbone net-
+and stride as runtime parameters so that the same kernel                    works used in computer vision tasks. In addition to GEMM,
+compiled can support inputs with dynamic shapes.                            ResNet-50 includes special heavy operations like Conv2dFprop
+                                                                            and Conv2dDgrad. Additionally, the "Conv-BN-ReLU" pat-
+   Performance. EVT is compatible with the StreamK[20]                      tern of ResNet-50 makes it challenging to be fused due to
+for better workload balance. It also introduces the ping-pong               the complexity of BN operation.
+buffer to the epilogue on Ampere GPU, enabling overlapping
+the computation and memory access in the epilogue.                             XML-CNN [17] is a representative example of extreme
+                                                                            classification tasks, where the label space contains millions
+   Mainloop Fusion. While EVT focuses on epilogue fusion,                   of categories. Its performance is critical for applications such
+it also offers the capability of fusing permutations of main-               as language modeling and recommendation systems. Due to
+loop arguments for particular producers, such as matrix mul-                the enormous number of categories, XML-CNN presents new
+tiplication. In detail, CUTLASS indices the multiplicand and                challenges in optimizing the loss function, which uses binary
+multiplier in matrix multiplication using the strides provided              cross-entropy loss, its gradient kernel, as well as surrounding
+through its runtime arguments. We leverage this feature and                 element-wise functions and reductions.
+recompute the stride of permuted inputs, which ensures the
+multiplicand and multiplier are accessed correctly without                     GCN [14] for node classification is selected as an exam-
+actually permuting their data in memory.                                    ple of graph neural networks (GNN) used to model graph-
+                                                                            structured data, such as protein and social networks. GCN
+6 Evaluation                                                                introduces a new mainloop operation, SpMM, for its aggrega-
+                                                                            tion stage. Additionally, the large batch size of whole graph
+This section evaluates the performance of EVT on five real-                 training can pose challenges for U-turn optimization.
+world NN architectures and compares it with existing com-
+pilers. Section 6.2 evaluates the end-to-end training perfor-                  Platform. Single NVIDIA A100 GPU (40 GB) with CUDA
+mance. Section 6.4 provides additional evaluations on repre-                12.1 and NGC docker nvcr.io/nvidia/pytorch:23.07-py3.
+sentative layers of each architecture to explain the rationale
+behind EVT's speedup. Besides, it also enables comparison                      Baselines. In the end-to-end benchmark, EVT is com-
+with inference compilers such as TVM [4].                                   pared with Torch Inductor [22] and NVFuser. The former
+                                                                            integrates various state-of-the-art compiler techniques from
+6.1 Experiment Setup                                                        Triton [26] to CUTLASS[25]. We set the mode to max-autotune
+                                                                            for optimal performance. The NVFuser is an operator com-
+Benchmarks. We select BERT-Large [6], VIT [7], ResNet-50                    piler for GPU that just-in-time compiles fast and flexible
+[8], XML-CNN [17], and GCN [14] to cover diverse architec-                  GPU-specific code. In layer-wise benchmarks, we compare
+tures and domains.                                                          with Triton[26] and TVM [4]. For TVM, GEMM and convo-
+                                                                            lutions are tuned by autotvm to leverage Tensor Cores, while
+   BERT-large [6] for language modeling and VIT [7] for                     others are generated through Ansor [31]. The CUDA Graph
+computer vision is constructed using stacked self-attention                 and AMP are applied to all methods for fair comparison.
+layers, which have become an indispensable building block
+in modern neural networks. These two benchmarks cover                       6.2 End-to-End Benchmarks
+multiple mainloops including GEMM, Batched GEMM, Soft-
+max, and LayerNorm operations. Their epilogue consists of                   The end-to-end training speedup for the five benchmarks is
+various element-wise operations, activation functions, re-                  summarized in Figure 12 with results normalized to the naive
+ductions, reshapes, and permutations.                                       PyTorch Implementation. Our EVT achieves 1.233.10× end-
+                                                                            to-end training speedup across all benchmarks, outperform-
+                                                                            ing existing compilers.
+
+                                                                     311
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng Wu, Yufei Ding, and Yuan Xie
+
+6.3 Ablation Study                                                     (element-wise / reductions). We also show the normalized
+                                                                       latency over the PyTorch, which is divided into heavy and
+To demonstrate the contribution of individual optimizations,           light ops. The speedups are also annotated for convenience.
+Figure 12 also incorporates results from the ablation studies.
+                                                                          m Matmul S Softmax            Elementwise       Placeholder
+   Ablation Study Setup. The ablation studies regarding                   b Batched Matmul
+"Loss Elimination", "Decomposition", and "Reduction Elimi-                 Triton                       Reshape/Permute
+nation" are performed by excluding the corresponding passes
+from the pass manager. In terms of the "ILP Partitioner", an al-                                        TVM                    EVT(Ours)
+ternative naive partitioner is used. Following existing studies,
+this partitioner first split the computation graph into forward        m        m         m  m          m    m            m      m        m
+and backward passes, and then find fusible subgraphs with
+simple heuristics inspired by TVM [4]. The ablation study              +        +         +  +          +    +            +      +        +
+for the "EVT Operator Compiler" incorporates graph-level
+optimizations into the torch inductor's backend, perform-              r        r         r  r          r    r            r      r        r
+ing operator-level optimizations via the inductor. Notably,
+GCN is excluded as the inductor does not support sparse                p        p         p  p          p    p            p      p        p
+computation.
+                                                                             b                      bs b                     b
+   Contribution of Loss Elimination. The loss elimina-
+tion pass has significant influence on models where the loss                 rsb                     rdp                     rsb
+function and its backward pass contribute substantially to
+execution time. For example, in XML-CNN, it removes the                      /dp                     /r r                    /dp
+Binary Cross-Entropy Loss. In GCN, it enables the optimiza-
+tion of the softmax with cross-entropy loss, as depicted in                  +r           r                                  +r           r
+Figure 2. This demonstrates the effectiveness of loss elim-
+ination as an optimization strategy for the loss functions,                                          +
+absenting in prior studies.
+                                                                       1                     Normalized Latency                  1.54x
+   Contribution of Decomposition. The decomposition                                          1.16x
+creates additional fusion opportunities for fusion. Taking the         0
+ResNet-50 as an example, decomposing the batch normaliza-                        PyTorch                           0.85x
+tion enables additional fusion opportunities, leading to the
+significant performance improvements shown in Figure 12.                                     Triton          TVM                 EVT
+
+   Contribution of Reduction Elimination. In GCN, re-                  Figure 13. The Self-Attention Layer. (Bert, VIT)
+duction elimination improves the performance by enabling
+the fusion between softmax and the decomposed nllLoss                     Self-Attention Layer. Accelerating the self-attention
+backward, as illustrated in Figure 2.                                  layer requires the compiler to 1) efficiently handle differ-
+                                                                       ent permutations and reshapes of the same tensor, and 2)
+   Contribution of Partitioner. The results in Figure 12               generate high-performance fused kernels. EVT handles 1)
+without the ILP-based partitioner have inferior performance            through the cute-based IR design and passes in Section 5.2
+compared to EVT across all the five models. Notably, besides           and guarantees 2) through the Epilogue Visitor abstraction.
+performance consideration, the ILP-based formulation offers            In contrast, fused kernels generated by Triton are less effi-
+flexibility and extensibility to integrate additional objective        cient than ours, while TVM does not handle 1) efficiently.
+functions, constraints, and heuristics.
+                                                                       m Matmul S Softmax       Elementwise               Placeholder Grad
+   Contribution of EVT Operator Compiler. Figure 12                                Triton         TVM                      EVT(Ours)
+illustrates that despite incorporating EVT's graph-level opti-
+mizations, the inductor still achieves inferior performance               m        mm m                    mm m                 mm
+compared to EVT. This demonstrates that EVT's operator
+compiler generates fused kernels with superior performance.               r        r         r×                           r×
+
+6.4 Layer-Wise Benchmarks                                                 m        mm        m             mm m                 mm
+
+This section evaluates EVT on representative layers from                  rSr                r S×                         r S×
+the five models. For each benchmark, we visualize the com-                                                                     
+putation graph from Triton, TVM, and our EVT. Operators
+fused are grouped with boxes, with orange indicating heavy             1.5                   Normalized Latency
+ops (e.g. GEMM, Softmax) and green indicating light ones
+                                                                                             1.07x           0.70x        1.16x
+
+                                                                       0.5                   Triton          TVM          EVT
+                                                                                 PyTorch
+
+                                                                       Figure 14. The Multilayer Perceptron (MLP). (Bert, VIT)
+
+                                                                          MLP. Optimizing the MLP requires the compiler to find
+                                                                       the feasible and optimal partition of the computation graph.
+                                                                       In Figure 14, EVT identifies the optimal cut between  and
+                                                                       × decomposed from the ReLU backward through the parti-
+                                                                       tioner in Section 4, while Triton and TVM generate subopti-
+                                                                       mal partitions.
+
+                                                                  312
+EVT: Accelerating Deep Learning Training with Epilogue Visitor Tree              ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA
+
+              C Conv2d B BatchNorm                                        the forward and backward pass and 2) generating high-
+                                                                          performance fused GEMM with diverse epilogue operators,
+         Placeholder   Elementwise/Reduction                              including broadcast, various element-wise operators, and
+                                                                          reductions. EVT accomplishes 1) through its loss elimination
+PyTorch Triton             TVM          EVT (Ours)                        pass and achieves 2) through the Epilogue Visitor abstrac-
+                                                                          tion. In contrast, Triton failed to cross the boundary between
+   C     C             C                C                                 forward and backward graphs, while TVM creates less per-
+                                                                          formant kernels.
+   B     B               ×                ×
+                         ×                ×
+   r     r              BN Elem          BN Elem
+                       r                r
+                                                                          X SoftmaxXEntropy N NLL Loss       Elementwise/Reduction
+
+                                                                          L LogSoftmax O Onehot Placeholder Const Grad
+
+   Normalized Latency
+
+2                      0.61x                                              cuDNN           Triton             TVM       EVT(Ours)
+
+              1.11x              1.24x                                                    L                  O        SO
+                                                                                                                      × +
+1                                                                                                                     ××
+                                                                                                                      ¬
+0                                                                         X               N               S
+     PyTorch Triton                                                                                                   2.81x
+                       TVM       EVT                                      X                               × +          EVT
+
+Figure 15. The Conv-BN-ReLU Layer. (ResNet)                                               NL              ××
+
+                                                                                                          ¬
+
+   Conv-BN-ReLU. The major challenge of BN under the                      2                       Normalized Latency
+channel-last layout is the strided access to the reduction di-
+mension, so optimizing this layer requires compilers to 1)                1                       0.85x      0.92x
+decompose the batch norm operator to create new fusion op-
+portunities, and 2) generate high-performance kernels under               0                       Triton     TVM
+the channel-last layout. EVT addresses this by decomposing                         cuDNN
+BN to reduction and element-wise, and the reduction is fused
+to the preceding convolution efficiently. In contrast, Triton's           Figure 17. Softmax Cross-Entropy Loss. (GCN)
+fused BN-ReLU is less performant due to the layout, and
+TVM fails to fuse the reductions.                                            Softmax Cross-Entropy Loss. This graph shares similar
+                                                                          optimization requirements with BCE loss. With the graph-
+         m Matmul S BCE Loss Elementwise                                  level optimizations and operator compiler, EVT fuses the
+                      Placeholder Grad                                    entire graph into a single kernel that offers 2.81× speedup
+                                                                          over cuDNN. Oppositely, Triton failed to identify fusion
+     PyTorch           Triton    TVM & EVT (Ours)                         opportunities between forward and backward graphs, while
+        m                m                m                               TVM creates less efficient kernels.
+         +
+         sB            +                +                                 7 Conclusion & Discussion
+
+   /-                  sB               s                                 EVT enables generating fused kernels with state-of-the-art
+         x                                                                performance while accommodating diverse fusion patterns.
+        m              /-               /-                                Along with the graph-level optimizations and partitioner that
+                                                                          fully unleash its potential, EVT optimizes the deep learning
+                       x                x                                 training workload automatically and achieves state-of-the-
+                                                                          art performance.
+                       m                m
+                                                                             Impact on Multi-GPU/Node Training. While we ma-
+      1       Normalized Latency                                          jorly focus on a single GPU in this paper, EVT can be easily
+                                                                          leveraged to accelerate the multi-GPU/node training. Par-
+                       2.73x 3.08x      4.13x                             ticularly, a recent trend is fusing GEMMs with succeeding
+                                        EVT                               communication kernels that allow overlapping between com-
+      0                                                                   putation and communication at the tile granularity [3, 23].
+                                                                          While this technique originally required manually imple-
+         PyTorch Triton TVM                                               menting these fused kernels by experts, with EVT, the com-
+                                                                          munication operator can be implemented as a special type of
+Figure 16. The Binary Cross-Entropy Loss. (XML-CNN)                       store node while reusing the rest of the EVT infrastructure.
+
+   Binary Cross-Entropy Loss. Accelerating BCE loss in-
+volves 1) identifying fusion opportunities on the fence of
+
+                                                                     313
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng Wu, Yufei Ding, and Yuan Xie
+
+References                                                                         [16] Mingzhen Li, Yi Liu, Xiaoyan Liu, Qingxiao Sun, Xin You, Hailong
+                                                                                         Yang, Zhongzhi Luan, Lin Gan, Guangwen Yang, and Depei Qian. The
+ [1] Riyadh Baghdadi, Jessica Ray, Malek Ben Romdhane, Emanuele                          deep learning compiler: A comprehensive survey. IEEE Transactions
+      Del Sozzo, Abdurrahman Akkas, Yunming Zhang, Patricia Suriana,                     on Parallel and Distributed Systems, 32(3):708­727, 2020.
+      Shoaib Kamil, and Saman Amarasinghe. Tiramisu: A polyhedral com-
+      piler for expressing fast and portable code. In 2019 IEEE/ACM Interna-       [17] Jingzhou Liu, Wei-Cheng Chang, Yuexin Wu, and Yiming Yang. Deep
+      tional Symposium on Code Generation and Optimization (CGO), pages                  learning for extreme multi-label text classification. In Proceedings of the
+      193­205. IEEE, 2019.                                                               40th international ACM SIGIR conference on research and development
+                                                                                         in information retrieval, pages 115­124, 2017.
+ [2] Preston Briggs and Keith D Cooper. Effective partial redundancy
+      elimination. ACM SIGPLAN Notices, 29(6):159­170, 1994.                       [18] Clair E Miller, Albert W Tucker, and Richard A Zemlin. Integer pro-
+                                                                                         gramming formulation of traveling salesman problems. Journal of the
+ [3] Tapabrata Chakraborti, Brendan McCane, Steven Mills, and Umapada                    ACM (JACM), 7(4):326­329, 1960.
+      Pal. Coconet: A collaborative convolutional network. arXiv preprint
+      arXiv:1901.09886, 2019.                                                      [19] Jenny Nossack and Erwin Pesch. A branch-and-bound algorithm for
+                                                                                         the acyclic partitioning problem. Computers & operations research,
+ [4] Tianqi Chen, Thierry Moreau, Ziheng Jiang, Lianmin Zheng, Eddie Yan,                41:174­184, 2014.
+      Meghan Cowan, Haichen Shen, Leyuan Wang, Yuwei Hu, Luis Ceze,
+      et al. Tvm: an automated end-to-end optimizing compiler for deep             [20] Muhammad Osama, Duane Merrill, Cris Cecka, Michael Garland, and
+      learning. In Proceedings of the 13th USENIX conference on Operating                John D Owens. Stream-k: Work-centric parallel decomposition for
+      Systems Design and Implementation, pages 579­594, 2018.                            dense matrix-matrix multiplication on the gpu. In Proceedings of the
+                                                                                         28th ACM SIGPLAN Annual Symposium on Principles and Practice of
+ [5] Zhaodong Chen, Zheng Qu, Liu Liu, Yufei Ding, and Yuan Xie. Ef-                     Parallel Programming, pages 429­431, 2023.
+      ficient tensor core-based gpu kernels for structured sparsity under
+      reduced precision. In Proceedings of the International Conference for        [21] M Yusuf Özkaya and Ümit V Çatalyürek. A simple and elegant mathe-
+      High Performance Computing, Networking, Storage and Analysis, pages                matical formulation for the acyclic dag partitioning problem. arXiv
+      1­14, 2021.                                                                        preprint arXiv:2207.13638, 2022.
+
+ [6] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.             [22] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James
+      Bert: Pre-training of deep bidirectional transformers for language                 Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia
+      understanding. In Proceedings of the 2019 Conference of the North                  Gimelshein, Luca Antiga, Alban Desmaison, Andreas Kopf, Edward
+      American Chapter of the Association for Computational Linguistics:                 Yang, Zachary DeVito, Martin Raison, Alykhan Tejani, Sasank Chil-
+      Human Language Technologies, Volume 1 (Long and Short Papers), pages               amkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and Soumith Chin-
+      4171­4186, 2019.                                                                   tala. PyTorch: An Imperative Style, High-Performance Deep Learning
+                                                                                         Library. In H. Wallach, H. Larochelle, A. Beygelzimer, F. d'Alché
+ [7] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weis-                   Buc, E. Fox, and R. Garnett, editors, Advances in Neural Informa-
+      senborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani,                       tion Processing Systems 32, pages 8024­8035. Curran Associates,
+      Matthias Minderer, Georg Heigold, Sylvain Gelly, et al. An image                   Inc., 2019. URL: http://papers.neurips.cc/paper/9015-pytorch-an-
+      is worth 16x16 words: Transformers for image recognition at scale. In              imperative-style-high-performance-deep-learning-library.pdf.
+      International Conference on Learning Representations.
+                                                                                   [23] Kishore Punniyamurthy, Bradford M Beckmann, and Khaled Hami-
+ [8] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep                         douche. Gpu-initiated fine-grained overlap of collective communica-
+      residual learning for image recognition. In Proceedings of the IEEE                tion with computation. arXiv preprint arXiv:2305.06942, 2023.
+      conference on computer vision and pattern recognition, pages 770­778,
+      2016.                                                                        [24] Nino Shervashidze, Pascal Schweitzer, Erik Jan Van Leeuwen, Kurt
+                                                                                         Mehlhorn, and Karsten M Borgwardt. Weisfeiler-lehman graph kernels.
+ [9] Julien Herrmann, Jonathan Kho, Bora Uçar, Kamer Kaya, and Ümit V                    Journal of Machine Learning Research, 12(9), 2011.
+      Çatalyürek. Acyclic partitioning of large directed acyclic graphs. In
+      2017 17th IEEE/ACM international symposium on cluster, cloud and grid        [25] Vijay Thakkar, Pradeep Ramani, Cris Cecka, Aniket Shivam, Honghao
+      computing (CCGRID), pages 371­380. IEEE, 2017.                                     Lu, Ethan Yan, Jack Kosaian, Mark Hoemmen, Haicheng Wu, Andrew
+                                                                                         Kerr, Matt Nicely, Duane Merrill, Dustyn Blasig, Fengqi Qiao, Piotr
+[10] Guyue Huang, Guohao Dai, Yu Wang, and Huazhong Yang. Ge-                            Majcher, Paul Springer, Markus Hohnerbach, Jin Wang, and Manish
+      spmm: General-purpose sparse matrix-matrix multiplication on gpus                  Gupta. CUTLASS, 1 2023. URL: https://github.com/NVIDIA/cutlass.
+      for graph neural networks. In SC20: International Conference for High
+      Performance Computing, Networking, Storage and Analysis, pages 1­12.         [26] Philippe Tillet, Hsiang-Tsung Kung, and David Cox. Triton: an inter-
+      IEEE, 2020.                                                                        mediate language and compiler for tiled neural network computations.
+                                                                                         In Proceedings of the 3rd ACM SIGPLAN International Workshop on
+[11] Sergey Ioffe and Christian Szegedy. Batch normalization: Accelerat-                 Machine Learning and Programming Languages, pages 10­19, 2019.
+      ing deep network training by reducing internal covariate shift. In
+      International conference on machine learning, pages 448­456. pmlr,           [27] Nicolas Vasilache, Oleksandr Zinenko, Theodoros Theodoridis, Priya
+      2015.                                                                              Goyal, Zachary DeVito, William S Moses, Sven Verdoolaege, Andrew
+                                                                                         Adams, and Albert Cohen. Tensor comprehensions: Framework-
+[12] Wonkyung Jung, Daejin Jung, Byeongho Kim, Sunjung Lee, Wonjong                      agnostic high-performance machine learning abstractions. arXiv
+      Rhee, and Jung Ho Ahn. Restructuring batch normalization to ac-                    preprint arXiv:1802.04730, 2018.
+      celerate cnn training. Proceedings of Machine Learning and Systems,
+      1:14­26, 2019.                                                               [28] Guibin Wang, YiSong Lin, and Wei Yi. Kernel fusion: An effective
+                                                                                         method for better power efficiency on multithreaded gpu. In 2010
+[13] Brian W Kernighan and Shen Lin. An efficient heuristic procedure for                IEEE/ACM Int'l Conference on Green Computing and Communications
+      partitioning graphs. The Bell system technical journal, 49(2):291­307,             & Int'l Conference on Cyber, Physical and Social Computing, pages
+      1970.                                                                              344­350. IEEE, 2010.
+
+[14] Thomas N Kipf and Max Welling. Semi-supervised classification with            [29] Jiarong Xing, Leyuan Wang, Shang Zhang, Jack Chen, Ang Chen, and
+      graph convolutional networks. In International Conference on Learning              Yibo Zhu. Bolt: Bridging the gap between auto-tuners and hardware-
+      Representations.                                                                   native performance. Proceedings of Machine Learning and Systems,
+                                                                                         4:204­216, 2022.
+[15] Chris Lattner, Mehdi Amini, Uday Bondhugula, Albert Cohen, Andy
+      Davis, Jacques Pienaar, River Riddle, Tatiana Shpeisman, Nicolas Vasi-       [30] Bing Xu, Ying Zhang, Hao Lu, Yang Chen, Terry Chen, Mike Iovine,
+      lache, and Oleksandr Zinenko. Mlir: A compiler infrastructure for the              Mu-Chu Lee, and Zhijing Li. AITemplate, 10 2022. URL: https://github.
+      end of moore's law. arXiv preprint arXiv:2002.11054, 2020.
+
+                                                                              314
+EVT: Accelerating Deep Learning Training with Epilogue Visitor Tree             ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA
+
+      com/facebookincubator/AITemplate.
+[31] Lianmin Zheng, Chengfan Jia, Minmin Sun, Zhao Wu, Cody Hao Yu,
+
+      Ameer Haj-Ali, Yida Wang, Jun Yang, Danyang Zhuo, Koushik Sen,
+      et al. Ansor: Generating high-performance tensor programs for deep
+      learning. In Proceedings of the 14th USENIX Conference on Operating
+      Systems Design and Implementation, pages 863­879, 2020.
+
+                                                                           315
+ASPLOS '24, April 27-May 1, 2024, La Jolla, CA, USA Zhaodong Chen, Andrew Kerr, Richard Cai, Jack Kosaian, Haicheng Wu, Yufei Ding, and Yuan Xie
+
+A Artifact Appendix                                                      A.6 Evaluation and expected results
+
+A.1 Abstract                                                             Two figures will be generated under the EVT_AE directory
+                                                                         after the evaluation is done. These two figures summarizes
+This artifact contains the source code of EVT, including the             the relative speedup achieved by EVT and other baseline
+Dockerfile to setup the environment and bash scripts to                  implementations in Figure 12-17 of the original paper. The
+reproduce the speedups shown in Figure 12 - 17.                          exact speedup should be close to what reported in the paper,
+                                                                         but small variance may exist. The EVT_AE/README.md also
+A.2 Artifact check-list (meta-information)                               includes the reference results obtained on our own server.
+     · Program: The EVT_AE/python contains the source code of
+        the EVT compiler. EVT_AE/src includes additional CUDA
+        source code. The benchmarks used for evaluation can be
+        found in EVT_AE/benchmark.
+     · Data set: ogbn-mag.
+     · Run-time environment: All the dependencies are provided
+        through Dockerfile. The results are evaluated under driver
+        verion 530.30.02, CUDA 12.1.
+     · Hardware: A single A100-SXM4-40GB is required.
+     · Output: Two figures similar to Figure 12 and Figure 13-17
+        will be generated under the EVT_AE/ directory.
+     · Experiments: Bash scripts figure12.sh and figure13_17.sh
+        are included. EVT_AE/README.md provides more detailed
+        instructions.
+     · How much disk space required (approximately)?: less
+        than 50 GB.
+     · How much time is needed to prepare workflow (ap-
+        proximately)?: Less than 20 minutes to build the docker
+        image.
+     · How much time is needed to complete experiments
+        (approximately)?: Around 2 hours.
+     · Publicly available?: Yes.
+
+A.3 Description
+
+A.3.1 How to access. The source code is publicly available
+at https://github.com/apuaaChen/EVT_AE/tree/main and
+https://zenodo.org/doi/10.5281/zenodo.10790585.
+
+A.3.2 Hardware dependencies. To reproduce the results,
+a single A100 GPU with at least 40GB HBM is required. The
+CPU should not influence the results, but may have impact
+on the compilation time.
+
+A.3.3 Software dependencies. The Dockerfile provided
+is built from docker image nvcr.io/nvidia/pytorch:23.07-py3.
+Other dependencies are specified in the Dockerfile. Notably,
+small changes are automatically applied to the source code
+of PyTorch to workaround certain issues when tracing GCNs
+with torch.compile.
+
+A.3.4 Data sets. . The GCN is evaluated on the ogbn-mag
+dataset. Others use synthesized inputs.
+
+A.4 Installation
+
+The detailed installation steps are in EVT_AE/README.md.
+
+A.5 Experiment workflow
+
+Follow the steps in EVT_AE/README.md, launch the two
+scripts: `bash figure12.sh` and `bash figure13_17.sh`.
+
+                                                                    316
+
