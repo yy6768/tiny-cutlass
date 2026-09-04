@@ -1,0 +1,4 @@
+interface:
+  display_name: "CUTLASS Blog Workflow"
+  short_description: "Human-led CUTLASS blog and profiling workflow"
+  default_prompt: "Use $cutlass-blog-workflow to initialize a CUTLASS learning blog overview from my preface prompt."
