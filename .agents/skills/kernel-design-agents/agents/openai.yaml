@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kernel Design Agents"
+  short_description: "面向 SM89、SM90、SM120 的 Diffusion 算子研究与优化"
+  default_prompt: "使用 $kernel-design-agents，基于当前仓库和目标 GPU，为端侧 Diffusion 的热点算子建立验证与优化计划。"
