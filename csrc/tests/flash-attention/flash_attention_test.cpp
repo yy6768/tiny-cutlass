@@ -24,6 +24,7 @@ struct Options {
   bool help = false;
   bool error = false;
   bool reference_check = true;
+  bool verify_only = false;
 
   std::string kernel = FLASH_ATTENTION_DEFAULT_KERNEL;
   std::string reference = "cudnn";
@@ -38,6 +39,8 @@ struct Options {
   int seed = 3080;
 
   float mae_tolerance = 1.0e-3f;
+  float max_abs_tolerance = 1.0e-2f;
+  float input_scale = 1.0f;
 
   void parse(int argc, char const** args) {
     cutlass::CommandLine cmd(argc, args);
@@ -50,6 +53,7 @@ struct Options {
     cmd.get_cmd_line_argument("kernel", kernel, kernel);
     cmd.get_cmd_line_argument("reference", reference, reference);
     cmd.get_cmd_line_argument("reference-check", reference_check, true);
+    cmd.get_cmd_line_argument("verify-only", verify_only, false);
     cmd.get_cmd_line_argument("head_number", head_number, 12);
     cmd.get_cmd_line_argument("batch_size", batch_size, 16);
     cmd.get_cmd_line_argument("head_size", head_size, 64);
@@ -59,10 +63,15 @@ struct Options {
     cmd.get_cmd_line_argument("iterations", iterations, 20);
     cmd.get_cmd_line_argument("seed", seed, 3080);
     cmd.get_cmd_line_argument("mae-tolerance", mae_tolerance, 1.0e-3f);
+    cmd.get_cmd_line_argument("max-abs-tolerance", max_abs_tolerance, 1.0e-2f);
+    cmd.get_cmd_line_argument("input-scale", input_scale, 1.0f);
 
     if (head_number <= 0 || batch_size <= 0 || head_size <= 0 ||
         head_size_v <= 0 || seq_length <= 0 || seq_length_kv <= 0 ||
-        iterations <= 0 || mae_tolerance <= 0.0f) {
+        iterations <= 0 || !std::isfinite(mae_tolerance) || mae_tolerance <= 0.0f ||
+        !std::isfinite(max_abs_tolerance) || max_abs_tolerance <= 0.0f ||
+        !std::isfinite(input_scale) || input_scale < 0.0f ||
+        (verify_only && !reference_check)) {
       error = true;
     }
   }
@@ -90,10 +99,13 @@ struct Options {
     out << "flash_attention_test\n\n"
         << "Options:\n\n"
         << "  --help                         Display this usage statement.\n"
-        << "  --kernel=<id|all|list>         Kernel to run. Available: 00-naive, 01-online-softmax, 02-tiled-online, all.\n"
+        << "  --kernel=<id|all|list>         Kernel to run. Available: 00-naive, 01-online-softmax, 02-split-kv, all.\n"
         << "  --reference=<cudnn>            Reference backend. CPU reference is intentionally unsupported.\n"
         << "  --reference-check=<bool>       Run reference verification before timing (default: true).\n"
+        << "  --verify-only=<bool>           Exit after reference verification; do not benchmark.\n"
         << "  --mae-tolerance=<float>        Required MAE against reference (default: 1e-3).\n"
+        << "  --max-abs-tolerance=<float>    Required maximum absolute error (default: 1e-2).\n"
+        << "  --input-scale=<float>          Multiply random Q/K by this value (default: 1).\n"
         << "  --head_number=<int>            Head number (default: 12).\n"
         << "  --batch_size=<int>             Batch size (default: 16).\n"
         << "  --head_size=<int>              Head dim for Q/K (default: 64).\n"
@@ -116,7 +128,7 @@ struct CompareResult {
 Kernel const* const kKernels[] = {
     &kernel_00_naive(),
     &kernel_01_online_softmax(),
-    &kernel_02_tiled_online(),
+    &kernel_02_split_kv(),
 };
 
 Kernel const* find_kernel(std::string const& id) {
@@ -138,7 +150,8 @@ CompareResult compare_outputs(
     cutlass::DeviceAllocation<Element> const& output,
     cutlass::DeviceAllocation<Element> const& reference,
     int64_t elements,
-    float mae_tolerance) {
+    float mae_tolerance,
+    float max_abs_tolerance) {
   std::vector<Element> host_output(elements);
   std::vector<Element> host_reference(elements);
 
@@ -169,20 +182,30 @@ CompareResult compare_outputs(
   }
 
   result.mae = double(abs_sum / long double(elements));
-  result.passed = result.mae <= double(mae_tolerance);
+  result.passed = result.mae <= double(mae_tolerance) && result.max_abs <= max_abs_tolerance;
+  if (!result.passed) {
+    int shown = 0;
+    for (int64_t i = 0; i < elements && shown < 16; ++i) {
+      if (std::fabs(float(host_output[i]) - float(host_reference[i])) <= max_abs_tolerance) continue;
+      ++shown;
+      std::cerr << "Mismatch sample " << i << ": actual=" << float(host_output[i])
+                << " reference=" << float(host_reference[i]) << "\n";
+    }
+  }
   return result;
 }
 
 void fill_random_uniform(
     cutlass::DeviceAllocation<Element>& block,
     int64_t elements,
-    int seed) {
+    int seed,
+    float scale = 1.0f) {
   std::vector<Element> host(elements);
   std::mt19937 rng(seed);
   std::uniform_real_distribution<float> distribution(-2.0f, 2.0f);
 
   for (auto& value : host) {
-    value = Element(distribution(rng));
+    value = Element(distribution(rng) * scale);
   }
 
   cutlass::device_memory::copy_to_device(block.get(), host.data(), elements);
@@ -192,13 +215,19 @@ cudaError_t run_kernel_once(
     Kernel const& kernel,
     Problem const& problem,
     Tensors const& tensors,
-    Workspace workspace) {
-  cudaError_t err = kernel.run(problem, tensors, workspace, nullptr);
+    Workspace workspace,
+    cudaStream_t stream) {
+  cudaError_t err = kernel.run(problem, tensors, workspace, stream);
   if (err != cudaSuccess) {
     return err;
   }
-  return cudaDeviceSynchronize();
+  return cudaStreamSynchronize(stream);
 }
+
+struct TestStream {
+  cudaStream_t handle = nullptr;
+  ~TestStream() { if (handle) cudaStreamDestroy(handle); }
+};
 
 int run_one(Kernel const& kernel, Options const& options) {
   Problem problem = options.problem();
@@ -225,11 +254,9 @@ int run_one(Kernel const& kernel, Options const& options) {
   cutlass::DeviceAllocation<Element> block_o(total_o);
   cutlass::DeviceAllocation<Element> block_reference_o(total_o);
 
-  fill_random_uniform(block_q, total_q, options.seed + 1);
-  fill_random_uniform(block_k, total_k, options.seed + 2);
+  fill_random_uniform(block_q, total_q, options.seed + 1, options.input_scale);
+  fill_random_uniform(block_k, total_k, options.seed + 2, options.input_scale);
   fill_random_uniform(block_v, total_v, options.seed + 3);
-  cudaMemset(block_o.get(), 0, total_o * sizeof(Element));
-  cudaMemset(block_reference_o.get(), 0, total_o * sizeof(Element));
 
   std::size_t workspace_bytes = kernel.workspace_bytes ? kernel.workspace_bytes(problem) : 0;
   cutlass::DeviceAllocation<uint8_t> block_workspace(workspace_bytes);
@@ -244,7 +271,23 @@ int run_one(Kernel const& kernel, Options const& options) {
   workspace.data = block_workspace.get();
   workspace.bytes = workspace_bytes;
 
-  cudaError_t err = run_kernel_once(kernel, problem, tensors, workspace);
+  TestStream stream;
+  cudaError_t err = cudaStreamCreateWithFlags(&stream.handle, cudaStreamNonBlocking);
+  if (err != cudaSuccess) {
+    std::cerr << "Stream creation failed: " << cudaGetErrorString(err) << "\n";
+    return -1;
+  }
+  // FP16 0x7f7f is NaN: an unwritten output must fail parity. Queue these
+  // writes on the tested stream, since a nonblocking stream does not wait
+  // for an asynchronous memset submitted to the legacy default stream.
+  err = cudaMemsetAsync(block_o.get(), 0x7f, total_o * sizeof(Element), stream.handle);
+  if (err == cudaSuccess)
+    err = cudaMemsetAsync(block_reference_o.get(), 0x7f, total_o * sizeof(Element), stream.handle);
+  if (err != cudaSuccess) {
+    std::cerr << "Output initialization failed: " << cudaGetErrorString(err) << "\n";
+    return -1;
+  }
+  err = run_kernel_once(kernel, problem, tensors, workspace, stream.handle);
   if (err != cudaSuccess) {
     std::cerr << "Kernel launch failed: " << cudaGetErrorString(err) << "\n";
     return -1;
@@ -255,22 +298,23 @@ int run_one(Kernel const& kernel, Options const& options) {
     reference_tensors.output = block_reference_o.get();
 
     std::string reference_error;
-    err = run_cudnn_reference(problem, reference_tensors, nullptr, reference_error);
+    err = run_cudnn_reference(problem, reference_tensors, stream.handle, reference_error);
     if (err != cudaSuccess) {
       std::cerr << "cuDNN reference failed: " << reference_error << "\n";
       return -1;
     }
-    err = cudaDeviceSynchronize();
+    err = cudaStreamSynchronize(stream.handle);
     if (err != cudaSuccess) {
       std::cerr << "cuDNN reference sync failed: " << cudaGetErrorString(err) << "\n";
       return -1;
     }
 
     CompareResult compare = compare_outputs(
-        block_o, block_reference_o, total_o, options.mae_tolerance);
+        block_o, block_reference_o, total_o, options.mae_tolerance, options.max_abs_tolerance);
     std::cout << "    Reference: cuDNN SDPA\n"
               << "    MAE      : " << compare.mae << " (tolerance " << options.mae_tolerance << ")\n"
-              << "    Max abs  : " << compare.max_abs << " at index " << compare.max_index << "\n";
+              << "    Max abs  : " << compare.max_abs << " at index " << compare.max_index
+              << " (tolerance " << options.max_abs_tolerance << ")\n";
 
     if (!compare.passed) {
       std::cout << "\nFailed\n";
@@ -278,7 +322,12 @@ int run_one(Kernel const& kernel, Options const& options) {
     }
   }
 
-  err = run_kernel_once(kernel, problem, tensors, workspace);
+  if (options.verify_only) {
+    std::cout << "Reference passed: " << kernel.id << " (non-default stream; no timing)\n";
+    return 0;
+  }
+
+  err = run_kernel_once(kernel, problem, tensors, workspace, stream.handle);
   if (err != cudaSuccess) {
     std::cerr << "Warmup failed: " << cudaGetErrorString(err) << "\n";
     return -1;
@@ -286,12 +335,17 @@ int run_one(Kernel const& kernel, Options const& options) {
 
   cudaEvent_t start = nullptr;
   cudaEvent_t stop = nullptr;
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-
-  cudaEventRecord(start);
+  err = cudaEventCreate(&start);
+  if (err == cudaSuccess) err = cudaEventCreate(&stop);
+  if (err == cudaSuccess) err = cudaEventRecord(start, stream.handle);
+  if (err != cudaSuccess) {
+    std::cerr << "Timing setup failed: " << cudaGetErrorString(err) << "\n";
+    if (start) cudaEventDestroy(start);
+    if (stop) cudaEventDestroy(stop);
+    return -1;
+  }
   for (int i = 0; i < options.iterations; ++i) {
-    err = kernel.run(problem, tensors, workspace, nullptr);
+    err = kernel.run(problem, tensors, workspace, stream.handle);
     if (err != cudaSuccess) {
       std::cerr << "Timed launch failed: " << cudaGetErrorString(err) << "\n";
       cudaEventDestroy(start);
@@ -299,13 +353,23 @@ int run_one(Kernel const& kernel, Options const& options) {
       return -1;
     }
   }
-  cudaEventRecord(stop);
-  cudaEventSynchronize(stop);
+  err = cudaEventRecord(stop, stream.handle);
+  if (err == cudaSuccess) err = cudaEventSynchronize(stop);
+  if (err != cudaSuccess) {
+    std::cerr << "Timed execution failed: " << cudaGetErrorString(err) << "\n";
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+    return -1;
+  }
 
   float elapsed_ms = 0.0f;
-  cudaEventElapsedTime(&elapsed_ms, start, stop);
+  err = cudaEventElapsedTime(&elapsed_ms, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+  if (err != cudaSuccess || elapsed_ms <= 0.f || !std::isfinite(elapsed_ms)) {
+    std::cerr << "Invalid CUDA event timing: " << cudaGetErrorString(err) << "\n";
+    return -1;
+  }
 
   double runtime_ms = double(elapsed_ms) / double(options.iterations);
   double gflops = options.gflops(runtime_ms / 1000.0);
@@ -336,7 +400,7 @@ int main(int argc, char const** args) {
   std::cout << "Device: " << props.name << " (SM" << props.major << props.minor << ")\n";
   if (CUDART_VERSION < 11000 || props.major < 8) {
     std::cout << "This test requires Ampere (SM80) or later.\n";
-    return 0;
+    return -1;
   }
 
   Options options;

@@ -4,12 +4,20 @@ if(NOT CMAKE_CUDA_ARCHITECTURES STREQUAL "89")
   message(FATAL_ERROR "conv-fused currently supports only SM89; configure with CMAKE_CUDA_ARCHITECTURES=89")
 endif()
 
+# Optional cuDNN cross-check reference for conv-fused tests. Off by default so a
+# build without cuDNN installed is unaffected; turn on with
+# -DTINY_CUTLASS_CONV_FUSED_USE_CUDNN=ON (requires CUDNN_PATH, see cmake/CUDNN.cmake).
+option(TINY_CUTLASS_CONV_FUSED_USE_CUDNN
+  "Cross-check conv-fused tests against a cuDNN reference" OFF)
+if(TINY_CUTLASS_CONV_FUSED_USE_CUDNN)
+  include("${CMAKE_SOURCE_DIR}/cmake/CUDNN.cmake")
+endif()
+
 function(add_conv_fused_family NAME)
   add_library(${NAME}_core STATIC ${ARGN})
 
   target_include_directories(${NAME}_core PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_SOURCE_DIR}/3rdparty/cutlass/examples/13_two_tensor_op_fusion"
   )
 
   target_link_libraries(${NAME}_core PUBLIC
@@ -51,6 +59,21 @@ tiny_cutlass_add_cutlass_executable(
   "${CMAKE_SOURCE_DIR}/csrc/tests/conv-fused/conv1x1_dual/conv1x1_dual.cu"
 )
 target_link_libraries(conv1x1_dual PRIVATE conv1x1_dual_core)
+target_include_directories(conv1x1_dual PRIVATE "${CMAKE_SOURCE_DIR}/csrc/tests/common")
+if(TINY_CUTLASS_CONV_FUSED_USE_CUDNN)
+  # The cuDNN reference is a HOST C++ TU (cudnn_frontend.h overflows nvcc's
+  # cudafe++ if pulled into a .cu). Build it separately and link it in.
+  add_library(conv_fused_cudnn_ref STATIC
+    "${CMAKE_SOURCE_DIR}/csrc/tests/common/cudnn_conv_reference.cpp")
+  target_include_directories(conv_fused_cudnn_ref PUBLIC
+    "${CMAKE_SOURCE_DIR}/csrc/tests/common")
+  target_link_libraries(conv_fused_cudnn_ref PUBLIC tiny_cutlass::cudnn)
+  set_target_properties(conv_fused_cudnn_ref PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+  target_link_libraries(conv1x1_dual PRIVATE conv_fused_cudnn_ref)
+  target_compile_definitions(conv1x1_dual PRIVATE TINY_CUTLASS_WITH_CUDNN=1)
+  tiny_cutlass_copy_cudnn_runtime(conv1x1_dual)
+endif()
 
 tiny_cutlass_add_cutlass_executable(
   conv1x1_upsample

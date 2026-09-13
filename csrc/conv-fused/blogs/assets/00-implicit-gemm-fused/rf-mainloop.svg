@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">Register-file fused back-to-back convolution mainloop</title>
+  <desc id="desc">A0 B0 and B1 use cp.async pipelines while the first accumulator is transformed directly into the second MMA A operand.</desc>
+  <defs>
+    <style>
+      .bg{fill:#fff}.ink{fill:#18232b}.muted{fill:#5c6970}.panel{fill:#f7f9f8;stroke:#cbd4d2;stroke-width:2}
+      .teal{fill:#d9f0ec;stroke:#16857a;stroke-width:2}.amber{fill:#fff0d6;stroke:#d58c1b;stroke-width:2}
+      .red{fill:#fde5e3;stroke:#c75450;stroke-width:2}.dark{fill:#26343b;stroke:#18232b;stroke-width:2}.white{fill:#fff}
+      .line{stroke:#18232b;stroke-width:2.4;fill:none}.dash{stroke-dasharray:7 6}.stage{fill:#eef2f1;stroke:#84928f;stroke-width:1.5}
+      text{font-family:"Segoe UI","Microsoft YaHei",Arial,sans-serif;letter-spacing:0}.h1{font-size:28px;font-weight:700}
+      .h2{font-size:18px;font-weight:700}.body{font-size:16px}.small{font-size:13px}.mono{font-family:Consolas,"Cascadia Mono",monospace}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#18232b"/></marker>
+  </defs>
+  <rect class="bg" width="1400" height="820"/>
+  <text class="ink h1" x="44" y="48">RF fusion mainloop：只有中间 activation 留在 registers</text>
+  <text class="muted body" x="44" y="78">A0/B0/B1 仍通过 shared memory；省掉的是 D0 global store 和 A1 global load。</text>
+
+  <rect class="panel" x="42" y="112" width="400" height="588" rx="6"/>
+  <text class="ink h2" x="64" y="144">GEMM0: A0 × B0</text>
+  <rect class="teal" x="64" y="172" width="146" height="66"/>
+  <text class="ink body mono" x="82" y="200">global A0</text><text class="muted small mono" x="82" y="220">(m·64, k·32)</text>
+  <rect class="teal" x="270" y="172" width="146" height="66"/>
+  <text class="ink body mono" x="288" y="200">global B0</text><text class="muted small mono" x="288" y="220">(k·32, n·64)</text>
+  <path class="line" d="M137 238 V280" marker-end="url(#arrow)"/><path class="line" d="M343 238 V280" marker-end="url(#arrow)"/>
+  <text class="muted small mono" x="182" y="270">cp.async_zfill</text>
+  <rect class="panel" x="64" y="292" width="352" height="116"/>
+  <text class="ink body" x="82" y="320">3-stage shared-memory ring</text>
+  <rect class="stage" x="82" y="340" width="92" height="46"/><rect class="stage" x="194" y="340" width="92" height="46"/><rect class="stage" x="306" y="340" width="92" height="46"/>
+  <text class="ink small" x="103" y="368">stage 0</text><text class="ink small" x="215" y="368">stage 1</text><text class="ink small" x="327" y="368">stage 2</text>
+  <path class="line" d="M240 408 V450" marker-end="url(#arrow)"/>
+  <rect class="dark" x="112" y="462" width="256" height="74"/>
+  <text class="white body mono" x="143" y="493">warp_mma0</text><text class="white small mono" x="143" y="516">m16n8k16.row.col</text>
+  <path class="line" d="M240 536 V578" marker-end="url(#arrow)"/>
+  <rect class="red" x="112" y="590" width="256" height="78"/>
+  <text class="ink body mono" x="135" y="621">accum0 registers</text><text class="muted small" x="135" y="645">第一层 output 不落地</text>
+
+  <rect class="panel" x="478" y="112" width="434" height="588" rx="6"/>
+  <text class="ink h2" x="500" y="144">RF bridge: accum0 → A1</text>
+  <rect class="red" x="522" y="178" width="346" height="82"/>
+  <text class="ink body mono" x="544" y="209">MmaTensorOpFragmentIterator</text>
+  <text class="muted small" x="544" y="234">按 GEMM1 operand-A 所需顺序读取 registers</text>
+  <path class="line" d="M695 260 V306" marker-end="url(#arrow)"/>
+  <rect class="amber" x="522" y="318" width="346" height="98"/>
+  <text class="ink body mono" x="544" y="347">bias0 + LinearCombinationRelu</text>
+  <text class="muted small" x="544" y="372">load fragment 时执行</text>
+  <text class="muted small mono" x="544" y="394">alpha0 = 1; source C0 is not used</text>
+  <path class="line" d="M695 416 V462" marker-end="url(#arrow)"/>
+  <rect class="teal" x="522" y="474" width="346" height="96"/>
+  <text class="ink body mono" x="544" y="505">warp_loaded_frag_A1</text>
+  <text class="muted small" x="544" y="530">FP16 Tensor Core operand A fragment</text>
+  <text class="muted small" x="544" y="552">不经过 shared memory</text>
+  <path class="line dash" d="M442 629 H500 V219 H522" marker-end="url(#arrow)"/>
+
+  <rect class="panel" x="948" y="112" width="410" height="588" rx="6"/>
+  <text class="ink h2" x="970" y="144">GEMM1: A1 × B1</text>
+  <rect class="teal" x="974" y="172" width="170" height="66"/>
+  <text class="ink body mono" x="994" y="200">global B1</text><text class="muted small mono" x="994" y="220">(k·32, n·128)</text>
+  <path class="line" d="M1059 238 V280" marker-end="url(#arrow)"/>
+  <rect class="panel" x="974" y="292" width="358" height="116"/>
+  <text class="ink body" x="992" y="320">3-stage B1 shared-memory ring</text>
+  <rect class="stage" x="992" y="340" width="92" height="46"/><rect class="stage" x="1104" y="340" width="92" height="46"/><rect class="stage" x="1216" y="340" width="92" height="46"/>
+  <text class="ink small" x="1013" y="368">stage 0</text><text class="ink small" x="1125" y="368">stage 1</text><text class="ink small" x="1237" y="368">stage 2</text>
+  <path class="line" d="M1153 408 V450" marker-end="url(#arrow)"/>
+  <path class="line" d="M868 522 H952" marker-end="url(#arrow)"/>
+  <rect class="dark" x="1008" y="462" width="290" height="74"/>
+  <text class="white body mono" x="1040" y="493">warp_mma1(A1, B1)</text><text class="white small mono" x="1040" y="516">accum1 registers</text>
+  <path class="line" d="M1153 536 V578" marker-end="url(#arrow)"/>
+  <rect class="amber" x="1008" y="590" width="290" height="78"/>
+  <text class="ink body" x="1030" y="621">final epilogue</text><text class="muted small" x="1030" y="645">bias1 broadcast → D1 global</text>
+
+  <rect x="42" y="730" width="1316" height="54" fill="#eef2f1" stroke="#cbd4d2"/>
+  <text class="ink body" x="62" y="754">pipeline 顺序：cp.async fence → wait&lt;1&gt; / wait&lt;0&gt; → __syncthreads；三个 stage 通过 circular buffer 复用。</text>
+  <text class="muted small" x="62" y="776">stage0 完成并 wait&lt;0&gt; 后，stage1 才复用同一个 shared-storage union；两侧 buffer 不同时常驻。</text>
+</svg>

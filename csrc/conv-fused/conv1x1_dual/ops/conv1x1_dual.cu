@@ -43,6 +43,31 @@ cutlass::Status validate(Conv1x1DualArguments<Element> const& args) {
   return cutlass::Status::kSuccess;
 }
 
+// Runs the fused op for a fixed residency. The residency is a compile-time
+// template parameter of the device operator, so we dispatch on the runtime
+// enum in conv1x1_dual() and forward to the matching instantiation here.
+template <typename Element, kernel::Residency ResidencyKind>
+cutlass::Status run_with_residency(
+    Conv1x1DualArguments<Element> const& args,
+    cutlass::conv::Conv2dProblemSize const& problem0,
+    cutlass::conv::Conv2dProblemSize const& problem1) {
+  using Operation = device::Conv1x1Dual<
+      cutlass::arch::Sm80, Element, ResidencyKind>;
+
+  typename Operation::Arguments device_args;
+  device_args.problem_size_0 = problem0;
+  device_args.problem_size_1 = problem1;
+  device_args.input = args.input;
+  device_args.weight0 = args.weight0;
+  device_args.bias0 = args.bias0;
+  device_args.weight1 = args.weight1;
+  device_args.bias1 = args.bias1;
+  device_args.output = args.output;
+
+  Operation op;
+  return op(device_args, nullptr, args.stream);
+}
+
 }  // namespace
 
 template <typename Element>
@@ -67,21 +92,17 @@ cutlass::Status conv1x1_dual(
       p.hidden_channels,
       p.output_channels);
 
-  using Operation =
-      device::Conv1x1Dual<cutlass::arch::Sm80, Element>;
-
-  typename Operation::Arguments device_args;
-  device_args.problem_size_0 = problem0;
-  device_args.problem_size_1 = problem1;
-  device_args.input = args.input;
-  device_args.weight0 = args.weight0;
-  device_args.bias0 = args.bias0;
-  device_args.weight1 = args.weight1;
-  device_args.bias1 = args.bias1;
-  device_args.output = args.output;
-
-  Operation op;
-  return op(device_args, nullptr, args.stream);
+  // Map the public runtime residency enum to the compile-time template
+  // instantiation of the device operator.
+  switch (args.residency) {
+    case Residency::kSmem:
+      return run_with_residency<Element, kernel::Residency::kSmem>(
+          args, problem0, problem1);
+    case Residency::kRF:
+    default:
+      return run_with_residency<Element, kernel::Residency::kRF>(
+          args, problem0, problem1);
+  }
 }
 
 template cutlass::Status conv1x1_dual<cutlass::half_t>(

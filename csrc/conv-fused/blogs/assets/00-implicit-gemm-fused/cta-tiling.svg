@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">conv1x1 dual implicit GEMM CTA tiling</title>
+  <desc id="desc">Two back-to-back implicit GEMMs use one 64-row CTA split between two warps.</desc>
+  <defs>
+    <style>
+      .bg{fill:#fff}.ink{fill:#18232b}.muted{fill:#5c6970}.panel{fill:#f7f9f8;stroke:#cbd4d2;stroke-width:2}
+      .teal{fill:#d9f0ec;stroke:#16857a;stroke-width:2}.amber{fill:#fff0d6;stroke:#d58c1b;stroke-width:2}
+      .red{fill:#fde5e3;stroke:#c75450;stroke-width:2}.grid{stroke:#aeb9b7;stroke-width:1}.dash{stroke-dasharray:7 6}
+      text{font-family:"Segoe UI","Microsoft YaHei",Arial,sans-serif;letter-spacing:0}.h1{font-size:28px;font-weight:700}
+      .h2{font-size:19px;font-weight:700}.body{font-size:16px}.small{font-size:14px}.mono{font-family:Consolas,"Cascadia Mono",monospace}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 Z" fill="#18232b"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1200" height="700"/>
+  <text class="ink h1" x="48" y="52">一个 CTA 中的两次 implicit GEMM</text>
+  <text class="muted body" x="48" y="82">1x1 convolution: M = N·P·Q，K = input channels，N = output channels</text>
+
+  <rect class="panel" x="48" y="112" width="510" height="470" rx="6"/>
+  <text class="ink h2" x="72" y="146">Conv0 / GEMM0</text>
+  <text class="muted mono body" x="72" y="174">CTA0 = 64 × 64 × 32</text>
+  <text class="muted mono body" x="72" y="198">Warp0 = 32 × 64 × 32</text>
+  <text class="muted small" x="72" y="226">输出逻辑 tile: [M=64, hidden C=64]</text>
+  <rect class="teal" x="92" y="258" width="410" height="112"/>
+  <line class="grid" x1="92" y1="314" x2="502" y2="314"/>
+  <text class="ink body" x="112" y="293">warp 0 owns M rows 0..31</text>
+  <text class="ink body" x="112" y="349">warp 1 owns M rows 32..63</text>
+  <text class="muted small" x="92" y="399">两个 warp 都覆盖完整的 N=64；只沿 M 切分。</text>
+  <rect class="amber" x="92" y="432" width="190" height="80"/>
+  <text class="ink small mono" x="108" y="463">mma.sync</text>
+  <text class="ink body mono" x="108" y="490">m16n8k16</text>
+  <text class="muted small" x="304" y="460">K 方向按 32 推进</text>
+  <text class="muted small" x="304" y="485">每个 warp 的 M=32</text>
+
+  <line x1="558" y1="347" x2="638" y2="347" stroke="#18232b" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text class="ink small" x="570" y="327">RF handoff</text>
+
+  <rect class="panel" x="642" y="112" width="510" height="470" rx="6"/>
+  <text class="ink h2" x="666" y="146">Conv1 / GEMM1</text>
+  <text class="muted mono body" x="666" y="174">CTA1 = 64 × 128 × 32</text>
+  <text class="muted mono body" x="666" y="198">Warp1 = 32 × 128 × 32</text>
+  <text class="muted small" x="666" y="226">输出逻辑 tile: [M=64, output C=128]</text>
+  <rect class="amber" x="686" y="258" width="410" height="112"/>
+  <line class="grid" x1="686" y1="314" x2="1096" y2="314"/>
+  <text class="ink body" x="706" y="293">warp 0 keeps M rows 0..31</text>
+  <text class="ink body" x="706" y="349">warp 1 keeps M rows 32..63</text>
+  <text class="muted small" x="686" y="399">同一 warp 继续拥有同一组 M rows。</text>
+  <rect class="red" x="686" y="432" width="410" height="80"/>
+  <text class="ink body" x="706" y="463">当前 RF policy 的支持边界</text>
+  <text class="ink small mono" x="706" y="490">hidden ≤ 64, output channels ≤ 128</text>
+
+  <rect x="48" y="610" width="1104" height="54" fill="#eef2f1" stroke="#cbd4d2"/>
+  <text class="ink body" x="68" y="642">图中是逻辑 ownership；Tensor Core fragment 在 32 个 lanes 的 registers 中仍是分散布局。</text>
+</svg>

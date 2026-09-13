@@ -77,4 +77,4 @@ inline int64_t total_probability_elements(Problem const& p) {
 
 Kernel const& kernel_00_naive();
 Kernel const& kernel_01_online_softmax();
-Kernel const& kernel_02_tiled_online();
+Kernel const& kernel_02_split_kv();

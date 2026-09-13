@@ -9,8 +9,12 @@
 #include "conv1x1_dual/ops/conv1x1_dual.h"
 #include "cutlass/half.h"
 
-namespace {
+#ifdef TINY_CUTLASS_WITH_CUDNN
+#include "cudnn_conv_reference.h"
+#include "test_utils.h"
+#endif
 
+namespace {
 using DefaultElement = cutlass::half_t;
 namespace conv = tiny_cutlass::conv_fused;
 
@@ -24,6 +28,7 @@ struct Case {
   int output_channels;
   bool use_bias;
   cutlass::Status expected_status = cutlass::Status::kSuccess;
+  conv::Residency residency = conv::Residency::kRF;
 };
 
 template <typename T>
@@ -207,6 +212,7 @@ bool run_case(Case const& c) {
   args.weight1 = d_weight1.get();
   args.bias1 = d_bias1.get();
   args.output = d_output.get();
+  args.residency = c.residency;
 
   cutlass::Status status = conv::conv1x1_dual(args);
   if (status != c.expected_status) {
@@ -248,10 +254,65 @@ bool run_case(Case const& c) {
     }
   }
 
+  float cudnn_max_abs = -1.0f;
+#ifdef TINY_CUTLASS_WITH_CUDNN
+  // Independent cross-check: run the same problem through a cuDNN b2b conv
+  // graph and compare the CUTLASS kernel output against it. This is not the
+  // pass/fail gate (the CPU reference above is); it is a second opinion that
+  // also serves as the ncu baseline later. A cuDNN "unsupported" is tolerated.
+  {
+    namespace tct = tiny_cutlass::testing;
+    DeviceBuffer<Element> d_cudnn(output.size());
+    if (!d_cudnn.get()) {
+      return false;
+    }
+    tct::ConvDualProblem cp{c.batch, c.height, c.width,
+                            c.channels, c.hidden, c.output_channels};
+    tct::ConvDualTensorsHalf ct;
+    ct.input = d_input.get();
+    ct.weight0 = d_weight0.get();
+    ct.bias0 = d_bias0.get();
+    ct.weight1 = d_weight1.get();
+    ct.bias1 = d_bias1.get();
+    ct.output = d_cudnn.get();
+
+    std::string cudnn_error;
+    cudaError_t cudnn_status =
+        tct::run_cudnn_conv_dual_reference_half(cp, ct, nullptr, cudnn_error);
+    if (cudnn_status == cudaErrorNotSupported) {
+      std::cout << "  [cudnn] skipped (" << cudnn_error << ")\n";
+    } else if (cudnn_status != cudaSuccess) {
+      std::cerr << "case " << c.name << " cuDNN reference failed: "
+                << cudnn_error << "\n";
+      return false;
+    } else {
+      cudaDeviceSynchronize();
+      std::vector<Element> cudnn_out(output.size());
+      if (!d_cudnn.copy_to_host(cudnn_out)) {
+        return false;
+      }
+      tct::CompareResult cmp = tct::compare_host(output, cudnn_out);
+      cudnn_max_abs = cmp.max_abs;
+      if (!cmp.finite || cmp.max_abs > 0.08f) {
+        std::cerr << "case " << c.name << " cuDNN mismatch: max_abs="
+                  << cmp.max_abs << " mae=" << cmp.mae
+                  << " at " << cmp.max_index << "\n";
+        return false;
+      }
+    }
+  }
+#endif
+
   std::cout << "pass " << c.name << " shape=(" << c.batch << ","
             << c.height << "," << c.width << "," << c.channels
             << ") hidden=" << c.hidden << " out=" << c.output_channels
-            << " bias=" << c.use_bias << " max_abs=" << max_abs << "\n";
+            << " bias=" << c.use_bias
+            << " residency=" << (c.residency == conv::Residency::kSmem ? "smem" : "rf")
+            << " max_abs=" << max_abs;
+  if (cudnn_max_abs >= 0.0f) {
+    std::cout << " cudnn_max_abs=" << cudnn_max_abs;
+  }
+  std::cout << "\n";
   return true;
 }
 
@@ -264,6 +325,15 @@ bool run_all() {
       {"aligned_rect", 2, 3, 5, 16, 32, 16, false},
       {"aligned_wide", 1, 2, 7, 32, 16, 24, true},
       {"aligned_out64", 1, 2, 3, 8, 16, 64, true},
+      // SMEM residency: same problems, staged accumulator. out=128 fits the RF
+      // cap; out=256 exceeds the RF ThreadblockShape1::kN (128) and only the
+      // SMEM variant (ThreadblockShape1::kN=256) can implement it.
+      {"smem_min", 1, 4, 4, 8, 8, 8, true, cutlass::Status::kSuccess,
+       conv::Residency::kSmem},
+      {"smem_out128", 1, 2, 3, 16, 32, 128, true, cutlass::Status::kSuccess,
+       conv::Residency::kSmem},
+      {"smem_out256", 1, 2, 3, 16, 32, 256, false, cutlass::Status::kSuccess,
+       conv::Residency::kSmem},
   };
 
   for (auto const& c : cases) {

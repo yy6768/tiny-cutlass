@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 860" role="img" aria-labelledby="title desc">
+  <title id="title">Global iterator and thread map for the fused convolution mainloop</title>
+  <desc id="desc">The CTA creates A0, B0, and B1 implicit-GEMM views, then 64 threads cooperatively copy 128-bit vectors to shared memory.</desc>
+  <defs>
+    <style>
+      .bg{fill:#fff}.ink{fill:#18232b}.muted{fill:#5c6970}.panel{fill:#f7f9f8;stroke:#cbd4d2;stroke-width:2}
+      .teal{fill:#d9f0ec;stroke:#16857a;stroke-width:2}.amber{fill:#fff0d6;stroke:#d58c1b;stroke-width:2}
+      .red{fill:#fde5e3;stroke:#c75450;stroke-width:2}.dark{fill:#26343b;stroke:#18232b;stroke-width:2}.white{fill:#fff}
+      .cell0{fill:#d9f0ec}.cell1{fill:#fff0d6}.grid{stroke:#83918e;stroke-width:1}.line{stroke:#18232b;stroke-width:2.3;fill:none}
+      text{font-family:"Segoe UI","Microsoft YaHei",Arial,sans-serif;letter-spacing:0}.h1{font-size:28px;font-weight:700}.h2{font-size:18px;font-weight:700}
+      .body{font-size:16px}.small{font-size:13px}.tiny{font-size:11px}.mono{font-family:Consolas,"Cascadia Mono",monospace}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#18232b"/></marker>
+  </defs>
+  <rect class="bg" width="1400" height="860"/>
+  <text class="ink h1" x="46" y="50">global iterator：从 CTA tile origin 到 64-thread vector copy</text>
+  <text class="muted body" x="46" y="80">三组 iterator 使用同一类 warp-raked thread map；矩阵语义和 strided 范围不同。</text>
+
+  <rect class="panel" x="46" y="112" width="406" height="520" rx="6"/>
+  <text class="ink h2" x="68" y="146">1. CTA kernel 建立 implicit-GEMM view</text>
+  <rect class="teal" x="70" y="176" width="358" height="92"/>
+  <text class="ink body mono" x="92" y="207">A0: (tile_m·64, tile_k·32)</text>
+  <text class="muted small" x="92" y="232">contiguous = input C；strided = flattened NPQ</text>
+  <text class="muted small mono" x="92" y="253">logical tile [M=64, K=32]</text>
+  <rect class="amber" x="70" y="286" width="358" height="92"/>
+  <text class="ink body mono" x="92" y="317">B0: (tile_k·32, tile_n·64)</text>
+  <text class="muted small" x="92" y="342">contiguous = reduction C；strided = hidden K0</text>
+  <text class="muted small mono" x="92" y="363">logical tile [K=32, N=64]</text>
+  <rect class="red" x="70" y="396" width="358" height="92"/>
+  <text class="ink body mono" x="92" y="427">B1: (tile_k·32, tile_n·128)</text>
+  <text class="muted small" x="92" y="452">contiguous = reduction K0；strided = output K1</text>
+  <text class="muted small mono" x="92" y="473">logical tile [K=32, N=128]</text>
+  <rect class="dark" x="70" y="520" width="358" height="82"/>
+  <text class="white body mono" x="92" y="551">IteratorA0 / IteratorB0 / IteratorB1</text>
+  <text class="white small" x="92" y="576">predicate invalid coordinates, then cp_async_zfill</text>
+
+  <path class="line" d="M452 365 H492" marker-end="url(#arrow)"/>
+  <rect class="panel" x="496" y="112" width="410" height="520" rx="6"/>
+  <text class="ink h2" x="518" y="146">2. PitchLinearWarpRakedThreadMap</text>
+  <text class="muted small mono" x="518" y="173">Threads=64, WarpThreadArrangement=&lt;4,8&gt;</text>
+  <text class="muted small mono" x="518" y="195">ElementsPerAccess=8 half = 128 bits</text>
+  <rect class="teal" x="520" y="218" width="362" height="124"/>
+  <text class="ink body mono" x="542" y="248">warp = thread_id / 32</text>
+  <text class="ink body mono" x="542" y="274">lane = thread_id % 32</text>
+  <text class="ink body mono" x="542" y="300">initial.contig = 8 · (lane % 4)</text>
+  <text class="ink body mono" x="542" y="322">initial.strided =</text>
+  <text class="ink body mono" x="566" y="338">base(warp) + lane / 4</text>
+  <text class="muted small" x="520" y="371">一个 warp 的第一次 access：4 vectors × 8 rows</text>
+  <g transform="translate(574 388)">
+    <rect class="cell0 grid" x="0" y="0" width="62" height="25"/><rect class="cell0 grid" x="62" y="0" width="62" height="25"/><rect class="cell0 grid" x="124" y="0" width="62" height="25"/><rect class="cell0 grid" x="186" y="0" width="62" height="25"/>
+    <rect class="cell1 grid" x="0" y="25" width="62" height="25"/><rect class="cell1 grid" x="62" y="25" width="62" height="25"/><rect class="cell1 grid" x="124" y="25" width="62" height="25"/><rect class="cell1 grid" x="186" y="25" width="62" height="25"/>
+    <rect class="cell0 grid" x="0" y="50" width="62" height="25"/><rect class="cell0 grid" x="62" y="50" width="62" height="25"/><rect class="cell0 grid" x="124" y="50" width="62" height="25"/><rect class="cell0 grid" x="186" y="50" width="62" height="25"/>
+    <rect class="cell1 grid" x="0" y="75" width="62" height="25"/><rect class="cell1 grid" x="62" y="75" width="62" height="25"/><rect class="cell1 grid" x="124" y="75" width="62" height="25"/><rect class="cell1 grid" x="186" y="75" width="62" height="25"/>
+    <rect class="cell0 grid" x="0" y="100" width="62" height="25"/><rect class="cell0 grid" x="62" y="100" width="62" height="25"/><rect class="cell0 grid" x="124" y="100" width="62" height="25"/><rect class="cell0 grid" x="186" y="100" width="62" height="25"/>
+    <rect class="cell1 grid" x="0" y="125" width="62" height="25"/><rect class="cell1 grid" x="62" y="125" width="62" height="25"/><rect class="cell1 grid" x="124" y="125" width="62" height="25"/><rect class="cell1 grid" x="186" y="125" width="62" height="25"/>
+    <rect class="cell0 grid" x="0" y="150" width="62" height="25"/><rect class="cell0 grid" x="62" y="150" width="62" height="25"/><rect class="cell0 grid" x="124" y="150" width="62" height="25"/><rect class="cell0 grid" x="186" y="150" width="62" height="25"/>
+    <rect class="cell1 grid" x="0" y="175" width="62" height="25"/><rect class="cell1 grid" x="62" y="175" width="62" height="25"/><rect class="cell1 grid" x="124" y="175" width="62" height="25"/><rect class="cell1 grid" x="186" y="175" width="62" height="25"/>
+    <text class="ink tiny mono" x="8" y="17">lane 0</text><text class="ink tiny mono" x="70" y="17">lane 1</text><text class="ink tiny mono" x="132" y="17">lane 2</text><text class="ink tiny mono" x="194" y="17">lane 3</text>
+    <text class="muted tiny mono" x="260" y="17">row 0</text><text class="muted tiny mono" x="260" y="42">row 1</text><text class="muted tiny mono" x="260" y="192">row 7</text>
+  </g>
+  <text class="muted small" x="518" y="615">每个 cell 是 8 个连续 half，不是一个 scalar。</text>
+
+  <path class="line" d="M906 365 H946" marker-end="url(#arrow)"/>
+  <rect class="panel" x="950" y="112" width="404" height="520" rx="6"/>
+  <text class="ink h2" x="972" y="146">3. iteration 推进并写入 crosswise SMEM</text>
+  <rect class="teal" x="974" y="176" width="356" height="116"/>
+  <text class="ink body mono" x="996" y="207">A0 / B0 shape: &lt;32,64&gt;</text>
+  <text class="muted small mono" x="996" y="232">base.strided = 32 · warp</text>
+  <text class="muted small mono" x="996" y="254">Iterations=&lt;1,4&gt;, Delta=&lt;32,8&gt;</text>
+  <text class="muted small" x="996" y="276">两个 warp 合作覆盖 64 个 strided rows</text>
+  <rect class="amber" x="974" y="310" width="356" height="116"/>
+  <text class="ink body mono" x="996" y="341">B1 shape: &lt;32,128&gt;</text>
+  <text class="muted small mono" x="996" y="366">base.strided = 64 · warp</text>
+  <text class="muted small mono" x="996" y="388">Iterations=&lt;1,8&gt;, Delta=&lt;32,8&gt;</text>
+  <text class="muted small" x="996" y="410">两个 warp 合作覆盖 128 个 output channels</text>
+  <path class="line" d="M1152 426 V466" marker-end="url(#arrow)"/>
+  <rect class="red" x="974" y="478" width="356" height="102"/>
+  <text class="ink body mono" x="996" y="509">SmemIteratorA0 / B0 / B1</text>
+  <text class="muted small" x="996" y="534">logical coordinate → crosswise physical offset</text>
+  <text class="muted small" x="996" y="558">cp.async producer writes one circular-buffer stage</text>
+  <text class="muted small" x="974" y="607">下一张图再展开 physical swizzle。</text>
+
+  <rect class="panel" x="46" y="670" width="1308" height="142" rx="6"/>
+  <text class="ink h2" x="68" y="705">copy ownership 和 MMA ownership 是两套映射</text>
+  <rect class="teal" x="70" y="728" width="560" height="58"/>
+  <text class="ink body" x="92" y="753">global → SMEM copy：64 threads 按 contiguous vector / strided row 分工</text>
+  <text class="muted small" x="92" y="775">B1 copy 时 warp 0/1 分别搬 output channels 0..63 / 64..127</text>
+  <path class="line" d="M630 757 H750" marker-end="url(#arrow)"/>
+  <rect class="amber" x="754" y="728" width="576" height="58"/>
+  <text class="ink body" x="776" y="753">warp MMA：两个 warp 都读完整 N，分别计算 M rows 0..31 / 32..63</text>
+  <text class="muted small" x="776" y="775">copy 时搬过哪些 bytes，不等于 MMA accumulator 属于哪些 rows</text>
+</svg>

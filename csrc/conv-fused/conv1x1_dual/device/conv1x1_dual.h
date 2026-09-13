@@ -11,17 +11,25 @@
 #include "cutlass/layout/tensor.h"
 #include "cutlass/tensor_ref.h"
 
-#include "device/b2b_implicit_gemm_convolution.h"
+#include "conv1x1_dual/device/b2b_implicit_gemm_convolution.h"
 #include "conv1x1_dual/kernel/conv1x1_dual.h"
 
 namespace tiny_cutlass::conv_fused::device {
 
+// Device-level driver for the fused conv1x1 -> ReLU -> conv1x1 family.
+//
+// The residency knob (RF vs SMEM) is a compile-time template parameter: it
+// selects a different underlying kernel through DefaultConv1x1Dual, but the
+// host-facing Arguments and call sequence are identical for both.
 template <
     typename ArchTag = cutlass::arch::Sm80,
-    typename Element = cutlass::half_t>
+    typename Element = cutlass::half_t,
+    kernel::Residency ResidencyKind = kernel::Residency::kRF>
 class Conv1x1Dual {
  public:
-  using KernelConfig = kernel::DefaultConv1x1Dual<ArchTag, Element>;
+  static kernel::Residency const kResidency = ResidencyKind;
+
+  using KernelConfig = kernel::DefaultConv1x1Dual<ArchTag, Element, ResidencyKind>;
   using Operation = cutlass::conv::device::B2bImplicitGemmConvolution<
       typename KernelConfig::CutlassKernel>;
   using CutlassArguments = typename Operation::Arguments;

@@ -28,8 +28,15 @@
 
 - kernel step 按 `00`、`01`、`02` 这样的顺序编号。
 - `00` 通常是 family baseline，但目录不锁死固定 step 数。
-- 编号 kernel `.cu` 文件保持为 launch entry。`csrc/tests/flash-attention` 下的共享
+- 编号 kernel 的 launch TU 保持为 launch entry。`csrc/tests/flash-attention` 下的共享
   executable 负责输入生成、reference 执行、MAE 检查和计时。
+- `02-split-kv` 起改用 ex13 风格分层布局（device/kernel/threadblock/warp/epilogue），launch TU
+  收在 `device/flash_attn.cu`，launch 逻辑由 device 层的 `run()` 经
+  `cutlass::Kernel<T>` trampoline 发出；不再保留 step 根目录的离散 `.cu` 和
+  umbrella header。
+- kernel 源文件允许中文注释（学习笔记风格）；GBK locale 下 EDG 前端会把 UTF-8
+  中文注释误解析成声明延续，必须带 `/utf-8` 编译（`flash_attention_kernels` 的
+  CMake 选项里已加，新建 target 时保持）。
 - fixed-seqlen flash-attention 测试当前使用 cuDNN SDPA 作为 reference backend。
   cuDNN 依赖必须在 CMake configure 阶段检查并提前失败；不要新增
   `HAS_CUDNN` 风格的 C++ fallback 分支。
@@ -46,15 +53,21 @@
 
 - `00-naive-attention` 会 materialize 完整 `P` 矩阵，是 baseline。
 - `01-online-softmax` 只改变 softmax kernel，仍然会 materialize `P`。
-- `02-tiled-online-attention` 是第一个 IO-aware tiled kernel，把 attention tile
-  保留在局部，不把完整 `P` 矩阵写回全局内存。
+- `02-split-kv` 是重置后 LeetCUDA MMA 路线的第一个 kernel：FlashAttention-1
+  forward，Q/K/V 全部按 warp 切分（split-KV warp tiling），m16n8k16 MMA 走
+  CUTLASS 包装。旧 `02-tiled-online-attention`（example 41 风格 fused kernel）
+  已废弃并从构建移除，目录仅作历史保留，不要再接入构建或测试。
+- `02-split-kv` 当前使用 CUTLASS `cp_async` 组件，device policy 选择2-stage K 环形缓冲；
+  Q/V 保持单 buffer，FP16 输入输出与 FP32 累加，显式支持 D=Dv 为32/64/96/128。
+  QK 使用 2×4 warp 切分，PV 每 warp N=32、内部通道补齐到128；
+  不要直接将 congruous B iterator 的 warp N 改成8/16，必须验证其地址置换。
+  完整边界、验证和 NCU 证据见 `blogs/02-split-kv.md`。
 
 ## 当前测试入口
 
 - `flash_attention_test` 是所有已注册 kernel 的共享测试 executable。
 - 可用参数包括 `--kernel=list`、`--kernel=00-naive`、
-  `--kernel=01-online-softmax`、`--kernel=02-tiled-online`、`--kernel=all`。
-- 兼容 executable `flash_attention_00_naive_attention_test`、
-  `flash_attention_01_online_softmax_attention_test`、
-  `flash_attention_02_tiled_online_attention_test` 指向同一个共享 host C++ test main，
-  只是默认 kernel 不同。
+  `--kernel=01-online-softmax`、`--kernel=02-split-kv`、`--kernel=all`。
+- 每个 kernel 另有独立 executable（`naive_attention`、`online_softmax_attention`、
+  `split_kv_attention`），指向同一个共享 host C++ test main，只是默认 kernel 不同；
+  脚本入口为 `scripts/kernels/attention/02-split-kv-attention.bat` 等同名 `.bat`。

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 760" role="img" aria-labelledby="title desc">
+  <title id="title">Warp MMA ownership and final epilogue</title>
+  <desc id="desc">Each warp keeps its M rows through both MMAs, then the final epilogue exchanges fragments through shared memory and adds broadcast bias1.</desc>
+  <defs>
+    <style>
+      .bg{fill:#fff}.ink{fill:#18232b}.muted{fill:#5c6970}.panel{fill:#f7f9f8;stroke:#cbd4d2;stroke-width:2}
+      .teal{fill:#d9f0ec;stroke:#16857a;stroke-width:2}.amber{fill:#fff0d6;stroke:#d58c1b;stroke-width:2}.red{fill:#fde5e3;stroke:#c75450;stroke-width:2}
+      .dark{fill:#26343b;stroke:#18232b;stroke-width:2}.white{fill:#fff}.line{stroke:#18232b;stroke-width:2.4;fill:none}.dash{stroke-dasharray:7 6}
+      text{font-family:"Segoe UI","Microsoft YaHei",Arial,sans-serif;letter-spacing:0}.h1{font-size:28px;font-weight:700}.h2{font-size:18px;font-weight:700}
+      .body{font-size:16px}.small{font-size:13px}.mono{font-family:Consolas,"Cascadia Mono",monospace}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#18232b"/></marker>
+  </defs>
+  <rect class="bg" width="1320" height="760"/>
+  <text class="ink h1" x="46" y="50">从 warp MMA ownership 到最终 epilogue</text>
+  <text class="muted body" x="46" y="80">中间 epilogue 是 register iterator；只有第二层 accumulator 进入普通 CUTLASS epilogue。</text>
+
+  <rect class="panel" x="46" y="116" width="368" height="510" rx="6"/>
+  <text class="ink h2" x="68" y="149">warp 0: M rows 0..31</text>
+  <rect class="teal" x="70" y="180" width="320" height="76"/><text class="ink body mono" x="92" y="211">MMA0 accumulator fragment</text><text class="muted small" x="92" y="235">distributed across 32 lanes</text>
+  <path class="line" d="M230 256 V294" marker-end="url(#arrow)"/>
+  <rect class="red" x="70" y="306" width="320" height="86"/><text class="ink body mono" x="92" y="337">FragmentIteratorA1</text><text class="muted small" x="92" y="361">bias0 + ReLU, register → register</text><text class="muted small mono" x="92" y="380">4 iterator fragments</text>
+  <path class="line" d="M230 392 V430" marker-end="url(#arrow)"/>
+  <rect class="dark" x="70" y="442" width="320" height="76"/><text class="white body mono" x="92" y="473">MMA1: m16n8k16.row.col</text><text class="white small" x="92" y="497">A1 fragment × B1 fragment</text>
+  <path class="line" d="M230 518 V556" marker-end="url(#arrow)"/>
+  <rect class="amber" x="70" y="568" width="320" height="36"/><text class="ink small mono" x="92" y="591">accum1 rows 0..31</text>
+
+  <rect class="panel" x="450" y="116" width="368" height="510" rx="6"/>
+  <text class="ink h2" x="472" y="149">warp 1: M rows 32..63</text>
+  <rect class="teal" x="474" y="180" width="320" height="76"/><text class="ink body mono" x="496" y="211">MMA0 accumulator fragment</text><text class="muted small" x="496" y="235">same layout, next M slice</text>
+  <path class="line" d="M634 256 V294" marker-end="url(#arrow)"/>
+  <rect class="red" x="474" y="306" width="320" height="86"/><text class="ink body mono" x="496" y="337">FragmentIteratorA1</text><text class="muted small" x="496" y="361">bias0 + ReLU, register → register</text><text class="muted small mono" x="496" y="380">4 iterator fragments</text>
+  <path class="line" d="M634 392 V430" marker-end="url(#arrow)"/>
+  <rect class="dark" x="474" y="442" width="320" height="76"/><text class="white body mono" x="496" y="473">MMA1: m16n8k16.row.col</text><text class="white small" x="496" y="497">A1 fragment × B1 fragment</text>
+  <path class="line" d="M634 518 V556" marker-end="url(#arrow)"/>
+  <rect class="amber" x="474" y="568" width="320" height="36"/><text class="ink small mono" x="496" y="591">accum1 rows 32..63</text>
+
+  <path class="line" d="M414 586 H438"/><path class="line" d="M818 586 H864" marker-end="url(#arrow)"/>
+  <rect class="panel" x="868" y="116" width="406" height="510" rx="6"/>
+  <text class="ink h2" x="890" y="149">final CUTLASS epilogue</text>
+  <rect class="amber" x="892" y="180" width="358" height="76"/><text class="ink body mono" x="914" y="211">accum1 register fragments</text><text class="muted small" x="914" y="235">TensorOp accumulator layout</text>
+  <path class="line" d="M1071 256 V294" marker-end="url(#arrow)"/>
+  <rect class="teal" x="892" y="306" width="358" height="86"/><text class="ink body" x="914" y="337">epilogue shared-memory exchange</text><text class="muted small" x="914" y="361">scratch [16,144] half = 4608 B</text><text class="muted small" x="914" y="380">mainloop / epilogue storage share a union</text>
+  <path class="line" d="M1071 392 V430" marker-end="url(#arrow)"/>
+  <rect class="red" x="892" y="442" width="358" height="76"/><text class="ink body mono" x="914" y="473">LinearCombination(accum1, C1)</text><text class="muted small" x="914" y="497">C1 = bias1 broadcast, alpha1=1, beta1=1</text>
+  <path class="line" d="M1071 518 V556" marker-end="url(#arrow)"/>
+  <rect class="dark" x="892" y="568" width="358" height="36"/><text class="white small mono" x="914" y="591">OutputTileIterator → D1 global</text>
+
+  <rect x="46" y="660" width="1228" height="58" fill="#eef2f1" stroke="#cbd4d2"/>
+  <text class="ink body" x="68" y="686">本文 RF 路径的 conv1 末尾是 LinearCombination，不包含 ReLU。</text>
+  <text class="muted small" x="68" y="706">因此真实数据流是 conv0 → bias0 + ReLU → conv1 → bias1；是否再加 ReLU 属于另一种 epilogue policy。</text>
+</svg>

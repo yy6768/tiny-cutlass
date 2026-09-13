@@ -1,128 +1,156 @@
-# Swin CUTLASS 
+# Swin Transformer on CUTLASS 2.x — Overview
 
-## Overview
+这一系列文档记录从 0 重建 Swin 管线的设计。约定见同目录 `AGENTS.md`。
 
+## 1. 为什么是 2.x
 
+CUTLASS 4.5.2 的 `include/cutlass/gemm/collective/collective_builder.hpp` 只特化
+Sm90 / Sm100 / Sm103 / Sm120，**没有 Sm80/89 特化**。本机是 SM89（RTX 4070 Laptop），
+所以 3.x/CuTe 在这里意味着手搓 `CollectiveMma<MainloopSm80CpAsync, ...>`——全 CUTLASS
+仓库只有 `examples/59_ampere_gather_scatter_conv` 一个先例，而且 conv implicit-GEMM、
+epilogue visitor、from-smem B2B 在 3.x Sm80 路径上都没有现成件。
+
+2.x 的分层惯例（`kernel/` → `threadblock/` → `warp/` → `epilogue/`）本身就是这个仓库
+要求的目录形态，两者刚好对齐。
+
+## 2. 管线分解
+
+一个完整的 v1 pre-norm Swin block 加上两端的 stage transition：
+
+```
+PatchEmbed:      conv(4x4, stride 4) + bias + LayerNorm(channel)
+                 |
+                 v
+  ┌──────────── SwinBlock ────────────┐
+  │  x0 = x                            │  <- shortcut1
+  │  LN1                               │
+  │  window partition (含 cyclic shift)│  <- 折进 QKV GEMM 的 GatherA
+  │  QKV projection                    │
+  │  softmax(scale·QKᵀ + bias + mask)  │
+  │  · V                               │
+  │  proj (C→C) + bias                 │
+  │  window reverse                    │  <- 折进 proj GEMM 的 ScatterD
+  │  x1 = x0 + ...                     │  <- residual1，走 ScatterD 的 source-C
+  │  LN2                               │
+  │  fc1 (C→4C) + GELU                 │
+  │  fc2 (4C→C)                        │
+  │  x2 = x1 + ...                     │  <- residual2
+  └────────────────────────────────────┘
+                 |
+                 v
+PatchMerging:    2x2 空间聚合 → LayerNorm(4C) → 线性 4C→2C
+```
+
+Swin 的 block 总是成对出现：第一个 shift=0（W-MSA），第二个 shift=w/2（SW-MSA）。
+
+## 3. 关键设计决策
+
+### 3.1 window partition / reverse 不是 kernel
+
+这两步是纯数据搬运：memory bound，白跑两趟 HBM，没有任何算术可以把延迟藏进去。
+CUTLASS 2.x 已经有正好合适的钩子——`GemmUniversal` 自带 `GatherA` / `GatherB` /
+`ScatterD` 三个模板 flag（`gemm_universal.h:130-136`），gather 是**按行号重映射**：
+
+```cpp
+// predicated_tile_access_iterator.h:575
+if (Gather) coord_strided = indices_[coord_strided];
+```
+
+A 是 row-major 时 strided rank 就是 GEMM 的 M 维。一个 Swin token 的 C 个 channel 在
+内存里连续 ⇒ **一个 token 就是一行** ⇒ 一行一个索引：
+
+- partition ⇒ QKV GEMM 用 `GatherA`，`idx[m] → token_id`
+- reverse ⇒ proj GEMM 用 `ScatterD`，同一张表
+- residual1 ⇒ 走 `ScatterD` 的 source-C 路径（`predicated_tile_iterator.h:336,410`
+  的 load 和 store 两条路径都被同一索引重定向）
+
+cyclic shift 烘进索引表，kernel 侧零索引数学。**零 bespoke iterator 代码。**
+
+已在 device 上逐 bit 验证（`swin_window_gather_scatter`，max_abs 恰好 0.0）。
+
+一个容易踩的点：predication 用的是**逻辑 extent**（problem_size 的 M），而 gather 改的是
+**地址**。所以 A buffer 的行数可以和 M 不同——测试里 A 有 `num_tokens` 行而 M 是
+`num_window_rows`。这与 example 36 用 `GatherB` 的方式一致。
+
+### 3.2 window=4 让 attention 大幅退化
+
+`L = w² = 16` 正好是一个 `m16` MMA tile：
+
+- 无 padding（对比 window=7 的 L=49 要 pad 到 56）
+- `S[16,16]` 全驻寄存器
+- softmax 退化成 lane 内 4 元素归约 + 2 次 `__shfl_xor_sync` 单趟完成，
+  **不需要 flash 的 online rescale 状态机**
+- rel-pos-bias 与 shifted mask 可在 host 侧折成**一张相加表** `[class, heads, 16, 16]`，
+  window=4 / heads=3 时只有 12 KB，L2 常驻
+
+### 3.3 shifted mask 只有 4 个类
+
+只有贴着卷绕边缘的 window 才带 mask，所以 mask 只取决于 window 的
+(是否最后一行, 是否最后一列)——最多 4 类，shift=0 时退化成 1 类。窗口内每个 slot 按
+其**卷绕后**坐标落在哪个区间打标签，标签相同才允许互相 attend。这和官方 Swin 对
+未卷绕的 `img_mask` 做 partition 是等价的。
+
+mask 值取 `-1e4` 而不是 `-inf`：scores 用 fp32 累加但可能以 fp16 存储，`-inf` 会让
+softmax 的减最大值步骤在整行被 mask 时产出 NaN。
+
+### 3.4 PatchEmbed 的 LayerNorm 需要 epilogue visitor
+
+- conv fprop **不支持** visitor：`ImplicitGemmConvolution::operator()` 直接调用普通的
+  threadblock epilogue。visitor 机制（`begin_row` / `end_row`，
+  `epilogue_with_visitor.h:117,134`）只存在于 GEMM kernel 层。
+- 普通 `EpilogueOutputOp` 是逐元素 thread functor：没有跨 lane 钩子、没有两遍，
+  结构上做不了沿 channel 的归约。
+- **单 kernel 完整 LN 的支点**：取 `ThreadblockShape::kN >= embed_dim` ⇒ 整个 channel
+  维落进单个 N-tile ⇒ `end_row` 里 `__shfl_xor_sync` butterfly 直接出**完整**
+  mean/var，无需跨 CTA finalize。范式见 `examples/37`。
+- `stride == kernel == patch` ⇒ 零 halo、im2col 放大倍数 1.0。但 NHWC 下一个 patch 是
+  4 段不连续内存，所以**不能**退化成 plain GEMM + GatherA，必须走 conv。
+
+## 4. 问题规模（window=4 设计线）
+
+```
+B=1, image=224, patch=4, embed_dim=96, window=4, mlp_ratio=4
+stage1: 56x56x96,  heads=3,  head_dim=32, hidden=384
+stage2: 28x28x192, heads=6,  head_dim=32, hidden=768
+stage3: 14x14x384, heads=12, head_dim=32, hidden=1536
+stage4:  7x7x768,  heads=24, head_dim=32     <- 4 除不尽 7
+L = 16 (无 padding), shift = 2, rel-pos table = (2*4-1)^2 = 49 / head
+```
+
+stage4 上 `window=4` 除不尽 `7`。按官方规则处理（window ≥ 特征图时退化成全局 attention
+且 shift=0），写进 `can_implement`；本轮验证覆盖 stage1–3。
+
+## 5. 文件结构
 
 ```text
-kernel/
-<TODO>
+csrc/swin/
+  swin_problem.h        PatchEmbedProblem / SwinStageProblem / PatchMergingProblem
+  window_index.h        host 侧索引表、bias+mask 折叠表、朴素 partition/reverse 参考
+  docs/                 00 overview, 01.. 逐个 family
 
----
-device/
-<TODO>
----
+  <family>/
+    ops/                公共 API：raw device pointer + problem + cudaStream_t
+    device/             CUTLASS device operator + 显式 can_implement
+    kernel/             DefaultXxx<ArchTag, Element, TBShape, WarpShape> 工厂
+    threadblock/        CTA 级 MMA 组合
+    warp/               warp 级原语（如 window softmax）
+    epilogue/ threads/  output iterator / output op
 
+csrc/tests/swin/        每个 family 一个自检 target，打印 MAE / max_abs
 ```
 
-约定（细节见同目录 `AGENTS.md`）：
+## 6. 进度
 
-- `DefaultPatchEmbed / DefaultSwinAttention / DefaultSwinBlock` 是 CUDA 实现侧的
-  CUTLASS factory，只在 `.cu` 组装 kernel 配置，不进入 public facade header。
-- 三个算子的 `can_implement` / `run` 统一返回 `cutlass::Status`；不支持的配置显式
-  失败（`kErrorNotSupported`），不静默退到更弱路径。
-- core runtime 用 raw device pointer + problem descriptor + `cudaStream_t`，不带
-  Torch/ATen ownership。
-- 当前显式实例化 `Sm80 + half_t`，构建目标 SM89。
+| step | 内容 | 状态 |
+|---|---|---|
+| 0 | descriptor + 索引/bias/mask 表 + host gate | ✅ `swin_window_index` PASS |
+| 2 | GatherA / ScatterD == partition / reverse | ✅ `swin_window_gather_scatter` PASS，max_abs 0.0 |
+| 1 | `patch_embed` | 进行中 |
+| 3 | `window_attention` | 待做 |
+| 4 | `swin_mlp` | 待做 |
+| 5 | `patch_merging` | 待做 |
+| 6 | stage 端到端 | 待做 |
 
-代码分层：
+step 2 提前到 step 1 之前跑，因为它验证的是整个设计的核心假设——先证伪比先动工便宜。
 
-```text
-device/       public facade（算子声明）和内部 launch helper
-kernel/       DefaultXxx factory、融合 kernel 及其 __global__ 入口
-epilogue/     算子专用的 epilogue visitor（如 PatchEmbed 的 LayerNorm visitor）
-threadblock/  threadblock 级计算（跨轴归约 LayerNorm、bias、gelu、residual 等）
-warp/         window 坐标映射（image_token <-> window_token）
-trt/          TensorRT plugin 封装
-tests/swin/   host / cuDNN reference 和 executable
-```
-
-## 2. 融合原则（三个算子共用）
-
-**GEMM/conv 只做矩阵乘；跨轴归约（LayerNorm 沿 channel、softmax 沿 key）留在 kernel
-内做，不落 global 中间 buffer；所有 per-element 的 bias / 激活 / residual / shift /
-partition 尽量吸附进最近的 GEMM 输入迭代器或 epilogue。** 一个完整算子内部只有它的
-输入和最终输出走 DRAM，中间量留在 smem / 寄存器。
-
-跨轴归约进不了 CUTLASS 的 `LinearCombination` 系 epilogue（它只能做 per-element
-scale/bias/激活）。归约要么用 block 内 `__syncthreads` 树形归约，要么用自定义
-epilogue visitor 在 warp 内 `__shfl` 归约——后者只有当归约维完整落在单个 threadblock
-的 tile 内时才免跨 CTA finalize。
-
-## 3. 各算子的目标融合形态
-
-### 3.1 PatchEmbed = 单 megakernel（conv + bias + 完整 LayerNorm）
-
-数学本质：stride = kernel = patch_size(4) 的 non-overlapping Conv2d patchify——把
-`[B,H,W,3]` 切成 `(H/4)(W/4)` 个 `4x4x3=48` 的 patch，乘 `[embed_dim, 48]` 权重 + bias，
-等价于单个 GEMM（M = B·(H/4)·(W/4) tokens，N = embed_dim = 96，K = 48）；紧跟沿
-embed_dim 的 per-token LayerNorm（有偏方差，再 `*gamma + beta`）。
-
-目标：**一个 conv kernel，epilogue 里做 bias + 完整两遍 LayerNorm**（归约 + 归一化 +
-仿射），一个 kernel 出最终结果。可行支点：embed_dim=96 小，取 `ThreadblockShape::kN ≥
-embed_dim` 让整个 channel 维落进单个 N-tile（`grid.n()==1`），warp 内 `__shfl` butterfly
-直接出**完整** mean/var，无需跨 CTA finalize、无需第二个 kernel。
-
-关键实现点（细节留 `01-patch-embed.md`）：
-
-- conv fprop 本身不支持 epilogue-visitor（`ImplicitGemmConvolution` 直接调普通
-  epilogue），要 fork 一个驱动 `EpilogueWithVisitor` 的 conv kernel（house style 里
-  `csrc/conv-fused/conv1x1_dual` 已有 fork conv kernel 的先例）。
-- LayerNorm visitor 扩展自 CUTLASS example 37 的 `EpilogueVisitorLayerNorm`（把它的
-  partial 归约补成完整两遍）。
-- in_channels=3 需 pad 到 8（TensorOp fp16 要 128-bit C load，禁 SIMT fallback）。
-
-> 口径：“单 megakernel” 指**计算**融合（conv+bias+完整 LN 一个 kernel）。layout pad
-> pre-pass 在把 gather/pad 折进输入迭代器之前会短期保留，不等于字面单 launch。
-
-### 3.2 SwinBlock = 单 per-window megakernel
-
-完整 v1 pre-norm block：norm1 + shift + partition → window attention → reverse +
-residual1 → norm2 → MLP(fc1 + GELU + fc2) → residual2。
-
-目标：**一个 threadblock 干一个 window 的全部 head**，grid = `(num_windows, batch)`，
-从 partition 到 residual2 全程不落 global 中间 buffer——`normed2` / `mlp_hidden` 等
-中间量留 smem，只有 block 输入和最终 output 走 DRAM。
-
-为什么 per-window：block 里唯一的跨-token 依赖是 softmax 沿 key 归约，它把一个 window
-的 L(≤64) 个 token 绑在一起；QKV / proj / LN / MLP 都作用在完整 C = heads×head_dim 上，
-只有 QK^T+softmax+×V 是 per-head。让一个 block 持有完整 C 并把 head 放进 block 内循环，
-attention 前后的 GEMM 和 LayerNorm 才能直接吃到完整通道，不必跨 block 拼通道；MLP
-per-token 独立，顺手在同一 block 内做完，`normed2` 直接留 smem 喂 fc1。
-
-可行域：单 kernel 的前提是一个 window 的全部中间量塞得进 smem。C 越大（Swin-T 四个
-stage 的 C 从 96 涨到 768），smem 需求线性增长，深层 stage 可能超出 Sm80/89 的 ~163KB
-上限；超限配置由 `can_implement` 显式 gate 拒绝，不做静默 fallback。细节留
-`02-swin-block.md`。
-
-### 3.3 SwinAttention = partition → attention → reverse
-
-只负责 attention 子路径：window partition → window attention（QK^T + softmax + ×V +
-relative-position bias）→ window reverse。attention core 复用
-`csrc/flash-attention/02-tiled-online-attention` 的 flash kernel。它与 SwinBlock 只通过
-内部 `WindowAttentionTensors` 共享 projection/attention 权重和 workspace，不合并成同时
-含 MLP/LayerNorm 的大 tensor 结构。
-
-## 4. 边界与非目标
-
-- PatchMerging 是 BasicLayer stage transition，若恢复必须是独立的
-  problem/factory/operator/test，不允许通过 nullable output pointer 作为 SwinAttention
-  的可选副作用。
-- TensorRT plugin（`trt/`）当前封装 SwinAttention，不是完整 SwinBlock 或整网。
-- 本 workspace 不是完整 Swin 网络实现；BasicLayer / 整网组合待三个算子做扎实后再定。
-
-## 5. 构建与验证
-
-唯一入口，顺序固定 build -> verify -> bench：
-
-```bat
-scripts\kernels\swin\run.bat
-```
-
-- verify 覆盖 public 算子，失败后不 benchmark / profile。
-- cuDNN correctness reference 固定在 `csrc/tests/swin/reference.h/.cpp`，不进入 runtime
-  fallback；未通过 reference parity 的数据不作性能结论。
-- benchmark / Nsys / NCU 采集与 CSV 解析统一在 `bench.py`。
-
-> 稳定边界与硬约束见同目录 `AGENTS.md`；本文只描述算子边界与目标方向，实现细节随
-> 各算子推进补进编号文档。
+融合（attention+MLP 同 kernel、PatchEmbed 作 prologue）和 FP8 都不在本轮范围。

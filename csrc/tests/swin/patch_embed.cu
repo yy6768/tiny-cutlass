@@ -1,405 +1,305 @@
+/*
+  Step 1 gate: fused PatchEmbed (conv + bias + channel-axis LayerNorm) against a
+  host reference.
+
+  The interesting property being tested is that the LayerNorm is COMPLETE inside
+  one kernel. A partial-reduction bug would not blow up -- it would produce
+  plausible values normalized by a fraction of the row -- so the test also
+  checks the statistical signature of a correct LayerNorm directly: every output
+  row must have mean ~0 and variance ~1 once gamma/beta are identity.
+*/
+
 #include <cmath>
-#include <cstdint>
-#include <fstream>
-#include <iostream>
-#include <limits>
-#include <random>
+#include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 
-#include <cuda_runtime.h>
+#include "cutlass/cutlass.h"
+#include "cutlass/half.h"
 
-#include "cutlass/arch/mma.h"
-#include "cutlass/numeric_types.h"
-#include "cutlass/util/command_line.h"
-#include "cutlass/util/device_memory.h"
+#include "swin/patch_embed/ops/patch_embed.h"
+#include "swin/swin_problem.h"
 
-#include "../../swin/device/patch_embed.h"
-#include "../../swin/kernel/default_patch_embed.h"
-#include "../../swin/swin_problem.h"
+#include "reference.h"
+#include "test_utils.h"
 
-namespace tiny_cutlass {
-namespace swin {
+using namespace tiny_cutlass::swin;
+using tiny_cutlass::testing::DeviceBuffer;
+
 namespace {
 
-using Op = device::PatchEmbed<cutlass::arch::Sm80, cutlass::half_t>;
-using Element = typename Op::Element;
+using Element = cutlass::half_t;
+
+int g_failures = 0;
+
+void check(bool condition, char const* what) {
+  if (!condition) {
+    std::printf("  FAIL  %s\n", what);
+    ++g_failures;
+  } else {
+    std::printf("  ok    %s\n", what);
+  }
+}
+
+// Zero-pads the channel axis of an NHWC activation from `in_channels` to
+// `in_channels_padded`. TensorOp fp16 needs an 8-wide C load and this family
+// takes no SIMT fallback, so the pad is mandatory rather than an optimization.
+std::vector<Element> pad_activation_channels(
+    std::vector<Element> const& src, PatchEmbedProblem const& problem) {
+  int const H = problem.image_size;
+  int const W = problem.image_size;
+  int const C = problem.in_channels;
+  int const Cp = problem.in_channels_padded;
+
+  std::vector<Element> dst(
+      size_t(problem.batch) * size_t(H) * size_t(W) * size_t(Cp), Element(0.0f));
+  for (int n = 0; n < problem.batch; ++n) {
+    for (int h = 0; h < H; ++h) {
+      for (int w = 0; w < W; ++w) {
+        for (int c = 0; c < C; ++c) {
+          size_t const si =
+              ((size_t(n) * size_t(H) + size_t(h)) * size_t(W) + size_t(w)) *
+                  size_t(C) + size_t(c);
+          size_t const di =
+              ((size_t(n) * size_t(H) + size_t(h)) * size_t(W) + size_t(w)) *
+                  size_t(Cp) + size_t(c);
+          dst[di] = src[si];
+        }
+      }
+    }
+  }
+  return dst;
+}
+
+// Same for the filter, KRSC.
+std::vector<Element> pad_filter_channels(
+    std::vector<Element> const& src, PatchEmbedProblem const& problem) {
+  int const K = problem.embed_dim;
+  int const R = problem.patch_size;
+  int const S = problem.patch_size;
+  int const C = problem.in_channels;
+  int const Cp = problem.in_channels_padded;
+
+  std::vector<Element> dst(
+      size_t(K) * size_t(R) * size_t(S) * size_t(Cp), Element(0.0f));
+  for (int k = 0; k < K; ++k) {
+    for (int r = 0; r < R; ++r) {
+      for (int s = 0; s < S; ++s) {
+        for (int c = 0; c < C; ++c) {
+          size_t const si =
+              ((size_t(k) * size_t(R) + size_t(r)) * size_t(S) + size_t(s)) *
+                  size_t(C) + size_t(c);
+          size_t const di =
+              ((size_t(k) * size_t(R) + size_t(r)) * size_t(S) + size_t(s)) *
+                  size_t(Cp) + size_t(c);
+          dst[di] = src[si];
+        }
+      }
+    }
+  }
+  return dst;
+}
+
+// A correct channel-axis LayerNorm with gamma=1, beta=0 leaves every row with
+// mean 0 and variance 1. Normalizing by a PARTIAL sum would still look
+// "reasonable" elementwise but would fail this, so it is checked separately
+// from the reference comparison.
+void check_row_statistics(
+    std::vector<Element> const& output, int rows, int cols, char const* label) {
+  double worst_mean = 0.0;
+  double worst_var_error = 0.0;
+  for (int r = 0; r < rows; ++r) {
+    double sum = 0.0;
+    for (int c = 0; c < cols; ++c) {
+      sum += double(float(output[size_t(r) * size_t(cols) + size_t(c)]));
+    }
+    double const mean = sum / double(cols);
+
+    double var_sum = 0.0;
+    for (int c = 0; c < cols; ++c) {
+      double const d =
+          double(float(output[size_t(r) * size_t(cols) + size_t(c)])) - mean;
+      var_sum += d * d;
+    }
+    double const variance = var_sum / double(cols);
+
+    worst_mean = std::max(worst_mean, std::fabs(mean));
+    worst_var_error = std::max(worst_var_error, std::fabs(variance - 1.0));
+  }
+  std::printf("        %s: max |mean| %.3e, max |var - 1| %.3e\n", label,
+              worst_mean, worst_var_error);
+  // fp16 storage of the normalized values sets the floor here.
+  check(worst_mean < 2.0e-2, "every row has mean ~ 0");
+  check(worst_var_error < 5.0e-2, "every row has variance ~ 1");
+}
 
 struct Options {
-  bool error = false;
-  bool reference_check = true;
-  bool profile_once = false;
-  int batch_size = 1;
-  int image_size = 224;
-  int in_channels = 3;
-  int input_channels_padded = 8;
-  int embed_dim = 96;
-  int patch_size = 4;
-  int iterations = 20;
+  PatchEmbedProblem problem;
+  bool identity_affine = false;  // gamma = 1, beta = 0 for the stats check
   int seed = 2026;
-  float epsilon = 1.0e-5f;
-  float abs_tolerance = 2.5e-2f;
-  float rel_tolerance = 2.5e-2f;
-  std::string input_file;
-  std::string kernel_file;
-  std::string bias_file;
-  std::string gamma_file;
-  std::string beta_file;
-
-  void parse(int argc, char const** args) {
-    cutlass::CommandLine cmd(argc, args);
-    auto get_string_arg = [&](char const* name, std::string& value) {
-      std::string prefix = std::string("--") + name + "=";
-      for (int i = 1; i < argc; ++i) {
-        std::string arg(args[i]);
-        if (arg.rfind(prefix, 0) == 0) {
-          value = arg.substr(prefix.size());
-        }
-      }
-    };
-    cmd.get_cmd_line_argument("batch_size", batch_size, batch_size);
-    cmd.get_cmd_line_argument("image_size", image_size, image_size);
-    cmd.get_cmd_line_argument("in_channels", in_channels, in_channels);
-    cmd.get_cmd_line_argument(
-        "input_channels_padded", input_channels_padded, input_channels_padded);
-    cmd.get_cmd_line_argument("embed_dim", embed_dim, embed_dim);
-    cmd.get_cmd_line_argument("patch_size", patch_size, patch_size);
-    cmd.get_cmd_line_argument("iterations", iterations, iterations);
-    cmd.get_cmd_line_argument("seed", seed, seed);
-    cmd.get_cmd_line_argument("epsilon", epsilon, epsilon);
-    cmd.get_cmd_line_argument("abs_tolerance", abs_tolerance, abs_tolerance);
-    cmd.get_cmd_line_argument("rel_tolerance", rel_tolerance, rel_tolerance);
-    cmd.get_cmd_line_argument("reference-check", reference_check, reference_check);
-    cmd.get_cmd_line_argument("profile-once", profile_once, profile_once);
-    get_string_arg("input-file", input_file);
-    get_string_arg("kernel-file", kernel_file);
-    get_string_arg("bias-file", bias_file);
-    get_string_arg("gamma-file", gamma_file);
-    get_string_arg("beta-file", beta_file);
-    error = batch_size <= 0 || image_size <= 0 || in_channels <= 0 ||
-        input_channels_padded <= 0 || embed_dim <= 0 || patch_size <= 0 ||
-        iterations <= 0 || epsilon <= 0.0f;
-  }
-
-  PatchEmbedProblem problem() const {
-    PatchEmbedProblem p;
-    p.batch_size = batch_size;
-    p.image_size = image_size;
-    p.in_channels = in_channels;
-    p.input_channels_padded = input_channels_padded;
-    p.embed_dim = embed_dim;
-    p.patch_size = patch_size;
-    p.layernorm_eps = epsilon;
-    return p;
-  }
 };
 
-void fill_random(std::vector<Element>& data, int seed, float lo, float hi) {
-  std::mt19937 rng(seed);
-  std::uniform_real_distribution<float> dist(lo, hi);
-  for (Element& value : data) {
-    value = Element(dist(rng));
-  }
-}
+bool run_case(Options const& options, char const* label) {
+  PatchEmbedProblem const& problem = options.problem;
+  std::printf("%s (B=%d image=%d in_ch=%d->%d embed=%d patch=%d)\n", label,
+              problem.batch, problem.image_size, problem.in_channels,
+              problem.in_channels_padded, problem.embed_dim, problem.patch_size);
 
-bool load_float_file(
-    std::string const& path,
-    std::vector<Element>& dst,
-    size_t expected,
-    char const* label) {
-  if (path.empty()) {
-    return true;
+  int const K = problem.embed_dim;
+  int const tokens = problem.num_tokens();
+
+  // Unpadded host tensors, then padded copies for both device and reference so
+  // the two see byte-identical inputs.
+  std::vector<Element> input(
+      size_t(problem.batch) * size_t(problem.image_size) *
+      size_t(problem.image_size) * size_t(problem.in_channels));
+  std::vector<Element> filter(
+      size_t(K) * size_t(problem.patch_size) * size_t(problem.patch_size) *
+      size_t(problem.in_channels));
+  tiny_cutlass::testing::fill_random_uniform(input, options.seed, -1.0f, 1.0f);
+  tiny_cutlass::testing::fill_random_uniform(filter, options.seed + 1, -0.5f, 0.5f);
+
+  std::vector<Element> const padded_input = pad_activation_channels(input, problem);
+  std::vector<Element> const padded_filter = pad_filter_channels(filter, problem);
+
+  // Two-arg form: `std::vector<float> bias(size_t(K));` is a most-vexing-parse
+  // and declares a function instead.
+  std::vector<float> bias(static_cast<size_t>(K), 0.0f);
+  std::vector<float> gamma(static_cast<size_t>(K), 0.0f);
+  std::vector<float> beta(static_cast<size_t>(K), 0.0f);
+  for (int k = 0; k < K; ++k) {
+    bias[size_t(k)] = 0.05f * std::sin(0.31f * float(k));
+    if (options.identity_affine) {
+      gamma[size_t(k)] = 1.0f;
+      beta[size_t(k)] = 0.0f;
+    } else {
+      gamma[size_t(k)] = 1.0f + 0.1f * std::cos(0.17f * float(k));
+      beta[size_t(k)] = 0.02f * std::sin(0.23f * float(k));
+    }
   }
-  std::ifstream file(path, std::ios::binary | std::ios::ate);
-  if (!file) {
-    std::cerr << "Could not open " << label << " file: " << path << "\n";
+
+  DeviceBuffer<Element> d_input(padded_input.size());
+  DeviceBuffer<Element> d_filter(padded_filter.size());
+  DeviceBuffer<float> d_bias(bias.size());
+  DeviceBuffer<float> d_gamma(gamma.size());
+  DeviceBuffer<float> d_beta(beta.size());
+  DeviceBuffer<Element> d_output(size_t(tokens) * size_t(K));
+  d_input.copy_from_host(padded_input);
+  d_filter.copy_from_host(padded_filter);
+  d_bias.copy_from_host(bias);
+  d_gamma.copy_from_host(gamma);
+  d_beta.copy_from_host(beta);
+
+  patch_embed::PatchEmbedArguments<Element, float> args;
+  args.problem = problem;
+  args.input = d_input.get();
+  args.filter = d_filter.get();
+  args.bias = d_bias.get();
+  args.gamma = d_gamma.get();
+  args.beta = d_beta.get();
+  args.output = d_output.get();
+
+  cutlass::Status status =
+      patch_embed::patch_embed_can_implement<Element, float>(args);
+  if (status != cutlass::Status::kSuccess) {
+    std::printf("  FAIL  can_implement: %s\n",
+                cutlass::cutlassGetStatusString(status));
+    ++g_failures;
     return false;
   }
-  std::streamsize bytes = file.tellg();
-  std::streamsize expected_bytes =
-      std::streamsize(expected * sizeof(float));
-  if (bytes != expected_bytes) {
-    std::cerr << label << " file size mismatch: " << path
-              << " has " << bytes << " bytes, expected "
-              << expected_bytes << "\n";
+
+  status = patch_embed::patch_embed<Element, float>(args);
+  if (status != cutlass::Status::kSuccess) {
+    std::printf("  FAIL  run: %s\n", cutlass::cutlassGetStatusString(status));
+    ++g_failures;
     return false;
   }
-  file.seekg(0, std::ios::beg);
-  std::vector<float> tmp(expected);
-  if (!file.read(reinterpret_cast<char*>(tmp.data()), bytes)) {
-    std::cerr << "Could not read " << label << " file: " << path << "\n";
+
+  cudaError_t error = cudaDeviceSynchronize();
+  if (error != cudaSuccess) {
+    std::printf("  FAIL  sync: %s\n", cudaGetErrorString(error));
+    ++g_failures;
     return false;
   }
-  dst.resize(expected);
-  for (size_t i = 0; i < expected; ++i) {
-    dst[i] = Element(tmp[i]);
+
+  std::vector<Element> got(size_t(tokens) * size_t(K));
+  d_output.copy_to_host(got);
+
+  std::vector<float> const want = testing::patch_embed_reference<Element>(
+      problem, padded_input, padded_filter, bias, gamma, beta);
+
+  auto const result = tiny_cutlass::testing::compare_host(got, want);
+  std::printf("        MAE %.3e  max_abs %.3e\n", result.mae, result.max_abs);
+  check(result.finite, "output is finite");
+  check(result.mae <= 1.0e-2, "MAE within 1e-2 of host reference");
+
+  if (options.identity_affine) {
+    check_row_statistics(got, tokens, K, "device");
   }
   return true;
 }
 
-void patch_embed_reference(
-    PatchEmbedProblem const& p,
-    std::vector<Element> const& input,
-    std::vector<Element> const& kernel,
-    std::vector<Element> const& bias,
-    std::vector<Element> const& gamma,
-    std::vector<Element> const& beta,
-    std::vector<Element>& output) {
-  int out = patch_embed_output_size(p);
-  output.assign(patch_embed_output_elements(p), Element(0));
+}  // namespace
 
-  std::vector<float> token(p.embed_dim);
-  for (int b = 0; b < p.batch_size; ++b) {
-    for (int oy = 0; oy < out; ++oy) {
-      for (int ox = 0; ox < out; ++ox) {
-        for (int k = 0; k < p.embed_dim; ++k) {
-          float acc = float(bias[k]);
-          for (int c = 0; c < p.in_channels; ++c) {
-            for (int r = 0; r < p.patch_size; ++r) {
-              for (int s = 0; s < p.patch_size; ++s) {
-                int iy = oy * p.patch_size + r;
-                int ix = ox * p.patch_size + s;
-                int64_t input_idx =
-                    ((int64_t(b) * p.image_size + iy) * p.image_size + ix) *
-                        p.in_channels +
-                    c;
-                int64_t kernel_idx =
-                    ((int64_t(k) * p.in_channels + c) * p.patch_size + r) *
-                        p.patch_size +
-                    s;
-                acc += float(input[input_idx]) * float(kernel[kernel_idx]);
-              }
-            }
-          }
-          token[k] = acc;
-        }
+int main() {
+  std::printf("fused shared storage: %zu bytes\n",
+              patch_embed::patch_embed_shared_storage_size<Element, float>());
 
-        float sum = 0.0f;
-        float square_sum = 0.0f;
-        for (float value : token) {
-          sum += value;
-          square_sum += value * value;
-        }
-        float mean = sum / float(p.embed_dim);
-        float variance = square_sum / float(p.embed_dim) - mean * mean;
-        float inv_std = 1.0f / std::sqrt(variance + p.layernorm_eps);
+  // Shipping stage-1 config.
+  Options shipping;
+  shipping.problem = PatchEmbedProblem{};
+  run_case(shipping, "swin-T stage1");
 
-        int64_t token_idx = (int64_t(b) * out * out + oy * out + ox) * p.embed_dim;
-        for (int k = 0; k < p.embed_dim; ++k) {
-          float value =
-              (token[k] - mean) * inv_std * float(gamma[k]) + float(beta[k]);
-          output[token_idx + k] = Element(value);
-        }
-      }
-    }
-  }
-}
+  // Same shape with identity affine, so the row statistics assert directly that
+  // the LayerNorm saw whole rows.
+  Options identity = shipping;
+  identity.identity_affine = true;
+  run_case(identity, "swin-T stage1, identity affine");
 
-bool compare(
-    std::vector<Element> const& actual,
-    std::vector<Element> const& expected,
-    float abs_tolerance,
-    float rel_tolerance) {
-  double abs_sum = 0.0;
-  float max_abs = 0.0f;
-  int64_t max_index = 0;
-  for (size_t i = 0; i < actual.size(); ++i) {
-    float a = float(actual[i]);
-    float e = float(expected[i]);
-    float diff = std::fabs(a - e);
-    float rel = diff / (std::fabs(e) + 1.0e-5f);
-    abs_sum += double(diff);
-    if (diff > max_abs) {
-      max_abs = diff;
-      max_index = int64_t(i);
-    }
-    if (!std::isfinite(a) || (diff > abs_tolerance && rel > rel_tolerance)) {
-      std::cerr << "Mismatch at " << i << ": actual=" << a
-                << " expected=" << e << " diff=" << diff
-                << " rel=" << rel << "\n";
-      return false;
-    }
-  }
-  std::cout << "    MAE     : " << (abs_sum / double(actual.size())) << "\n"
-            << "    Max abs : " << max_abs << " at index " << max_index << "\n";
-  return true;
-}
+  // Smaller image and a batch, to catch anything hardcoded to 224 / B=1.
+  Options small;
+  small.problem.batch = 2;
+  small.problem.image_size = 32;
+  small.problem.in_channels = 3;
+  small.problem.in_channels_padded = 8;
+  small.problem.embed_dim = 96;
+  small.problem.patch_size = 4;
+  small.identity_affine = true;
+  run_case(small, "batched 32x32");
 
-int run(Options const& options) {
-  PatchEmbedProblem problem = options.problem();
-  cutlass::Status status = Op::can_implement(problem);
-  if (status != cutlass::Status::kSuccess) {
-    std::cerr << "Unsupported PatchEmbed problem: "
-              << cutlassGetStatusString(status) << "\n";
-    return -1;
+  // embed_dim 64: exercises a channel count below the N-tile with a different
+  // lane arrangement.
+  Options narrow;
+  narrow.problem.batch = 1;
+  narrow.problem.image_size = 32;
+  narrow.problem.in_channels = 3;
+  narrow.problem.in_channels_padded = 8;
+  narrow.problem.embed_dim = 64;
+  narrow.problem.patch_size = 4;
+  narrow.identity_affine = true;
+  run_case(narrow, "embed_dim 64");
+
+  // A configuration that must be REFUSED, not silently mis-normalized:
+  // embed_dim beyond the N-tile would give partial row statistics.
+  {
+    std::printf("rejects embed_dim > ThreadblockShape::kN\n");
+    Options too_wide;
+    too_wide.problem.image_size = 32;
+    too_wide.problem.embed_dim = 256;  // > kN = 128
+    patch_embed::PatchEmbedArguments<Element, float> args;
+    args.problem = too_wide.problem;
+    // Non-null pointers so the check under test is the shape check.
+    args.input = reinterpret_cast<Element const*>(0x1);
+    args.filter = reinterpret_cast<Element const*>(0x1);
+    args.output = reinterpret_cast<Element*>(0x1);
+    cutlass::Status const status =
+        patch_embed::patch_embed_can_implement<Element, float>(args);
+    check(status == cutlass::Status::kErrorNotSupported,
+          "can_implement rejects embed_dim > kN with kErrorNotSupported");
   }
 
-  std::vector<Element> host_input(patch_embed_input_elements(problem));
-  std::vector<Element> host_kernel(patch_embed_kernel_elements(problem));
-  std::vector<Element> host_bias(problem.embed_dim);
-  std::vector<Element> host_gamma(problem.embed_dim);
-  std::vector<Element> host_beta(problem.embed_dim);
-  fill_random(host_input, options.seed, -1.0f, 1.0f);
-  fill_random(host_kernel, options.seed + 1, -0.08f, 0.08f);
-  fill_random(host_bias, options.seed + 2, -0.05f, 0.05f);
-  fill_random(host_gamma, options.seed + 3, 0.8f, 1.2f);
-  fill_random(host_beta, options.seed + 4, -0.05f, 0.05f);
-  if (!load_float_file(
-          options.input_file,
-          host_input,
-          patch_embed_input_elements(problem),
-          "input") ||
-      !load_float_file(
-          options.kernel_file,
-          host_kernel,
-          patch_embed_kernel_elements(problem),
-          "kernel") ||
-      !load_float_file(
-          options.bias_file,
-          host_bias,
-          problem.embed_dim,
-          "bias") ||
-      !load_float_file(
-          options.gamma_file,
-          host_gamma,
-          problem.embed_dim,
-          "gamma") ||
-      !load_float_file(
-          options.beta_file,
-          host_beta,
-          problem.embed_dim,
-          "beta")) {
-    return -1;
-  }
-
-  int64_t workspace_elements =
-      patch_embed_output_elements(problem) +
-      patch_embed_input_padded_elements(problem) +
-      patch_embed_kernel_padded_elements(problem);
-  cutlass::DeviceAllocation<Element> input(patch_embed_input_elements(problem));
-  cutlass::DeviceAllocation<Element> kernel(patch_embed_kernel_elements(problem));
-  cutlass::DeviceAllocation<Element> bias(problem.embed_dim);
-  cutlass::DeviceAllocation<Element> gamma(problem.embed_dim);
-  cutlass::DeviceAllocation<Element> beta(problem.embed_dim);
-  cutlass::DeviceAllocation<Element> workspace(workspace_elements);
-  cutlass::DeviceAllocation<Element> output(patch_embed_output_elements(problem));
-
-  cutlass::device_memory::copy_to_device(input.get(), host_input.data(), host_input.size());
-  cutlass::device_memory::copy_to_device(kernel.get(), host_kernel.data(), host_kernel.size());
-  cutlass::device_memory::copy_to_device(bias.get(), host_bias.data(), host_bias.size());
-  cutlass::device_memory::copy_to_device(gamma.get(), host_gamma.data(), host_gamma.size());
-  cutlass::device_memory::copy_to_device(beta.get(), host_beta.data(), host_beta.size());
-  cudaMemset(workspace.get(), 0, workspace_elements * sizeof(Element));
-  cudaMemset(output.get(), 0, patch_embed_output_elements(problem) * sizeof(Element));
-
-  Op::Tensors tensors;
-  tensors.input = input.get();
-  tensors.kernel = kernel.get();
-  tensors.bias = bias.get();
-  tensors.gamma = gamma.get();
-  tensors.beta = beta.get();
-  tensors.conv_output = workspace.get();
-  tensors.output = output.get();
-
-  status = Op::run(problem, tensors, nullptr);
-  if (status != cutlass::Status::kSuccess) {
-    std::cerr << "PatchEmbed run failed: "
-              << cutlassGetStatusString(status) << "\n";
-    return -1;
-  }
-  cudaError_t err = cudaDeviceSynchronize();
-  if (err != cudaSuccess) {
-    std::cerr << "PatchEmbed sync failed: " << cudaGetErrorString(err) << "\n";
-    return -1;
-  }
-
-  if (options.reference_check) {
-    std::vector<Element> host_output(patch_embed_output_elements(problem));
-    std::vector<Element> host_reference;
-    cutlass::device_memory::copy_to_host(
-        host_output.data(), output.get(), host_output.size());
-    patch_embed_reference(
-        problem,
-        host_input,
-        host_kernel,
-        host_bias,
-        host_gamma,
-        host_beta,
-        host_reference);
-
-    if (!compare(host_output, host_reference, options.abs_tolerance, options.rel_tolerance)) {
-      std::cout << "\nFailed\n";
-      return -1;
-    }
-  }
-
-  if (options.profile_once) {
-    std::cout << "\nSwin PatchEmbed profile path:\n"
-              << "====================================================\n"
-              << "    Path: NHWC input -> channel pad -> CUTLASS Conv2d -> BiasLayerNorm -> NHWC output\n"
-              << "\nPassed\n";
-    return 0;
-  }
-
-  cudaEvent_t start = nullptr;
-  cudaEvent_t stop = nullptr;
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-  cudaEventRecord(start);
-  for (int i = 0; i < options.iterations; ++i) {
-    status = Op::run(problem, tensors, nullptr);
-    if (status != cutlass::Status::kSuccess) {
-      cudaEventDestroy(start);
-      cudaEventDestroy(stop);
-      return -1;
-    }
-  }
-  cudaEventRecord(stop);
-  cudaEventSynchronize(stop);
-  float elapsed_ms = 0.0f;
-  cudaEventElapsedTime(&elapsed_ms, start, stop);
-  cudaEventDestroy(start);
-  cudaEventDestroy(stop);
-
-  double runtime_ms = double(elapsed_ms) / double(options.iterations);
-  int out = patch_embed_output_size(problem);
-  double flops = 2.0 * problem.batch_size * out * out * problem.embed_dim *
-      problem.in_channels * problem.patch_size * problem.patch_size;
-  double gflops = flops / 1.0e6 / runtime_ms;
-
-  std::cout << "\nSwin PatchEmbed path:\n"
-            << "====================================================\n"
-            << "    {B, image, patch, Cin, Cin_pad, embed} = {"
-            << problem.batch_size << ", " << problem.image_size << ", "
-            << problem.patch_size << ", " << problem.in_channels << ", "
-            << problem.input_channels_padded << ", " << problem.embed_dim << "}\n"
-            << "    Path: NHWC input -> channel pad -> CUTLASS Conv2d -> BiasLayerNorm -> NHWC output\n"
-            << "    Runtime: " << runtime_ms << " ms\n"
-            << "    GFLOPs : " << gflops << "\n\nPassed\n";
-
-  return 0;
-}
-
-} // namespace
-} // namespace swin
-} // namespace tiny_cutlass
-
-int main(int argc, char const** args) {
-  using namespace tiny_cutlass::swin;
-
-  cudaDeviceProp props;
-  cudaError_t err = cudaGetDeviceProperties(&props, 0);
-  if (err != cudaSuccess) {
-    std::cerr << "cudaGetDeviceProperties: " << cudaGetErrorString(err) << "\n";
-    return -1;
-  }
-  std::cout << "Device: " << props.name << " (SM" << props.major << props.minor << ")\n";
-
-  Options options;
-  options.parse(argc, args);
-  if (options.error) {
-    std::cerr << "Invalid options.\n";
-    return -1;
-  }
-  return run(options);
+  std::printf("\n%s (%d failure%s)\n", g_failures == 0 ? "PASS" : "FAIL",
+              g_failures, g_failures == 1 ? "" : "s");
+  return g_failures == 0 ? 0 : 1;
 }
