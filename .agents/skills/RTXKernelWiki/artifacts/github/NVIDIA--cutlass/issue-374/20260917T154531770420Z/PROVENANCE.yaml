@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/374
+repo: NVIDIA/cutlass
+number: 374
+type: issue
+retrieved_at: 20260917T154531770420Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4531
+  sha256: 548c2f0f8ec05351fcb9b1c015f41f68300ed8772c6ea9e435f6c9c83b6bef50
+- path: comments.json
+  bytes: 4314
+  sha256: 1624f1dfb84a27de429d7f7806701b8d9d36e17811cd932c075ceda3cff68412
+- path: page.md
+  bytes: 1449
+  sha256: 1711480ba1f3772ec15a48740bde416cafb7ebc79ce69ae940f280625f264c03
+skipped: []
+errors: []
+truncations: []
+title: Mixed precision GEMM Performance (A100 & V100)
+updated_at: '2021-12-07T16:05:29Z'
+status: closed
+kernel_files_captured: 0

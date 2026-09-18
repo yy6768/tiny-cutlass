@@ -1,0 +1,64 @@
+schema_version: 1
+origin_url: https://github.com/SHI-Labs/NATTEN/pull/114
+repo: SHI-Labs/NATTEN
+number: 114
+type: pr
+retrieved_at: 20260917T164959670620Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4477
+  sha256: 2a42471c12a31ba410809993acdcdc60f839f8d7d678eef343aa3625de44b1cb
+- path: comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: pull.json
+  bytes: 20341
+  sha256: ec4e02eb303038109f4bd41629a7a964626f7e26bee2ae9f197edb40216171cd
+- path: changed-files.json
+  bytes: 4986
+  sha256: c455460783de47182b8e432df683b9e1580498538a1a5e850d0b9356e830cfe7
+- path: reviews.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 3947
+  sha256: 932cb80018f5d45237997d92a44e83477a8795169be72a786bc7edbf64e1ac40
+- path: key-files/head/src/natten/autotuner.py
+  bytes: 15295
+  sha256: 39d5d866b69e7230aa1b91c2641309cff4628113aa2af25b439ff37066048437
+  upstream_path: src/natten/autotuner.py
+  source_sha: 12ed5ea7ed92c64ef1327a439382525f4e35b034
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/12ed5ea7ed92c64ef1327a439382525f4e35b034/src/natten/autotuner.py
+- path: key-files/head/src/natten/functional.py
+  bytes: 52864
+  sha256: 4b53b66d1bd405b9dd95400c47ae86f57451c6947b593d22c61a39083d899c51
+  upstream_path: src/natten/functional.py
+  source_sha: 12ed5ea7ed92c64ef1327a439382525f4e35b034
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/12ed5ea7ed92c64ef1327a439382525f4e35b034/src/natten/functional.py
+- path: page.md
+  bytes: 733
+  sha256: 8ba726da7a3da6856da3e2ecfaaccf56145e4f58b0a58248d7fe2af5909f7409
+skipped: []
+errors: []
+truncations: []
+title: Disable 64x128x128 GEMM config for SM86 and 89
+updated_at: '2024-03-16T02:50:58Z'
+status: merged
+head_sha: 12ed5ea7ed92c64ef1327a439382525f4e35b034
+base_sha: a84dd0929ef904c076823ea3be05bc75cf2a0682
+merged_at: '2024-03-16T02:50:54Z'
+merge_commit_sha: e4ceaef3ad8817b3c02ba55ec0dcddd532eb8f5d
+changed_files: 2
+kernel_files_selected: 2
+key_file_policy: CUDA/C++/PTX/MLIR and kernel-related Python; exclude docs, CI, tests
+  and benchmarks
+kernel_files_captured: 2

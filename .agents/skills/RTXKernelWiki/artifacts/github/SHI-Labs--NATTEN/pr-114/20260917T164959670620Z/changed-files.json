@@ -1,0 +1,26 @@
+[
+  {
+    "sha": "c49bf47656410141422a63df19b3adf94c79dcb1",
+    "filename": "src/natten/autotuner.py",
+    "status": "modified",
+    "additions": 35,
+    "deletions": 8,
+    "changes": 43,
+    "blob_url": "https://github.com/SHI-Labs/NATTEN/blob/12ed5ea7ed92c64ef1327a439382525f4e35b034/src%2Fnatten%2Fautotuner.py",
+    "raw_url": "https://github.com/SHI-Labs/NATTEN/raw/12ed5ea7ed92c64ef1327a439382525f4e35b034/src%2Fnatten%2Fautotuner.py",
+    "contents_url": "https://api.github.com/repos/SHI-Labs/NATTEN/contents/src%2Fnatten%2Fautotuner.py?ref=12ed5ea7ed92c64ef1327a439382525f4e35b034",
+    "patch": "@@ -21,10 +21,11 @@\n #\n #################################################################################################\n import warnings\n-from typing import Any, Dict, List, Tuple\n+from typing import Any, Dict, List, Optional, Tuple\n \n import torch\n from torch import Tensor\n+from torch.cuda import _device_t\n \n try:\n     from natten import libnatten  # type: ignore\n@@ -38,6 +39,11 @@\n from .utils import check_all_args\n \n \n+def get_device_cc(device_index: Optional[_device_t] = None) -> int:\n+    major, minor = torch.cuda.get_device_capability(device_index)\n+    return major * 10 + minor\n+\n+\n class Autotuner:\n     enabled: bool = False\n     warmup_steps: int = 5\n@@ -48,6 +54,9 @@ class Autotuner:\n _TILE_SIZES_1D = [\n     ((64,), (64,)),\n     ((32,), (128,)),\n+]\n+\n+_TILE_SIZES_1D_64x128 = [\n     ((64,), (128,)),\n ]\n \n@@ -79,7 +88,9 @@ class Autotuner:\n     ((1, 32), (4, 32)),\n     ((1, 32), (2, 64)),\n     ((1, 32), (1, 128)),\n-    # 64x128\n+]\n+\n+_TILE_SIZES_2D_64x128 = [\n     ((64, 1), (128, 1)),\n     ((64, 1), (64, 2)),\n     ((32, 2), (64, 2)),\n@@ -253,7 +264,9 @@ class Autotuner:\n     ((1, 1, 32), (1, 4, 32)),\n     ((1, 1, 32), (1, 2, 64)),\n     ((1, 1, 32), (1, 1, 128)),\n-    # 64x128\n+]\n+\n+_TILE_SIZES_3D_64x128 = [\n     ((64, 1, 1), (128, 1, 1)),\n     ((64, 1, 1), (64, 2, 1)),\n     ((64, 1, 1), (64, 1, 2)),\n@@ -370,18 +383,32 @@ def get_default_tiling_config(\n \n \n def _get_all_tiling_configs(\n-    na_dim: int,\n+    na_dim: int, torch_device: Any\n ) -> (\n     List[Tuple[Tuple[int], Tuple[int]]]\n     | List[Tuple[Tuple[int, int], Tuple[int, int]]]\n     | List[Tuple[Tuple[int, int, int], Tuple[int, int, int]]]\n ):\n     assert na_dim > 0 and na_dim < 4\n+    # SM80 and SM90 have more shared memory than SM86 and SM89\n+    # and their tensor core GEMMs can therefore target larger\n+    # tile shapes.\n+    # SM80 and 86 have been tested, but I don't have an SM89.\n+    # However, I suspect SM89 is to SM90 what SM86 was to SM80\n+    # in terms of shared memory (and only that).\n+    # Better to disable the larger tile configs for SM89 as well\n+    # as 86 until we can test it.\n+    if get_device_cc(torch_device) in [86, 89]:\n+        if na_dim == 2:\n+            return _TILE_SIZES_2D\n+        if na_dim == 3:\n+            return _TILE_SIZES_3D\n+        return _TILE_SIZES_1D\n     if na_dim == 2:\n-        return _TILE_SIZES_2D\n+        return _TILE_SIZES_2D + _TILE_SIZES_2D_64x128\n     if na_dim == 3:\n-        return _TILE_SIZES_3D\n-    return _TILE_SIZES_1D\n+        return _TILE_SIZES_3D + _TILE_SIZES_3D_64x128\n+    return _TILE_SIZES_1D + _TILE_SIZES_1D_64x128\n \n \n def _problem_to_hash(\n@@ -464,7 +491,7 @@ def autotune_fna(\n         )\n         best_time = 1e9\n         best_config = None\n-        for tile_config in _get_all_tiling_configs(na_dim):\n+        for tile_config in _get_all_tiling_configs(na_dim, input_tensor.device):\n             for _ in range(Autotuner.warmup_steps):\n                 fna_func(\n                     out,"
+  },
+  {
+    "sha": "da33604c90552e9ce141811abdffa77887c5de26",
+    "filename": "src/natten/functional.py",
+    "status": "modified",
+    "additions": 2,
+    "deletions": 5,
+    "changes": 7,
+    "blob_url": "https://github.com/SHI-Labs/NATTEN/blob/12ed5ea7ed92c64ef1327a439382525f4e35b034/src%2Fnatten%2Ffunctional.py",
+    "raw_url": "https://github.com/SHI-Labs/NATTEN/raw/12ed5ea7ed92c64ef1327a439382525f4e35b034/src%2Fnatten%2Ffunctional.py",
+    "contents_url": "https://api.github.com/repos/SHI-Labs/NATTEN/contents/src%2Fnatten%2Ffunctional.py?ref=12ed5ea7ed92c64ef1327a439382525f4e35b034",
+    "patch": "@@ -38,7 +38,7 @@\n         \" correct torch build: shi-labs.com/natten .\"\n     )\n \n-from .autotuner import autotune_fna, disable_autotuner, enable_autotuner\n+from .autotuner import autotune_fna, disable_autotuner, enable_autotuner, get_device_cc\n from .fna import disable_fna, enable_fna, is_fna_enabled\n from .nested import (\n     na1d_av_nested,\n@@ -71,10 +71,7 @@\n disable_fused_na = disable_fna\n enable_fused_na = enable_fna\n \n-\n-def get_device_cc(device_index: Optional[_device_t] = None) -> int:\n-    major, minor = torch.cuda.get_device_capability(device_index)\n-    return major * 10 + minor\n+get_device_cc = get_device_cc\n \n \n def has_cuda() -> bool:"
+  }
+]

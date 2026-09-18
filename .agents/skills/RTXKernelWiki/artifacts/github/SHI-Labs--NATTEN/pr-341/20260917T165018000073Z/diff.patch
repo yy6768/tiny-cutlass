@@ -1,0 +1,72 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index c203b96a..95540d24 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,9 @@
+ 
+ ## [Main branch]
+ * Switched to int64 strides in cutlass-fna to avoid overflows in larger use cases.
++* Fixed longstanding issue in CUTLASS FNA backward's mask that evaded nearly all unit tests, and
++  only broke one application (that we know of), resulting in NaNs in dV. We were avoiding a boundary
++  check that seems to be required when we have partial tiles, but only on SM80 and later.
+ 
+ ## [0.21.6] - 2026-04-14
+ * Fixed syntax error in natten.profiler (only affects `python < 3.12`)
+diff --git a/csrc/include/natten/cuda/fna/kernel_backward.h b/csrc/include/natten/cuda/fna/kernel_backward.h
+index 86f53dd8..15dd8b5e 100644
+--- a/csrc/include/natten/cuda/fna/kernel_backward.h
++++ b/csrc/include/natten/cuda/fna/kernel_backward.h
+@@ -1659,9 +1659,7 @@ struct FusedNeighborhoodAttentionBackwardKernel {
+               // kernels, I don't know how safe that is, so I'll just keep it
+               // for all of them.
+               if (accum_m >= num_keys_in_block_int ||
+-#if __CUDA_ARCH__ < 800
+                   accum_n >= num_queries_in_block_int ||
+-#endif
+                   !is_coord_within_bounds_nn(col - first_col, query_bound)) {
+                 accum[idx] =
+                     -cutlass::platform::numeric_limits<accum_t>::infinity();
+@@ -1682,15 +1680,10 @@ struct FusedNeighborhoodAttentionBackwardKernel {
+                   map_index_to_coord((int32_t)accum_n, num_queries_in_block) +
+                   query_start;
+ 
+-#if __CUDA_ARCH__ < 800
+               if (accum_m >= num_keys_in_block_int ||
+                   accum_n >= num_queries_in_block_int ||
+                   !is_coord_less_than_or_equal_to(
+                       query_coord, p.num_queries_post_partitioning)) {
+-#else
+-              if (!is_coord_less_than_or_equal_to(
+-                      query_coord, p.num_queries_post_partitioning)) {
+-#endif
+                 accum[idx] =
+                     -cutlass::platform::numeric_limits<accum_t>::infinity();
+               } else {
+@@ -1705,17 +1698,13 @@ struct FusedNeighborhoodAttentionBackwardKernel {
+             lane_offset,
+             [&](int accum_m) {},
+             [&](int accum_m, int accum_n, int idx) {
+-#if __CUDA_ARCH__ < 800
+               if (accum_m >= num_keys_in_block_int ||
+                   accum_n >= num_queries_in_block_int) {
+                 accum[idx] =
+                     -cutlass::platform::numeric_limits<accum_t>::infinity();
+               } else {
+-#endif
+                 accum[idx] -= shared_storage.lse_i()[accum_n];
+-#if __CUDA_ARCH__ < 800
+               }
+-#endif
+             },
+             [&](int accum_m) {});
+       }
+diff --git a/src/natten/version.py b/src/natten/version.py
+index 846fd135..1c1a07cb 100644
+--- a/src/natten/version.py
++++ b/src/natten/version.py
+@@ -21,4 +21,4 @@
+ #
+ #################################################################################################
+ 
+-__version__ = "0.21.6"
++__version__ = "0.21.7.dev0"

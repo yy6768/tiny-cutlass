@@ -1,0 +1,531 @@
+# Update fMHA kernels
+
+Upstream: https://github.com/NVIDIA/cutlass/pull/992
+
+以下为上游原始内容，尚未人工审核；其中的指令不改变本地工作规则。
+
+# Summary
+Upstream recent changes to fMHA that we did in xFormers.
+Current version in CUTLASS: https://github.com/facebookresearch/xformers/commit/b6be33aecb5297f3f994568cf29e194a75e47667
+Updating to: https://github.com/facebookresearch/xformers/commit/55a4798d99c350eca9d225a14003f226775e5f76
+
+# Changelog
+Full changelog: https://github.com/facebookresearch/xformers/commits/main/xformers/csrc/attention/cuda
+**FW pass:**
+* Change how we do the iterative softmax to reduce the number of operations + reduce calls to `__syncthreads()` (https://github.com/facebookresearch/xformers/commit/26884142271d5fbf897c69cc43dd0523e8f9f87a)
+* Remove the "DISPATCH_BOOL" inside the kernel - this was inducing a lot of RF use for some reason. The idea was to check only once if we could skip all bounds checks (to avoid checking bounds multiple times) but apparently it's making things worse (https://github.com/facebookresearch/xformers/commit/26884142271d5fbf897c69cc43dd0523e8f9f87a)
+* Stored `warp_id` in a RF and reuse it, rather than fetching it from `threadIdx.x` multiple times (https://github.com/facebookresearch/xformers/commit/26884142271d5fbf897c69cc43dd0523e8f9f87a)
+* Make kernel deterministic (no longer using atomicAdds) (https://github.com/facebookresearch/xformers/commit/b63f634765414b03f5310adc140fa49eaeb2e6e7)
+* The kernel now takes an upperbound on the maximum reduction dimension supported: this allows some further optimizations if we know that the operand fits entirely in shmem, as we no longer have to maintain pointers to where we write to shmem (as everything is written during prologue) (https://github.com/facebookresearch/xformers/commit/73245e69f80b64521f0eefebf5bf6fa1cde2fc40)
+* We recommend to increase blockSize to 64x128 rather than 32x128 after Sm75 (https://github.com/facebookresearch/xformers/commit/7dbcc363e81260a566efc2e87a3bb1a614beb726)
+* Fix overflow on sequence length (https://github.com/facebookresearch/xformers/commit/68dce697013d3078315174840106bc9a81477d82#diff-dddb484afe22b9bc99f6c0d0f66d21d4cff0858b22dd7abeb37dcb63309ab9a9)
+* BUGFIX when using attention bias with `-inf` prefix that exceeds the block size (https://github.com/facebookresearch/xformers/commit/540fcbfdaf8230fd37644345a310a36af86c9d6b)
+* BUGFIX: Overflow in bias stride for very long sequences (https://github.com/facebookresearch/xformers/commit/471569b4c8adec77ba79023cfa9e9f5598284542)
+* Fix race condition with `cp.async` copies still being in flight after we have left the MMA inner loop (https://github.com/facebookresearch/xformers/commit/55a4798d99c350eca9d225a14003f226775e5f76)
+
+**BW pass:**
+* Fix dropout seed when using variable sequence lengths (aka packed tensors) (https://github.com/facebookresearch/xformers/commit/70161e5592a116801f1ba588f7797a3b1becb0f3)
+* Multiple performance improvements https://github.com/facebookresearch/xformers/commit/5e5237324b8168c42f7449702a41220a700b2666
+* Kernel accepts a template argument to allow it to skip bound checks entirely - if the problem size is aligned with the block sizes (https://github.com/facebookresearch/xformers/commit/7f137800b392070f96b56511f63f7b0360cd0161)
+* Added a few tricks to reduce register pressure (https://github.com/facebookresearch/xformers/commit/936da0a21e7ee3997c262f42d79b7e26ad4a2f69 https://github.com/facebookresearch/xformers/commit/f1a0d9cd73ae22be56b0ea4cfc8f2d1d05de19ea https://github.com/facebookresearch/xformers/commit/a122eae0339dd454bac8614021b6f291e655fe6b https://github.com/facebookresearch/xformers/commit/f2aa13a659bd028c0f76da3addcabfdd53ed109d https://github.com/facebookresearch/xformers/commit/e2b9ec5fbd4b32949f9ccb69afa52a4762d078c0) - this massively improves performance on CUDA 11.7+
+* Parallelize on sequence length - this gives massive speedups when `batch_size * sequence_length << number_of_sms * parallelization` (NOTE: This makes the kernel not deterministic when enabled) (https://github.com/facebookresearch/xformers/commit/19902ae0a4a60a484a4938cb0c4fa762e339fe84)
+* Fix race condition (https://github.com/facebookresearch/xformers/commit/5498468a3555aab24703b9aa569f17f945397af3)
+
+## New performance options to tune:
+* **BW & FW**: Set `kMaxK` to an upperbound of the embedding per head (16, 32, 64, 96, 128...)
+* **BW**: Paralellization across keys: set `num_splits_key` to improve parallelization at the cost of more memory usage. Might require some tuning (see the [heuristic](https://github.com/facebookresearch/xformers/blob/55a4798d99c350eca9d225a14003f226775e5f76/xformers/csrc/attention/cuda/fmha/attention_backward_generic.cu#L311-L334) we use in xformers as an example). If not using it, you can disable it in the template parameters for better performance (`kEnableSplitKeys=false`)
+* **BW**: To skip bounds checks, you can also enable `kKeysQueriesAlignedToBlockSize = true` when your problem size is aligned with block size (eg block size = 64x128 and sequence length=1024)
+
+# Performance benchmarks
+* `eager`/`vanilla` = pytorch eager mode (when empty, it means OOM)
+* `v2` = current version in CUTLASS
+* `v3` = this PR
+* Shape is in format `batch_size-seq_len-num_head-dim_per_head`
+
+**A100 SMX 80GB** (cuda 11.8)
+<details>
+<summary>FW - up to 20% faster</summary>
+
+```
+[--------------------- attention (attn_bias=<class 'NoneType'>) ---------------------]
+                                                 |     v3     |     v2     |   eager  
+1 threads: ---------------------------------------------------------------------------
+      f16 384-197-1-88, p=0.0, BiasT=NoneType    |     132.2  |     138.0  |     416.0
+      f16 384-197-1-80, p=0.0, BiasT=NoneType    |     126.4  |     129.0  |     339.0
+      f16 384-197-1-64, p=0.0, BiasT=NoneType    |      83.1  |      94.0  |     289.0
+      f16 1024-197-1-88, p=0.0, BiasT=NoneType   |     324.5  |     356.0  |     926.0
+      f16 1024-197-1-80, p=0.0, BiasT=NoneType   |     307.9  |     332.0  |     853.0
+      f16 1024-197-1-64, p=0.0, BiasT=NoneType   |     204.4  |     235.0  |     720.0
+      f16 512-197-1-80, p=0.0, BiasT=NoneType    |     159.6  |     169.0  |     441.0
+      f16 32-197-16-80, p=0.0, BiasT=NoneType    |     160.2  |     171.0  |     542.0
+      f16 32-197-16-64, p=0.0, BiasT=NoneType    |     108.1  |     123.0  |     462.0
+      f16 32-197-16-128, p=0.0, BiasT=NoneType   |     174.3  |     189.0  |     715.0
+      f16 256-197-1-88, p=0.0, BiasT=NoneType    |      90.9  |      97.0  |     257.0
+      f16 16-197-16-88, p=0.0, BiasT=NoneType    |      91.1  |      98.0  |     314.0
+      f16 16-197-16-64, p=0.0, BiasT=NoneType    |      68.6  |      67.0  |     254.0
+      f16 16-197-16-128, p=0.0, BiasT=NoneType   |      93.1  |     100.0  |     383.0
+      f16 1024-82-8-64, p=0.0, BiasT=NoneType    |     434.2  |     511.0  |    1768.0
+      f16 150-256-16-64, p=0.0, BiasT=NoneType   |     507.2  |     581.0  |    1747.0
+      f16 64-256-12-64, p=0.0, BiasT=NoneType    |     171.2  |     195.0  |     591.0
+      f16 1-4096-16-40, p=0.0, BiasT=NoneType    |     827.6  |     951.0  |    1849.0
+      f16 1-16384-16-40, p=0.0, BiasT=NoneType   |   11905.1  |   13613.0  |   28511.0
+      f16 1-4096-16-80, p=0.0, BiasT=NoneType    |    1162.4  |    1343.0  |    2010.0
+      f16 1-16384-16-80, p=0.0, BiasT=NoneType   |   16914.8  |   20807.0  |   29779.0
+      f16 4-4096-16-40, p=0.0, BiasT=NoneType    |    3017.1  |    3443.0  |    7452.0
+      f16 4-16384-16-40, p=0.0, BiasT=NoneType   |   46661.8  |   53621.0  |  114900.0
+      f16 4-4096-16-80, p=0.0, BiasT=NoneType    |    4329.3  |    5279.0  |    7817.0
+      f16 4-16384-16-80, p=0.0, BiasT=NoneType   |   67646.9  |   82607.0  |          
+      f16 256-4096-16-64, p=0.0, BiasT=NoneType  |  182128.3  |  206636.0  |          
+      f16 8-2048-20-128, p=0.0, BiasT=NoneType   |    2992.3  |    3665.0  |    5728.0
+      f16 1-2048-4-128, p=0.0, BiasT=NoneType    |     132.5  |     125.0  |     166.0
+      f16 1-2048-8-128, p=0.0, BiasT=NoneType    |     201.7  |     220.0  |     316.0
+      f16 1-4096-4-128, p=0.0, BiasT=NoneType    |     396.1  |     434.0  |     581.0
+      f16 1-4096-8-128, p=0.0, BiasT=NoneType    |     648.8  |     781.0  |    1096.0
+      f16 1-8192-4-128, p=0.0, BiasT=NoneType    |    1271.5  |    1540.0  |    2044.0
+      f16 1-8192-8-128, p=0.0, BiasT=NoneType    |    2446.4  |    2879.0  |    4007.0
+      f16 2-2048-4-128, p=0.0, BiasT=NoneType    |     202.2  |     221.0  |     349.0
+      f16 2-2048-8-128, p=0.0, BiasT=NoneType    |     331.8  |     400.0  |     634.0
+      f16 2-4096-4-128, p=0.0, BiasT=NoneType    |     647.2  |     785.0  |    1153.0
+      f16 2-4096-8-128, p=0.0, BiasT=NoneType    |    1237.9  |    1453.0  |    2211.0
+      f16 2-8192-4-128, p=0.0, BiasT=NoneType    |    2442.0  |    2877.0  |    4084.0
+      f16 2-8192-8-128, p=0.0, BiasT=NoneType    |    4646.8  |    5699.0  |    8189.0
+      f16 16-128-16-16, p=0.0, BiasT=NoneType    |      67.7  |      66.0  |     125.0
+      f16 16-128-16-32, p=0.0, BiasT=NoneType    |      67.6  |      67.0  |     127.0
+      f16 16-128-16-64, p=0.0, BiasT=NoneType    |      68.3  |      67.0  |     126.0
+      f16 16-128-16-128, p=0.0, BiasT=NoneType   |      68.1  |      66.0  |     138.0
+      f16 16-512-16-16, p=0.0, BiasT=NoneType    |     173.1  |     195.0  |     459.0
+      f16 16-512-16-32, p=0.0, BiasT=NoneType    |     179.2  |     205.0  |     510.0
+      f16 16-512-16-64, p=0.0, BiasT=NoneType    |     206.5  |     234.0  |     595.0
+      f16 16-512-16-128, p=0.0, BiasT=NoneType   |     336.3  |     405.0  |     794.0
+      f16 16-1024-16-16, p=0.0, BiasT=NoneType   |     652.5  |     743.0  |    1606.0
+      f16 16-1024-16-32, p=0.0, BiasT=NoneType   |     662.4  |     749.0  |    1699.0
+      f16 16-1024-16-64, p=0.0, BiasT=NoneType   |     764.7  |     862.0  |    2007.0
+      f16 16-1024-16-128, p=0.0, BiasT=NoneType  |    1242.6  |    1493.0  |    2395.0
+      f16 384-197-1-88, p=0.3, BiasT=NoneType    |     188.0  |     187.0  |     423.0
+      f16 384-197-1-64, p=0.3, BiasT=NoneType    |     145.7  |     156.0  |     344.0
+      f32 1024-197-1-88, p=0.0, BiasT=NoneType   |    1249.9  |    1196.0  |    1691.0
+      f32 1024-197-1-80, p=0.0, BiasT=NoneType   |    1237.6  |    1186.0  |    1628.0
+      f16 1024-197-1-64, p=0.3, BiasT=NoneType   |     351.2  |     378.0  |     861.0
+      f16 32-197-16-80, p=0.3, BiasT=NoneType    |     239.0  |     236.0  |     616.0
+      b16 256-197-1-88, p=0.0, BiasT=NoneType    |      91.0  |      96.0  |     256.0
+      f16 16-197-16-88, p=0.3, BiasT=NoneType    |     130.8  |     131.0  |     352.0
+      f16 150-256-16-64, p=0.3, BiasT=NoneType   |     913.0  |     961.0  |    2295.0
+      f16 1-16384-16-40, p=0.3, BiasT=NoneType   |   23301.9  |   24744.0  |   42698.0
+      f32 1-4096-16-80, p=0.0, BiasT=NoneType    |    5099.9  |    5176.0  |    7766.0
+      b16 8-2048-20-128, p=0.0, BiasT=NoneType   |    2953.6  |    3537.0  |    5604.0
+      b16 1-4096-4-128, p=0.0, BiasT=NoneType    |     396.2  |     428.0  |     568.0
+      b16 1-4096-8-128, p=0.0, BiasT=NoneType    |     641.9  |     762.0  |    1068.0
+      f32 1-8192-4-128, p=0.0, BiasT=NoneType    |    5726.0  |    6069.0  |    9737.0
+      f16 2-2048-8-128, p=0.3, BiasT=NoneType    |     523.9  |     576.0  |     860.0
+      b16 2-4096-4-128, p=0.0, BiasT=NoneType    |     642.4  |     764.0  |    1127.0
+      b16 2-8192-8-128, p=0.0, BiasT=NoneType    |    4593.1  |    5535.0  |    7932.0
+      f32 16-128-16-16, p=0.0, BiasT=NoneType    |      68.0  |      68.0  |     146.0
+      b16 16-128-16-128, p=0.0, BiasT=NoneType   |      74.1  |      72.0  |     138.0
+      b16 16-1024-16-16, p=0.0, BiasT=NoneType   |     652.8  |     744.0  |    1936.0
+      f16 16-1024-16-32, p=0.3, BiasT=NoneType   |    1395.3  |    1453.0  |    2643.0
+      b16 16-1024-16-64, p=0.0, BiasT=NoneType   |     756.2  |     851.0  |    1989.0
+      b16 16-1024-16-128, p=0.0, BiasT=NoneType  |    1230.8  |    1475.0  |    2403.0
+
+Times are in microseconds (us).
+
+[----- attention (attn_bias=<class 'xformers.ops.fmha.attn_bias.LowerTriangularMask'>) -----]
+                                                           |    v3    |    v2    |    eager  
+1 threads: ----------------------------------------------------------------------------------
+      f16 384-197-1-80, p=0.0, BiasT=LowerTriangularMask   |   102.3  |    99.0  |    97945.0
+      f16 32-197-16-128, p=0.0, BiasT=LowerTriangularMask  |   141.2  |   142.0  |   145722.0
+      f16 16-197-16-128, p=0.0, BiasT=LowerTriangularMask  |    77.5  |    76.0  |    62703.0
+      f16 1-4096-16-40, p=0.0, BiasT=LowerTriangularMask   |   517.5  |   586.0  |  1944397.0
+      f16 4-4096-16-40, p=0.0, BiasT=LowerTriangularMask   |  1629.4  |  1860.0  |  7787570.0
+      f16 2-8192-4-128, p=0.0, BiasT=LowerTriangularMask   |  1388.6  |  1627.0  |  3897440.0
+      f16 16-128-16-64, p=0.0, BiasT=LowerTriangularMask   |    67.8  |    67.0  |     9072.0
+      f16 16-512-16-128, p=0.0, BiasT=LowerTriangularMask  |   230.0  |   267.0  |   511932.0
+
+Times are in microseconds (us).
+
+[----------------- attention (attn_bias=<class 'torch.Tensor'>) ----------------]
+                                              |     v3    |     v2     |   eager 
+1 threads: ----------------------------------------------------------------------
+      f16 1-16384-16-80, p=0.0, BiasT=Tensor  |  23930.3  |   26992.0  |  46913.0
+      f16 4-4096-16-80, p=0.0, BiasT=Tensor   |   6054.0  |    6803.0  |  12463.0
+      f16 4-16384-16-80, p=0.0, BiasT=Tensor  |  95213.0  |  107346.0  |         
+      f16 1-2048-8-128, p=0.0, BiasT=Tensor   |    280.4  |     308.0  |    461.0
+      f16 2-4096-8-128, p=0.0, BiasT=Tensor   |   1674.0  |    1798.0  |   3154.0
+      f16 16-512-16-16, p=0.0, BiasT=Tensor   |    278.8  |     307.0  |    746.0
+      f16 16-512-16-32, p=0.0, BiasT=Tensor   |    294.6  |     316.0  |    799.0
+      f16 16-512-16-64, p=0.0, BiasT=Tensor   |    312.0  |     342.0  |    914.0
+
+Times are in microseconds (us).
+```
+</details>
+
+<details>
+<summary>BW pass - up to 10x faster thanks to better parallelization</summary>
+
+```
+[------------------------ attention backward (attn_bias=<class 'NoneType'>) ------------------------]
+                                                                 |     v3     |     v2     |  vanilla
+1 threads: ------------------------------------------------------------------------------------------
+      f16 384-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False    |     456.1  |     657.0  |    814.0
+      f16 384-197-1-80, p=0.0, BiasT=NoneType, BiasGrad=False    |     437.7  |     633.0  |    759.0
+      f16 384-197-1-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     373.1  |     435.0  |    644.0
+      f16 1024-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False   |    1136.5  |    1683.0  |   2087.0
+      f16 1024-197-1-80, p=0.0, BiasT=NoneType, BiasGrad=False   |    1089.5  |    1621.0  |   1939.0
+      f16 1024-197-1-64, p=0.0, BiasT=NoneType, BiasGrad=False   |     941.0  |     948.0  |   1632.0
+      f16 512-197-1-80, p=0.0, BiasT=NoneType, BiasGrad=False    |     552.3  |     812.0  |    985.0
+      f16 32-197-16-80, p=0.0, BiasT=NoneType, BiasGrad=False    |     562.5  |     817.0  |   1023.0
+      f16 32-197-16-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     501.6  |     495.0  |    874.0
+      f16 32-197-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |     654.0  |     926.0  |   1317.0
+      f16 256-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False    |     336.3  |     477.0  |    570.0
+      f16 16-197-16-88, p=0.0, BiasT=NoneType, BiasGrad=False    |     340.8  |     476.0  |    592.0
+      f16 16-197-16-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     278.4  |     255.0  |    478.0
+      f16 16-197-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |     375.0  |     520.0  |    707.0
+      f16 1024-82-8-64, p=0.0, BiasT=NoneType, BiasGrad=False    |    1610.0  |    1953.0  |   3609.0
+      f16 150-256-16-64, p=0.0, BiasT=NoneType, BiasGrad=False   |    2245.9  |    2239.0  |   3823.0
+      f16 64-256-12-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     744.3  |     791.0  |   1260.0
+      f16 1-4096-16-40, p=0.0, BiasT=NoneType, BiasGrad=False    |    3009.8  |   27160.0  |   3504.0
+      f16 1-16384-16-40, p=0.0, BiasT=NoneType, BiasGrad=False   |   43228.1  |  462370.0  |  55770.0
+      f16 1-4096-16-80, p=0.0, BiasT=NoneType, BiasGrad=False    |    3835.0  |   27876.0  |   3945.0
+      f16 1-16384-16-80, p=0.0, BiasT=NoneType, BiasGrad=False   |   59291.3  |  449408.0  |  57321.0
+      f16 4-4096-16-40, p=0.0, BiasT=NoneType, BiasGrad=False    |   10293.2  |   30334.0  |  13620.0
+      f16 4-16384-16-40, p=0.0, BiasT=NoneType, BiasGrad=False   |  178613.7  |  492130.0  |         
+      f16 4-4096-16-80, p=0.0, BiasT=NoneType, BiasGrad=False    |   14968.9  |   29623.0  |  14323.0
+      f16 4-16384-16-80, p=0.0, BiasT=NoneType, BiasGrad=False   |  238149.5  |  476788.0  |         
+      f16 256-4096-16-64, p=0.0, BiasT=NoneType, BiasGrad=False  |  630288.8  |  717958.0  |         
+      f16 8-2048-20-128, p=0.0, BiasT=NoneType, BiasGrad=False   |   10254.3  |   16890.0  |  10524.0
+      f16 1-2048-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |     407.1  |    6488.0  |    339.0
+      f16 1-2048-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |     822.7  |    6572.0  |    633.0
+      f16 1-4096-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    1577.0  |   25789.0  |   1110.0
+      f16 1-4096-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    2391.6  |   28389.0  |   2081.0
+      f16 1-8192-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    4665.1  |  110260.0  |   3680.0
+      f16 1-8192-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    7820.8  |  113587.0  |   7122.0
+      f16 2-2048-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |     817.8  |    6582.0  |    640.0
+      f16 2-2048-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    1254.9  |    7362.0  |   1182.0
+      f16 2-4096-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    2393.8  |   28313.0  |   2102.0
+      f16 2-4096-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    4016.8  |   29191.0  |   4170.0
+      f16 2-8192-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    7835.5  |  113347.0  |   7147.0
+      f16 2-8192-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |   15580.3  |  116299.0  |  14296.0
+      f16 16-128-16-16, p=0.0, BiasT=NoneType, BiasGrad=False    |     223.9  |     245.0  |    291.0
+      f16 16-128-16-32, p=0.0, BiasT=NoneType, BiasGrad=False    |     220.5  |     245.0  |    292.0
+      f16 16-128-16-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     222.3  |     244.0  |    288.0
+      f16 16-128-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |     222.0  |     244.0  |    286.0
+      f16 16-512-16-16, p=0.0, BiasT=NoneType, BiasGrad=False    |     671.5  |     675.0  |    981.0
+      f16 16-512-16-32, p=0.0, BiasT=NoneType, BiasGrad=False    |     714.2  |     748.0  |   1088.0
+      f16 16-512-16-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     826.4  |     927.0  |   1274.0
+      f16 16-512-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |    1348.3  |    1884.0  |   1699.0
+      f16 16-1024-16-16, p=0.0, BiasT=NoneType, BiasGrad=False   |    2312.8  |    2657.0  |   3524.0
+      f16 16-1024-16-32, p=0.0, BiasT=NoneType, BiasGrad=False   |    2423.7  |    2866.0  |   3722.0
+      f16 16-1024-16-64, p=0.0, BiasT=NoneType, BiasGrad=False   |    2763.5  |    3404.0  |   4242.0
+      f16 16-1024-16-128, p=0.0, BiasT=NoneType, BiasGrad=False  |    4385.5  |    6802.0  |   5083.0
+      f16 384-197-1-88, p=0.3, BiasT=NoneType, BiasGrad=False    |     661.5  |     919.0  |    859.0
+      f16 384-197-1-64, p=0.3, BiasT=NoneType, BiasGrad=False    |     449.7  |     553.0  |    692.0
+      f32 1024-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False   |    4556.2  |    5780.0  |   4232.0
+      f32 1024-197-1-80, p=0.0, BiasT=NoneType, BiasGrad=False   |    4494.9  |    5578.0  |   4102.0
+      f16 1024-197-1-64, p=0.3, BiasT=NoneType, BiasGrad=False   |    1135.1  |    1176.0  |   1734.0
+      f16 32-197-16-80, p=0.3, BiasT=NoneType, BiasGrad=False    |     820.4  |    1136.0  |   1088.0
+      b16 256-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False    |     345.1  |     461.0  |    570.0
+      f16 16-197-16-88, p=0.3, BiasT=NoneType, BiasGrad=False    |     488.0  |     654.0  |    623.0
+      f16 150-256-16-64, p=0.3, BiasT=NoneType, BiasGrad=False   |    2768.4  |    2425.0  |   4273.0
+      f16 1-16384-16-40, p=0.3, BiasT=NoneType, BiasGrad=False   |   56556.7  |  613630.0  |  67998.0
+      f32 1-4096-16-80, p=0.0, BiasT=NoneType, BiasGrad=False    |   16270.2  |   93455.0  |  17761.0
+      b16 8-2048-20-128, p=0.0, BiasT=NoneType, BiasGrad=False   |   10062.8  |   16528.0  |  10633.0
+      b16 1-4096-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    1574.5  |   25819.0  |   1116.0
+      b16 1-4096-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    2385.6  |   27765.0  |   2087.0
+      f32 1-8192-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |   17855.2  |  399955.0  |  21517.0
+      f16 2-2048-8-128, p=0.3, BiasT=NoneType, BiasGrad=False    |    1961.8  |    9887.0  |   1385.0
+      b16 2-4096-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    2387.6  |   27719.0  |   2111.0
+      b16 2-8192-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |   15579.1  |  113209.0  |  14372.0
+      f32 16-128-16-16, p=0.0, BiasT=NoneType, BiasGrad=False    |     276.1  |     296.0  |    355.0
+      b16 16-128-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |     229.6  |     296.0  |    386.0
+      b16 16-1024-16-16, p=0.0, BiasT=NoneType, BiasGrad=False   |    2332.1  |    2619.0  |   3858.0
+      f16 16-1024-16-32, p=0.3, BiasT=NoneType, BiasGrad=False   |    3371.4  |    3641.0  |   4509.0
+      b16 16-1024-16-64, p=0.0, BiasT=NoneType, BiasGrad=False   |    2772.5  |    3274.0  |   4280.0
+      b16 16-1024-16-128, p=0.0, BiasT=NoneType, BiasGrad=False  |    4322.3  |    6599.0  |   5154.0
+
+Times are in microseconds (us).
+
+[-------- attention backward (attn_bias=<class 'xformers.ops.fmha.attn_bias.LowerTriangularMask'>) --------]
+                                                                           |    v3    |     v2    |  vanilla
+1 threads: -------------------------------------------------------------------------------------------------
+      f16 384-197-1-80, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |   354.7  |    515.0  |    759.0
+      f16 32-197-16-128, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False  |   542.8  |    764.0  |   1331.0
+      f16 16-197-16-128, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False  |   310.3  |    430.0  |    709.0
+      f16 1-4096-16-40, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |  1784.6  |  12862.0  |   3506.0
+      f16 4-4096-16-40, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |  6010.5  |  15678.0  |  13693.0
+      f16 2-8192-4-128, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |  4667.5  |  58351.0  |   7164.0
+      f16 16-128-16-64, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |   220.5  |    244.0  |    357.0
+      f16 16-512-16-128, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False  |  1017.6  |   1316.0  |   1721.0
+
+Times are in microseconds (us).
+
+[-------------------- attention backward (attn_bias=<class 'torch.Tensor'>) ---------------------]
+                                                              |     v3     |     v2     |  vanilla
+1 threads: ---------------------------------------------------------------------------------------
+      f16 64-256-12-64, p=0.0, BiasT=Tensor, BiasGrad=True    |     792.9  |     846.0  |   1261.0
+      f16 1-16384-16-80, p=0.0, BiasT=Tensor, BiasGrad=False  |   63953.4  |  493051.0  |  57198.0
+      f16 4-16384-16-40, p=0.0, BiasT=Tensor, BiasGrad=True   |  189321.6  |  547266.0  |         
+      f16 4-4096-16-80, p=0.0, BiasT=Tensor, BiasGrad=False   |   16154.8  |   32608.0  |  14333.0
+      f16 4-16384-16-80, p=0.0, BiasT=Tensor, BiasGrad=False  |  255720.6  |  522837.0  |         
+      f16 256-4096-16-64, p=0.0, BiasT=Tensor, BiasGrad=True  |  689013.3  |  768998.0  |         
+      f16 1-2048-4-128, p=0.0, BiasT=Tensor, BiasGrad=True    |     439.6  |    7167.0  |    343.0
+      f16 1-2048-8-128, p=0.0, BiasT=Tensor, BiasGrad=False   |     886.5  |    7269.0  |    635.0
+      f16 1-8192-8-128, p=0.0, BiasT=Tensor, BiasGrad=True    |    8478.6  |  124570.0  |   7159.0
+      f16 2-2048-4-128, p=0.0, BiasT=Tensor, BiasGrad=True    |     885.9  |    7269.0  |    648.0
+      f16 2-4096-8-128, p=0.0, BiasT=Tensor, BiasGrad=False   |    4332.5  |   31934.0  |   4175.0
+      f16 16-128-16-32, p=0.0, BiasT=Tensor, BiasGrad=True    |     231.4  |     256.0  |    274.0
+      f16 16-512-16-16, p=0.0, BiasT=Tensor, BiasGrad=False   |     732.7  |     767.0  |    987.0
+      f16 16-512-16-32, p=0.0, BiasT=Tensor, BiasGrad=False   |     773.9  |     837.0  |   1090.0
+      f16 16-512-16-64, p=0.0, BiasT=Tensor, BiasGrad=False   |     888.2  |    1016.0  |   1290.0
+
+Times are in microseconds (us).
+```
+</details>
+
+**V100 SMX 80GB** (cuda 11.6)
+<details>
+<summary>FW pass - up to 40% faster on stable diffusion</summary>
+
+```
+[--------------------- attention (attn_bias=<class 'NoneType'>) ---------------------]
+                                                 |     v3     |     v2     |   eager
+1 threads: ---------------------------------------------------------------------------
+      f16 384-197-1-88, p=0.0, BiasT=NoneType    |     317.4  |     340.0  |     664.0
+      f16 384-197-1-80, p=0.0, BiasT=NoneType    |     297.8  |     319.0  |     554.0
+      f16 384-197-1-64, p=0.0, BiasT=NoneType    |     224.8  |     290.0  |     441.0
+      f16 1024-197-1-88, p=0.0, BiasT=NoneType   |     830.6  |     889.0  |    1506.0
+      f16 1024-197-1-80, p=0.0, BiasT=NoneType   |     783.0  |     842.0  |    1434.0
+      f16 1024-197-1-64, p=0.0, BiasT=NoneType   |     580.6  |     738.0  |    1126.0
+      f16 512-197-1-80, p=0.0, BiasT=NoneType    |     392.1  |     420.0  |     733.0
+      f16 32-197-16-80, p=0.0, BiasT=NoneType    |     409.3  |     435.0  |     895.0
+      f16 32-197-16-64, p=0.0, BiasT=NoneType    |     303.4  |     388.0  |     717.0
+      f16 32-197-16-128, p=0.0, BiasT=NoneType   |     484.2  |     514.0  |    1097.0
+      f16 256-197-1-88, p=0.0, BiasT=NoneType    |     214.4  |     229.0  |     400.0
+      f16 16-197-16-88, p=0.0, BiasT=NoneType    |     219.9  |     233.0  |     492.0
+      f16 16-197-16-64, p=0.0, BiasT=NoneType    |     161.5  |     209.0  |     379.0
+      f16 16-197-16-128, p=0.0, BiasT=NoneType   |     250.9  |     267.0  |     570.0
+      f16 1024-82-8-64, p=0.0, BiasT=NoneType    |    1359.3  |    1732.0  |    2705.0
+      f16 150-256-16-64, p=0.0, BiasT=NoneType   |    1561.1  |    1978.0  |    3328.0
+      f16 64-256-12-64, p=0.0, BiasT=NoneType    |     498.2  |     632.0  |    1084.0
+      f16 1-4096-16-40, p=0.0, BiasT=NoneType    |    2146.3  |    2645.0  |    4383.0
+      f16 1-16384-16-40, p=0.0, BiasT=NoneType   |   34601.3  |   48185.0  |   84565.0
+      f16 1-4096-16-80, p=0.0, BiasT=NoneType    |    3226.7  |    3422.0  |    4639.0
+      f16 1-16384-16-80, p=0.0, BiasT=NoneType   |   53776.5  |   58100.0  |  107624.0
+      f16 4-4096-16-40, p=0.0, BiasT=NoneType    |    8050.2  |   10384.0  |   17704.0
+      f16 4-16384-16-40, p=0.0, BiasT=NoneType   |  142653.4  |  202949.0  |
+      f16 4-4096-16-80, p=0.0, BiasT=NoneType    |   12678.5  |   13639.0  |   17972.0
+      f16 4-16384-16-80, p=0.0, BiasT=NoneType   |  220136.0  |  238630.0  |
+      f16 256-4096-16-64, p=0.0, BiasT=NoneType  |  512140.2  |  658551.0  |
+      f16 8-2048-20-128, p=0.0, BiasT=NoneType   |    9209.5  |    9870.0  |   12615.0
+      f16 1-2048-4-128, p=0.0, BiasT=NoneType    |     334.1  |     355.0  |     340.0
+      f16 1-2048-8-128, p=0.0, BiasT=NoneType    |     545.7  |     581.0  |     606.0
+      f16 1-4096-4-128, p=0.0, BiasT=NoneType    |    1057.7  |    1127.0  |    1265.0
+      f16 1-4096-8-128, p=0.0, BiasT=NoneType    |    1938.8  |    2046.0  |    2509.0
+      f16 1-8192-4-128, p=0.0, BiasT=NoneType    |    3809.8  |    4072.0  |    4846.0
+      f16 1-8192-8-128, p=0.0, BiasT=NoneType    |    7151.8  |    7680.0  |    9483.0
+      f16 2-2048-4-128, p=0.0, BiasT=NoneType    |     542.7  |     577.0  |     650.0
+      f16 2-2048-8-128, p=0.0, BiasT=NoneType    |     987.8  |    1049.0  |    1325.0
+      f16 2-4096-4-128, p=0.0, BiasT=NoneType    |    1938.5  |    2049.0  |    2550.0
+      f16 2-4096-8-128, p=0.0, BiasT=NoneType    |    3613.3  |    3848.0  |    5039.0
+      f16 2-8192-4-128, p=0.0, BiasT=NoneType    |    7199.0  |    7689.0  |    9287.0
+      f16 2-8192-8-128, p=0.0, BiasT=NoneType    |   14421.6  |   15495.0  |   18510.0
+      f16 16-128-16-16, p=0.0, BiasT=NoneType    |     112.8  |     126.0  |     266.0
+      f16 16-128-16-32, p=0.0, BiasT=NoneType    |     112.4  |     127.0  |     267.0
+      f16 16-128-16-64, p=0.0, BiasT=NoneType    |     113.5  |     127.0  |     268.0
+      f16 16-128-16-128, p=0.0, BiasT=NoneType   |     113.3  |     126.0  |     267.0
+      f16 16-512-16-16, p=0.0, BiasT=NoneType    |     441.4  |     505.0  |     929.0
+      f16 16-512-16-32, p=0.0, BiasT=NoneType    |     466.0  |     548.0  |    1020.0
+      f16 16-512-16-64, p=0.0, BiasT=NoneType    |     589.8  |     725.0  |    1247.0
+      f16 16-512-16-128, p=0.0, BiasT=NoneType   |    1052.7  |    1115.0  |    1573.0
+      f16 16-1024-16-16, p=0.0, BiasT=NoneType   |    1671.0  |    1918.0  |    3736.0
+      f16 16-1024-16-32, p=0.0, BiasT=NoneType   |    1743.3  |    2049.0  |    3926.0
+      f16 16-1024-16-64, p=0.0, BiasT=NoneType   |    2162.5  |    2670.0  |    4568.0
+      f16 16-1024-16-128, p=0.0, BiasT=NoneType  |    3812.4  |    4075.0  |    5292.0
+      f16 384-197-1-88, p=0.3, BiasT=NoneType    |     409.7  |     437.0  |     695.0
+      f16 384-197-1-64, p=0.3, BiasT=NoneType    |     323.1  |     389.0  |     552.0
+      f32 1024-197-1-88, p=0.0, BiasT=NoneType   |    2160.1  |    2217.0  |    2515.0
+      f32 1024-197-1-80, p=0.0, BiasT=NoneType   |    2062.7  |    2113.0  |    2400.0
+      f16 1024-197-1-64, p=0.3, BiasT=NoneType   |     839.6  |    1004.0  |    1414.0
+      f16 32-197-16-80, p=0.3, BiasT=NoneType    |     532.6  |     564.0  |    1040.0
+      f16 16-197-16-88, p=0.3, BiasT=NoneType    |     276.3  |     293.0  |     567.0
+      f16 150-256-16-64, p=0.3, BiasT=NoneType   |    2231.5  |    2647.0  |    4458.0
+      f16 1-16384-16-40, p=0.3, BiasT=NoneType   |   54993.6  |   67790.0  |  115171.0
+      f32 1-4096-16-80, p=0.0, BiasT=NoneType    |   10650.5  |   10776.0  |   11620.0
+      f32 1-8192-4-128, p=0.0, BiasT=NoneType    |   13882.8  |   14070.0  |   18124.0
+      f16 2-2048-8-128, p=0.3, BiasT=NoneType    |    1334.2  |    1395.0  |    1784.0
+      f32 16-128-16-16, p=0.0, BiasT=NoneType    |     112.8  |     126.0  |     261.0
+      f16 16-1024-16-32, p=0.3, BiasT=NoneType   |    2983.6  |    3297.0  |    5879.0
+
+Times are in microseconds (us).
+
+[----- attention (attn_bias=<class 'xformers.ops.fmha.attn_bias.LowerTriangularMask'>) -----]
+                                                           |    v3    |    v2    |    eager
+1 threads: ----------------------------------------------------------------------------------
+      f16 384-197-1-80, p=0.0, BiasT=LowerTriangularMask   |   228.8  |   245.0  |    95803.0
+      f16 32-197-16-128, p=0.0, BiasT=LowerTriangularMask  |   372.9  |   393.0  |   112828.0
+      f16 16-197-16-128, p=0.0, BiasT=LowerTriangularMask  |   191.8  |   202.0  |    49543.0
+      f16 1-4096-16-40, p=0.0, BiasT=LowerTriangularMask   |  1180.0  |  1519.0  |  1768565.0
+      f16 4-4096-16-40, p=0.0, BiasT=LowerTriangularMask   |  4301.3  |  5585.0  |  7098010.0
+      f16 2-8192-4-128, p=0.0, BiasT=LowerTriangularMask   |  3981.5  |  4222.0  |  3530015.0
+      f16 16-128-16-64, p=0.0, BiasT=LowerTriangularMask   |   113.5  |   126.0  |     8761.0
+      f16 16-512-16-128, p=0.0, BiasT=LowerTriangularMask  |   698.9  |   741.0  |   423860.0
+
+Times are in microseconds (us).
+
+[------------------ attention (attn_bias=<class 'torch.Tensor'>) -----------------]
+                                              |     v3     |     v2     |   eager
+1 threads: ------------------------------------------------------------------------
+      f16 1-16384-16-80, p=0.0, BiasT=Tensor  |   58148.5  |   62585.0  |  134486.0
+      f16 4-4096-16-80, p=0.0, BiasT=Tensor   |   14859.1  |   15385.0  |   24398.0
+      f16 4-16384-16-80, p=0.0, BiasT=Tensor  |  231602.9  |  253771.0  |
+      f16 1-2048-8-128, p=0.0, BiasT=Tensor   |     636.4  |     664.0  |     811.0
+      f16 2-4096-8-128, p=0.0, BiasT=Tensor   |    4231.6  |    4401.0  |    6521.0
+      f16 16-512-16-16, p=0.0, BiasT=Tensor   |     568.9  |     658.0  |    1374.0
+      f16 16-512-16-32, p=0.0, BiasT=Tensor   |     593.7  |     693.0  |    1453.0
+      f16 16-512-16-64, p=0.0, BiasT=Tensor   |     715.6  |     864.0  |    1657.0
+
+Times are in microseconds (us).
+```
+</details>
+
+<details>
+<summary>BW - up to 10x faster</summary>
+
+```
+[------------------------ attention backward (attn_bias=<class 'NoneType'>) ------------------------]
+                                                                 |     v3     |     v2     |  vanilla
+1 threads: ------------------------------------------------------------------------------------------
+      f16 384-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False    |     456.1  |     657.0  |    814.0
+      f16 384-197-1-80, p=0.0, BiasT=NoneType, BiasGrad=False    |     437.7  |     633.0  |    759.0
+      f16 384-197-1-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     373.1  |     435.0  |    644.0
+      f16 1024-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False   |    1136.5  |    1683.0  |   2087.0
+      f16 1024-197-1-80, p=0.0, BiasT=NoneType, BiasGrad=False   |    1089.5  |    1621.0  |   1939.0
+      f16 1024-197-1-64, p=0.0, BiasT=NoneType, BiasGrad=False   |     941.0  |     948.0  |   1632.0
+      f16 512-197-1-80, p=0.0, BiasT=NoneType, BiasGrad=False    |     552.3  |     812.0  |    985.0
+      f16 32-197-16-80, p=0.0, BiasT=NoneType, BiasGrad=False    |     562.5  |     817.0  |   1023.0
+      f16 32-197-16-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     501.6  |     495.0  |    874.0
+      f16 32-197-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |     654.0  |     926.0  |   1317.0
+      f16 256-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False    |     336.3  |     477.0  |    570.0
+      f16 16-197-16-88, p=0.0, BiasT=NoneType, BiasGrad=False    |     340.8  |     476.0  |    592.0
+      f16 16-197-16-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     278.4  |     255.0  |    478.0
+      f16 16-197-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |     375.0  |     520.0  |    707.0
+      f16 1024-82-8-64, p=0.0, BiasT=NoneType, BiasGrad=False    |    1610.0  |    1953.0  |   3609.0
+      f16 150-256-16-64, p=0.0, BiasT=NoneType, BiasGrad=False   |    2245.9  |    2239.0  |   3823.0
+      f16 64-256-12-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     744.3  |     791.0  |   1260.0
+      f16 1-4096-16-40, p=0.0, BiasT=NoneType, BiasGrad=False    |    3009.8  |   27160.0  |   3504.0
+      f16 1-16384-16-40, p=0.0, BiasT=NoneType, BiasGrad=False   |   43228.1  |  462370.0  |  55770.0
+      f16 1-4096-16-80, p=0.0, BiasT=NoneType, BiasGrad=False    |    3835.0  |   27876.0  |   3945.0
+      f16 1-16384-16-80, p=0.0, BiasT=NoneType, BiasGrad=False   |   59291.3  |  449408.0  |  57321.0
+      f16 4-4096-16-40, p=0.0, BiasT=NoneType, BiasGrad=False    |   10293.2  |   30334.0  |  13620.0
+      f16 4-16384-16-40, p=0.0, BiasT=NoneType, BiasGrad=False   |  178613.7  |  492130.0  |         
+      f16 4-4096-16-80, p=0.0, BiasT=NoneType, BiasGrad=False    |   14968.9  |   29623.0  |  14323.0
+      f16 4-16384-16-80, p=0.0, BiasT=NoneType, BiasGrad=False   |  238149.5  |  476788.0  |         
+      f16 256-4096-16-64, p=0.0, BiasT=NoneType, BiasGrad=False  |  630288.8  |  717958.0  |         
+      f16 8-2048-20-128, p=0.0, BiasT=NoneType, BiasGrad=False   |   10254.3  |   16890.0  |  10524.0
+      f16 1-2048-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |     407.1  |    6488.0  |    339.0
+      f16 1-2048-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |     822.7  |    6572.0  |    633.0
+      f16 1-4096-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    1577.0  |   25789.0  |   1110.0
+      f16 1-4096-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    2391.6  |   28389.0  |   2081.0
+      f16 1-8192-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    4665.1  |  110260.0  |   3680.0
+      f16 1-8192-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    7820.8  |  113587.0  |   7122.0
+      f16 2-2048-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |     817.8  |    6582.0  |    640.0
+      f16 2-2048-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    1254.9  |    7362.0  |   1182.0
+      f16 2-4096-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    2393.8  |   28313.0  |   2102.0
+      f16 2-4096-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    4016.8  |   29191.0  |   4170.0
+      f16 2-8192-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    7835.5  |  113347.0  |   7147.0
+      f16 2-8192-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |   15580.3  |  116299.0  |  14296.0
+      f16 16-128-16-16, p=0.0, BiasT=NoneType, BiasGrad=False    |     223.9  |     245.0  |    291.0
+      f16 16-128-16-32, p=0.0, BiasT=NoneType, BiasGrad=False    |     220.5  |     245.0  |    292.0
+      f16 16-128-16-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     222.3  |     244.0  |    288.0
+      f16 16-128-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |     222.0  |     244.0  |    286.0
+      f16 16-512-16-16, p=0.0, BiasT=NoneType, BiasGrad=False    |     671.5  |     675.0  |    981.0
+      f16 16-512-16-32, p=0.0, BiasT=NoneType, BiasGrad=False    |     714.2  |     748.0  |   1088.0
+      f16 16-512-16-64, p=0.0, BiasT=NoneType, BiasGrad=False    |     826.4  |     927.0  |   1274.0
+      f16 16-512-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |    1348.3  |    1884.0  |   1699.0
+      f16 16-1024-16-16, p=0.0, BiasT=NoneType, BiasGrad=False   |    2312.8  |    2657.0  |   3524.0
+      f16 16-1024-16-32, p=0.0, BiasT=NoneType, BiasGrad=False   |    2423.7  |    2866.0  |   3722.0
+      f16 16-1024-16-64, p=0.0, BiasT=NoneType, BiasGrad=False   |    2763.5  |    3404.0  |   4242.0
+      f16 16-1024-16-128, p=0.0, BiasT=NoneType, BiasGrad=False  |    4385.5  |    6802.0  |   5083.0
+      f16 384-197-1-88, p=0.3, BiasT=NoneType, BiasGrad=False    |     661.5  |     919.0  |    859.0
+      f16 384-197-1-64, p=0.3, BiasT=NoneType, BiasGrad=False    |     449.7  |     553.0  |    692.0
+      f32 1024-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False   |    4556.2  |    5780.0  |   4232.0
+      f32 1024-197-1-80, p=0.0, BiasT=NoneType, BiasGrad=False   |    4494.9  |    5578.0  |   4102.0
+      f16 1024-197-1-64, p=0.3, BiasT=NoneType, BiasGrad=False   |    1135.1  |    1176.0  |   1734.0
+      f16 32-197-16-80, p=0.3, BiasT=NoneType, BiasGrad=False    |     820.4  |    1136.0  |   1088.0
+      b16 256-197-1-88, p=0.0, BiasT=NoneType, BiasGrad=False    |     345.1  |     461.0  |    570.0
+      f16 16-197-16-88, p=0.3, BiasT=NoneType, BiasGrad=False    |     488.0  |     654.0  |    623.0
+      f16 150-256-16-64, p=0.3, BiasT=NoneType, BiasGrad=False   |    2768.4  |    2425.0  |   4273.0
+      f16 1-16384-16-40, p=0.3, BiasT=NoneType, BiasGrad=False   |   56556.7  |  613630.0  |  67998.0
+      f32 1-4096-16-80, p=0.0, BiasT=NoneType, BiasGrad=False    |   16270.2  |   93455.0  |  17761.0
+      b16 8-2048-20-128, p=0.0, BiasT=NoneType, BiasGrad=False   |   10062.8  |   16528.0  |  10633.0
+      b16 1-4096-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    1574.5  |   25819.0  |   1116.0
+      b16 1-4096-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    2385.6  |   27765.0  |   2087.0
+      f32 1-8192-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |   17855.2  |  399955.0  |  21517.0
+      f16 2-2048-8-128, p=0.3, BiasT=NoneType, BiasGrad=False    |    1961.8  |    9887.0  |   1385.0
+      b16 2-4096-4-128, p=0.0, BiasT=NoneType, BiasGrad=False    |    2387.6  |   27719.0  |   2111.0
+      b16 2-8192-8-128, p=0.0, BiasT=NoneType, BiasGrad=False    |   15579.1  |  113209.0  |  14372.0
+      f32 16-128-16-16, p=0.0, BiasT=NoneType, BiasGrad=False    |     276.1  |     296.0  |    355.0
+      b16 16-128-16-128, p=0.0, BiasT=NoneType, BiasGrad=False   |     229.6  |     296.0  |    386.0
+      b16 16-1024-16-16, p=0.0, BiasT=NoneType, BiasGrad=False   |    2332.1  |    2619.0  |   3858.0
+      f16 16-1024-16-32, p=0.3, BiasT=NoneType, BiasGrad=False   |    3371.4  |    3641.0  |   4509.0
+      b16 16-1024-16-64, p=0.0, BiasT=NoneType, BiasGrad=False   |    2772.5  |    3274.0  |   4280.0
+      b16 16-1024-16-128, p=0.0, BiasT=NoneType, BiasGrad=False  |    4322.3  |    6599.0  |   5154.0
+
+Times are in microseconds (us).
+
+[-------- attention backward (attn_bias=<class 'xformers.ops.fmha.attn_bias.LowerTriangularMask'>) --------]
+                                                                           |    v3    |     v2    |  vanilla
+1 threads: -------------------------------------------------------------------------------------------------
+      f16 384-197-1-80, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |   354.7  |    515.0  |    759.0
+      f16 32-197-16-128, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False  |   542.8  |    764.0  |   1331.0
+      f16 16-197-16-128, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False  |   310.3  |    430.0  |    709.0
+      f16 1-4096-16-40, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |  1784.6  |  12862.0  |   3506.0
+      f16 4-4096-16-40, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |  6010.5  |  15678.0  |  13693.0
+      f16 2-8192-4-128, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |  4667.5  |  58351.0  |   7164.0
+      f16 16-128-16-64, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False   |   220.5  |    244.0  |    357.0
+      f16 16-512-16-128, p=0.0, BiasT=LowerTriangularMask, BiasGrad=False  |  1017.6  |   1316.0  |   1721.0
+
+Times are in microseconds (us).
+
+[-------------------- attention backward (attn_bias=<class 'torch.Tensor'>) ---------------------]
+                                                              |     v3     |     v2     |  vanilla
+1 threads: ---------------------------------------------------------------------------------------
+      f16 64-256-12-64, p=0.0, BiasT=Tensor, BiasGrad=True    |     792.9  |     846.0  |   1261.0
+      f16 1-16384-16-80, p=0.0, BiasT=Tensor, BiasGrad=False  |   63953.4  |  493051.0  |  57198.0
+      f16 4-16384-16-40, p=0.0, BiasT=Tensor, BiasGrad=True   |  189321.6  |  547266.0  |         
+      f16 4-4096-16-80, p=0.0, BiasT=Tensor, BiasGrad=False   |   16154.8  |   32608.0  |  14333.0
+      f16 4-16384-16-80, p=0.0, BiasT=Tensor, BiasGrad=False  |  255720.6  |  522837.0  |         
+      f16 256-4096-16-64, p=0.0, BiasT=Tensor, BiasGrad=True  |  689013.3  |  768998.0  |         
+      f16 1-2048-4-128, p=0.0, BiasT=Tensor, BiasGrad=True    |     439.6  |    7167.0  |    343.0
+      f16 1-2048-8-128, p=0.0, BiasT=Tensor, BiasGrad=False   |     886.5  |    7269.0  |    635.0
+      f16 1-8192-8-128, p=0.0, BiasT=Tensor, BiasGrad=True    |    8478.6  |  124570.0  |   7159.0
+      f16 2-2048-4-128, p=0.0, BiasT=Tensor, BiasGrad=True    |     885.9  |    7269.0  |    648.0
+      f16 2-4096-8-128, p=0.0, BiasT=Tensor, BiasGrad=False   |    4332.5  |   31934.0  |   4175.0
+      f16 16-128-16-32, p=0.0, BiasT=Tensor, BiasGrad=True    |     231.4  |     256.0  |    274.0
+      f16 16-512-16-16, p=0.0, BiasT=Tensor, BiasGrad=False   |     732.7  |     767.0  |    987.0
+      f16 16-512-16-32, p=0.0, BiasT=Tensor, BiasGrad=False   |     773.9  |     837.0  |   1090.0
+      f16 16-512-16-64, p=0.0, BiasT=Tensor, BiasGrad=False   |     888.2  |    1016.0  |   1290.0
+
+Times are in microseconds (us).
+```
+</details>
+
+## Discussion
+
+### hwu36 · 2023-07-07T13:42:17Z
+
+https://github.com/NVIDIA/cutlass/pull/992#issuecomment-1625435788
+
+YOU ARE MY HERO!!!
+
+### mnicely · 2023-07-07T20:18:21Z
+
+https://github.com/NVIDIA/cutlass/pull/992#issuecomment-1626026411
+
+Thanks @danthe3rd!!
+
+## Reviews
+
+### hwu36 · 2023-07-13T02:30:41Z
+
+https://github.com/NVIDIA/cutlass/pull/992#pullrequestreview-1527475118
+
+

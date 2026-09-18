@@ -1,0 +1,102 @@
+{
+  "retrieved_at": "2026-09-17",
+  "notes": "2026-09-17 初筛快照；最多 50 条/搜索，非全量。后续通过精确 PR/issue API 审核。",
+  "searches": [
+    {
+      "search_id": "cutlass-sm120-issue",
+      "total_count": 44,
+      "fetched": 44,
+      "incomplete_results": false,
+      "truncated": false,
+      "query": "repo:NVIDIA/cutlass is:issue sm120"
+    },
+    {
+      "search_id": "cutlass-sm120-pr",
+      "total_count": 33,
+      "fetched": 33,
+      "incomplete_results": false,
+      "truncated": false,
+      "query": "repo:NVIDIA/cutlass is:pr sm120"
+    },
+    {
+      "search_id": "cutlass-sm80-issue",
+      "total_count": 273,
+      "fetched": 50,
+      "incomplete_results": false,
+      "truncated": true,
+      "query": "repo:NVIDIA/cutlass is:issue sm80"
+    },
+    {
+      "search_id": "cutlass-sm80-pr",
+      "total_count": 47,
+      "fetched": 47,
+      "incomplete_results": false,
+      "truncated": false,
+      "query": "repo:NVIDIA/cutlass is:pr sm80"
+    },
+    {
+      "search_id": "cutlass-sm86",
+      "total_count": 23,
+      "fetched": 23,
+      "incomplete_results": false,
+      "truncated": false,
+      "query": "repo:NVIDIA/cutlass sm86"
+    },
+    {
+      "search_id": "cutlass-sm89",
+      "total_count": 36,
+      "fetched": 36,
+      "incomplete_results": false,
+      "truncated": false,
+      "query": "repo:NVIDIA/cutlass sm89"
+    },
+    {
+      "search_id": "flashattention-consumer",
+      "total_count": 7,
+      "fetched": 7,
+      "incomplete_results": false,
+      "truncated": false,
+      "query": "repo:Dao-AILab/flash-attention is:pr 4090"
+    },
+    {
+      "search_id": "flashinfer-sm120",
+      "total_count": 744,
+      "fetched": 50,
+      "incomplete_results": false,
+      "truncated": true,
+      "query": "repo:flashinfer-ai/flashinfer sm120"
+    },
+    {
+      "search_id": "triton-sm120",
+      "total_count": 58,
+      "fetched": 50,
+      "incomplete_results": false,
+      "truncated": true,
+      "query": "repo:triton-lang/triton sm120"
+    },
+    {
+      "search_id": "vllm-sm120",
+      "total_count": 192,
+      "fetched": 50,
+      "incomplete_results": false,
+      "truncated": true,
+      "query": "repo:vllm-project/vllm is:pr sm120 cutlass"
+    },
+    {
+      "search_id": "vllm-sm80",
+      "total_count": 32,
+      "fetched": 32,
+      "incomplete_results": false,
+      "truncated": false,
+      "query": "repo:vllm-project/vllm is:pr cutlass sm80"
+    },
+    {
+      "search_id": "vllm-sm89",
+      "total_count": 205,
+      "fetched": 50,
+      "incomplete_results": false,
+      "truncated": true,
+      "query": "repo:vllm-project/vllm sm89"
+    }
+  ]
+}

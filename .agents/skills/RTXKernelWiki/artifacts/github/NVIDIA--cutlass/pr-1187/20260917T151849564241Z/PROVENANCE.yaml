@@ -1,0 +1,55 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/pull/1187
+repo: NVIDIA/cutlass
+number: 1187
+type: pr
+retrieved_at: 20260917T151849564241Z
+architectures:
+- sm80
+- sm86
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4273
+  sha256: 9c1df7e325acf5da775b7bac88fcbe1857c578167d3bed40aef72251b85113ab
+- path: comments.json
+  bytes: 5916
+  sha256: bdf96a85934657e0a8e5cba724eacb948f025aa021764ee4501c08b17065b725
+- path: pull.json
+  bytes: 19612
+  sha256: b5e478d80845e52c4389228f504d5dad51a5e6700837e6aa92f29b477699a705
+- path: changed-files.json
+  bytes: 1103
+  sha256: dc9b543c073826be157226fd5f873037c0405d09d3cd244fb8af524415fdd5ec
+- path: reviews.json
+  bytes: 1745
+  sha256: d4aefe4880c005a22c85a6d3df2321856d55f347579b328172942c496dbf1306
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 626
+  sha256: 5f42fb7f99cb0a4902f881a47b67c5f35890a8bdbb4377c9de9ca34890da12a8
+- path: key-files/head/include/cute/arch/copy_sm80.hpp
+  bytes: 6832
+  sha256: 91cc2b13c710e4dce98ec317ee24cf2156d97f711909214efe59f0a92e931043
+  upstream_path: include/cute/arch/copy_sm80.hpp
+  source_sha: 21424b0c5fa2bd31e8fa5655ee4252b7a01953d1
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/21424b0c5fa2bd31e8fa5655ee4252b7a01953d1/include/cute/arch/copy_sm80.hpp
+- path: page.md
+  bytes: 1341
+  sha256: 43794d8661c0b5304428d0677c8b867997930dda20ce33f5819a1cf5b93b0c00
+skipped: []
+errors: []
+truncations: []
+title: fix cp.async L2 prefetch typo
+updated_at: '2023-11-28T21:58:04Z'
+status: merged
+head_sha: 21424b0c5fa2bd31e8fa5655ee4252b7a01953d1
+base_sha: 6e60b9b17c5e6734488dbb7401b5c55ccb37feba
+merged_at: '2023-11-28T21:58:04Z'
+merge_commit_sha: eb01d5449d616fb1bde45777e14fed8f7fbda509
+changed_files: 1

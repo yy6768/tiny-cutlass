@@ -1,0 +1,120 @@
+schema_version: 1
+origin_url: https://github.com/SHI-Labs/NATTEN/pull/337
+repo: SHI-Labs/NATTEN
+number: 337
+type: pr
+retrieved_at: 20260917T164959673620Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4192
+  sha256: 0f2e48119dcee53b945934e66a0e59426e595d0ba3a51dd287327510090b4ca2
+- path: comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: pull.json
+  bytes: 20041
+  sha256: 2ad726af01a7732c4380bd6d5681f33d84c04bb4b539829bc285d6d0a5aa4630
+- path: changed-files.json
+  bytes: 42780
+  sha256: 1879fb560545b15bb0a661607f74e3ab491ae2ae0cec65aae2237cc6b7aa1889
+- path: reviews.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 36508
+  sha256: 0c461b9dca8cc53d5c7aff9cd18abbfa4a45bfc379b72cf0963ae35c8f53e87c
+- path: key-files/head/csrc/include/natten/cuda/fna/epilogue/predicated_tile_iterator.h
+  bytes: 20396
+  sha256: 087a7f6ce2885f59a74c989d6be902faa1d3821fb99e14f1dc949d15cc41c664
+  upstream_path: csrc/include/natten/cuda/fna/epilogue/predicated_tile_iterator.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/epilogue/predicated_tile_iterator.h
+- path: key-files/head/csrc/include/natten/cuda/fna/epilogue/predicated_tile_iterator_params.h
+  bytes: 5641
+  sha256: c933e90b8cd23af44ecef9bac12c6234995405ab75bd863ebd6c09ed85fd3fa5
+  upstream_path: csrc/include/natten/cuda/fna/epilogue/predicated_tile_iterator_params.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/epilogue/predicated_tile_iterator_params.h
+- path: key-files/head/csrc/include/natten/cuda/fna/iterators/epilogue_predicated_tile_iterator.h
+  bytes: 17501
+  sha256: 01478c799601dcad5d646e318c73eb65cd0aa03f52cf65ede6926cec8d484eb8
+  upstream_path: csrc/include/natten/cuda/fna/iterators/epilogue_predicated_tile_iterator.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/iterators/epilogue_predicated_tile_iterator.h
+- path: key-files/head/csrc/include/natten/cuda/fna/iterators/predicated_tile_access_iterator.h
+  bytes: 53109
+  sha256: 6e1714b33270b10a3c83091c2de949678327b139e44d53e6161abd62682907f8
+  upstream_path: csrc/include/natten/cuda/fna/iterators/predicated_tile_access_iterator.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/iterators/predicated_tile_access_iterator.h
+- path: key-files/head/csrc/include/natten/cuda/fna/iterators/predicated_tile_access_iterator_residual_last.h
+  bytes: 30957
+  sha256: da370b914478b5c899af68c738978ae1ee26c52c2477c96d7b41c0d4d166ca85
+  upstream_path: csrc/include/natten/cuda/fna/iterators/predicated_tile_access_iterator_residual_last.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/iterators/predicated_tile_access_iterator_residual_last.h
+- path: key-files/head/csrc/include/natten/cuda/fna/iterators/predicated_tile_iterator.h
+  bytes: 25672
+  sha256: 17edb7a227fef3e6dba8d48ba29a970b7c5e94aa874b415edc53dfb74d0983ac
+  upstream_path: csrc/include/natten/cuda/fna/iterators/predicated_tile_iterator.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/iterators/predicated_tile_iterator.h
+- path: key-files/head/csrc/include/natten/cuda/fna/iterators/predicated_tile_iterator_residual_last.h
+  bytes: 19376
+  sha256: 80a0bd3eaba4fe68ad0ec6bec3ec64ee433ba68a7565c2373be63eb730bdf76e
+  upstream_path: csrc/include/natten/cuda/fna/iterators/predicated_tile_iterator_residual_last.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/iterators/predicated_tile_iterator_residual_last.h
+- path: key-files/head/csrc/include/natten/cuda/fna/kernel_backward.h
+  bytes: 106938
+  sha256: 2e21ebb9a94c94efc5f755786a5ed11d8e39759c287b626d6b96061b065a6899
+  upstream_path: csrc/include/natten/cuda/fna/kernel_backward.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/kernel_backward.h
+- path: key-files/head/csrc/include/natten/cuda/fna/kernel_forward.h
+  bytes: 44339
+  sha256: 8c52e3f90607e3d8362f0a562ba78e71c0c3e1490d51f0675b41d21d991eca42
+  upstream_path: csrc/include/natten/cuda/fna/kernel_forward.h
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/kernel_forward.h
+- path: key-files/head/csrc/include/natten/cuda/fna/na_utils.cuh
+  bytes: 55109
+  sha256: 28be5548387f512bac892d0b2bdc8616e78c85a8a1fa200211864b7b52142efb
+  upstream_path: csrc/include/natten/cuda/fna/na_utils.cuh
+  source_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/6fd34669017a39cd37b10d9edd3c65c88c18dfb6/csrc/include/natten/cuda/fna/na_utils.cuh
+- path: page.md
+  bytes: 444
+  sha256: 905ecdfce261f2a0a21c8169ae56f2920c15e610ba5c9ab381a947e816d245b0
+skipped: []
+errors: []
+truncations: []
+title: 'cutlass-fna: 64b strides'
+updated_at: '2026-05-10T02:33:42Z'
+status: merged
+head_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+base_sha: 4472b95f46f55a8ba2c5f9869eba252bbf5a22f5
+merged_at: '2026-05-10T02:33:38Z'
+merge_commit_sha: 92750c3cf837652d58b6091e5ebd37dcad46e753
+changed_files: 11
+kernel_files_selected: 10
+key_file_policy: CUDA/C++/PTX/MLIR and kernel-related Python; exclude docs, CI, tests
+  and benchmarks
+kernel_files_captured: 10

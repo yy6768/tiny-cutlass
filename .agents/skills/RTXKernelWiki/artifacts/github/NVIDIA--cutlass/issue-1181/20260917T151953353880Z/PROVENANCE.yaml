@@ -1,0 +1,28 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/1181
+repo: NVIDIA/cutlass
+number: 1181
+type: issue
+retrieved_at: 20260917T151953353880Z
+architectures:
+- sm80
+- sm86
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 5187
+  sha256: e9e18dabab1181c13fbe447f3546182901da7313166e37f1312924499bdc2461
+- path: comments.json
+  bytes: 4092
+  sha256: 0808c21e1de4d2b1ff2e36e99e1ccb2d99f3eff6cd7b333a9cccb925e80d4f0d
+- path: page.md
+  bytes: 1522
+  sha256: 928722737b8ac8cb05e871ab499e43e04d3aa3eb3823b187e6f0403dae5561f4
+skipped: []
+errors: []
+truncations: []
+title: '[QST] What is the usage of Sm86?'
+updated_at: '2023-11-11T02:22:55Z'
+status: closed

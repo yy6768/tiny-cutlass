@@ -1,0 +1,57 @@
+repo: NVIDIA/FasterTransformer
+candidates:
+- kind: pr
+  number: 219
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-fastertransformer-swin
+  url: https://github.com/NVIDIA/FasterTransformer/pull/219
+  title: 'fix: fix bug of submodule for vit and swin transformer'
+  state: closed
+  updated_at: '2022-05-10T05:34:17Z'
+- kind: pr
+  number: 242
+  decision: exclude
+  reason: SM86 INT8 TRT FMHA header，不满足 SM89 FP8/CUTLASS 2.x attention 主线。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-fastertransformer-swin
+  url: https://github.com/NVIDIA/FasterTransformer/pull/242
+  title: add int8 fmha for int8 swin on SM86
+  state: closed
+  updated_at: '2022-06-24T05:19:33Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 333
+  decision: include
+  reason: Swin WindowAttention 的 qk_scale 修正，用来检查接口 scale 和 fused runner 内部 scale
+    是否重复。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-fastertransformer-swin
+  url: https://github.com/NVIDIA/FasterTransformer/pull/333
+  title: Fix/swin qk scale
+  state: closed
+  updated_at: '2022-09-29T05:16:14Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: window-semantics-reference
+  priority: P2
+  merged_at: '2022-09-29T05:16:02Z'
+  head_sha: 8fc725235bf3c707945e0ccd326783a1aafdff4b
+  artifact_dir: artifacts/github/NVIDIA--FasterTransformer/pr-333/20260917T165141113463Z
+  local_validation: not-run
+last_attempt_at: '2026-09-17T16:46:43.297402+00:00'
+last_search_partial: false
+last_queries:
+- id: sm89-local-attention-fastertransformer-swin
+  architecture: sm89
+  kind: pr
+  query: repo:NVIDIA/FasterTransformer is:pr swin is:merged
+  repo: NVIDIA/FasterTransformer

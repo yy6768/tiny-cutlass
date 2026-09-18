@@ -1,0 +1,57 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/pull/3278
+repo: NVIDIA/cutlass
+number: 3278
+type: pr
+retrieved_at: 20260917T165052550363Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4902
+  sha256: c1cf73c137af14d9093fa7ecb67dca348bdb02083716e05be6e2f58aca8ec377
+- path: comments.json
+  bytes: 13979
+  sha256: 7992560887b145397bbb2259d10b76955433607ba714bd4fdd22c11238510cc1
+- path: pull.json
+  bytes: 20463
+  sha256: 439248377d30bf94fbce637fa226e1c424f725b7ac2a2cc7826114a903353a9d
+- path: changed-files.json
+  bytes: 3737
+  sha256: 62cef584bb3539abb0ed3a56e8bb6e15a6d06e548482ce6b60217f644e835001
+- path: reviews.json
+  bytes: 1865
+  sha256: dcdb0dc8574e67c2cf566da6bb36f1f76b9e6dfba24bba63e8e532241c21cbf2
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 3203
+  sha256: 65ffb0d71f23e713831ff08e7c2fea447b783b5951c3a37812d853a31a438a86
+- path: key-files/head/include/cutlass/epilogue/threadblock/predicated_tile_iterator.h
+  bytes: 42069
+  sha256: c3fff72c0c1848065a197e1df26f1b0c410e95449cd979b4ef4393aca756935a
+  upstream_path: include/cutlass/epilogue/threadblock/predicated_tile_iterator.h
+  source_sha: dbea1dcc4979c88353d661f898a6e2f0b047ba4e
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/dbea1dcc4979c88353d661f898a6e2f0b047ba4e/include/cutlass/epilogue/threadblock/predicated_tile_iterator.h
+- path: page.md
+  bytes: 3142
+  sha256: 6f9e5c3158e5019b05b9007bad01caa742d859660b2895bc66727f2b39de69bf
+skipped: []
+errors: []
+truncations: []
+title: Fix the ScatterD issue in predicated_tile_iterator
+updated_at: '2026-08-18T01:20:28Z'
+status: merged
+head_sha: dbea1dcc4979c88353d661f898a6e2f0b047ba4e
+base_sha: 5c54bee12b1efc83fda51bbfb116b2f0a66b4591
+merged_at: '2026-08-18T01:20:28Z'
+merge_commit_sha: 1d7cde107fa2edbf8fbf7460498b5b36a0cf8f0a
+changed_files: 1
+kernel_files_selected: 1
+key_file_policy: CUDA/C++/PTX/MLIR and kernel-related Python; exclude docs, CI, tests
+  and benchmarks
+kernel_files_captured: 1

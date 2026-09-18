@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1754028017,
+    "node_id": "PRR_kwDOBrVDM85ojFfx",
+    "user": {
+      "login": "hwu36",
+      "id": 57973641,
+      "node_id": "MDQ6VXNlcjU3OTczNjQx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57973641?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hwu36",
+      "html_url": "https://github.com/hwu36",
+      "followers_url": "https://api.github.com/users/hwu36/followers",
+      "following_url": "https://api.github.com/users/hwu36/following{/other_user}",
+      "gists_url": "https://api.github.com/users/hwu36/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/hwu36/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/hwu36/subscriptions",
+      "organizations_url": "https://api.github.com/users/hwu36/orgs",
+      "repos_url": "https://api.github.com/users/hwu36/repos",
+      "events_url": "https://api.github.com/users/hwu36/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/hwu36/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "",
+    "state": "APPROVED",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/1187#pullrequestreview-1754028017",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/1187",
+    "author_association": "CONTRIBUTOR",
+    "_links": {
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/1187#pullrequestreview-1754028017"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/1187"
+      }
+    },
+    "submitted_at": "2023-11-28T21:57:58Z",
+    "commit_id": "21424b0c5fa2bd31e8fa5655ee4252b7a01953d1"
+  }
+]

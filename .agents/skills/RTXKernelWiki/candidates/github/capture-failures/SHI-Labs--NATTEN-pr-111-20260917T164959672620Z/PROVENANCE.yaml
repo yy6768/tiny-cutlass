@@ -1,0 +1,41 @@
+schema_version: 1
+origin_url: https://github.com/SHI-Labs/NATTEN/pull/111
+repo: SHI-Labs/NATTEN
+number: 111
+type: pr
+retrieved_at: 20260917T164959672620Z
+architectures:
+- sm89
+review: defer
+complete: false
+files:
+- path: issue.json
+  bytes: 5537
+  sha256: 5d2de24c97de59c56bea59b1a790fe71d3e124cbcea8ce6cdf0c61eb2fa4f756
+- path: comments.json
+  bytes: 3991
+  sha256: 4af4c8aaa6edca037143c9aa0b0a9d1636cdfe09fba28a4a60525a58d1818125
+- path: pull.json
+  bytes: 21352
+  sha256: 6e2df7bd427ae7c29a566cd618b7fb1fb864378891970b6f1b3cc0b4cbd8e31f
+- path: changed-files.json
+  bytes: 2137334
+  sha256: 3d6d6621b231ea64abb718bb8a8f5fe6c62dedaf1e177f2753ba66fadde70645
+- path: reviews.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+skipped: []
+errors:
+- 'gh: Sorry, the diff exceeded the maximum number of lines (20000) (HTTP 406)'
+truncations: []
+title: Fused neighborhood attention
+updated_at: '2024-03-10T18:57:14Z'
+status: merged
+head_sha: ed95abfec5f1698f709d099c97baf113fbd6b2da
+base_sha: bdee155f61f6cc5105b24280482a1745731d480e
+merged_at: '2024-03-08T05:35:03Z'
+merge_commit_sha: 9b99173c9fe0a1370fcbb870ddafe7930f96731b
+changed_files: 254

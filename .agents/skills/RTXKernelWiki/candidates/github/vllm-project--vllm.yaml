@@ -1,0 +1,190 @@
+repo: vllm-project/vllm
+candidates:
+- kind: pr
+  number: 5183
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/5183
+  title: '[Kernel] Switch fp8 layers to use the CUTLASS kernels'
+  state: closed
+  updated_at: '2024-06-14T17:20:02Z'
+- kind: pr
+  number: 6384
+  decision: exclude
+  reason: '历史上禁用未调优的 Ada GEMM；后续 #6677 才是本轮实现候选。保留性能退化背景，不采用禁用逻辑。'
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/6384
+  title: '[Kernel] Turn off CUTLASS scaled_mm for Ada Lovelace'
+  state: closed
+  updated_at: '2024-07-14T13:37:20Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 6677
+  decision: include
+  reason: Ada FP8 CUTLASS 2.x GEMM 的 M/N 分派、tile/stages 和 scale epilogue；用于 FP8 primitive
+    选型。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/6677
+  title: '[Kernel] Tuned FP8 Kernels for Ada Lovelace'
+  state: closed
+  updated_at: '2024-07-29T15:42:38Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: fp8-component
+  priority: P0
+  merged_at: '2024-07-29T15:42:36Z'
+  head_sha: 163e091b3015471cf438345e430790af638588de
+  artifact_dir: artifacts/github/vllm-project--vllm/pr-6677/20260917T165110800094Z
+  local_validation: not-run
+- kind: pr
+  number: 9932
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/9932
+  title: '[CI] Prune back the number of tests in tests/kernels/*'
+  state: closed
+  updated_at: '2024-11-05T21:02:38Z'
+- kind: pr
+  number: 22131
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/22131
+  title: '[Kernel] Add support for block FP8 on SM120 (NVIDIA 5090 and RTX PRO 6000)'
+  state: closed
+  updated_at: '2026-05-06T20:25:48Z'
+- kind: pr
+  number: 34302
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/34302
+  title: '[ModelBash][DSV3] Add TRTLLM DSV3 Router GEMM kernel (6% B1 Speedup)'
+  state: closed
+  updated_at: '2026-02-24T23:29:56Z'
+- kind: pr
+  number: 34556
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/34556
+  title: '[Quantization] add humming quantization kernel'
+  state: closed
+  updated_at: '2026-04-24T13:29:44Z'
+- kind: pr
+  number: 35538
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/35538
+  title: '[docs][torch.compile] Add fusions.md — kernel/operator fusion reference
+    page'
+  state: closed
+  updated_at: '2026-03-06T23:55:07Z'
+- kind: pr
+  number: 35568
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/35568
+  title: '[Bugfix] Fix SM121 (DGX Spark) exclusion from Marlin/CUTLASS FP8 paths'
+  state: closed
+  updated_at: '2026-05-15T17:59:01Z'
+- kind: pr
+  number: 36976
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/36976
+  title: '[Bugfix][LoRA] Fix  Qwen35 LoRA'
+  state: closed
+  updated_at: '2026-03-23T15:58:50Z'
+- kind: pr
+  number: 38423
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/38423
+  title: '[NVIDIA] Bugfix NVFP4 DGX Spark and RTX50'
+  state: closed
+  updated_at: '2026-03-30T16:36:24Z'
+- kind: pr
+  number: 40923
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/40923
+  title: '[Kernel] Marlin MoE: include SM 12.x in default arch list'
+  state: closed
+  updated_at: '2026-05-28T07:30:27Z'
+- kind: pr
+  number: 53896
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/53896
+  title: '[Model] Support Qwen3.8-Flash-Next'
+  state: closed
+  updated_at: '2026-09-17T14:55:27Z'
+- kind: pr
+  number: 53906
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-vllm-ada-fp8
+  url: https://github.com/vllm-project/vllm/pull/53906
+  title: '[Model] add GLM-5.3-Flash support'
+  state: closed
+  updated_at: '2026-09-09T12:29:01Z'
+last_attempt_at: '2026-09-17T16:46:43.297402+00:00'
+last_search_partial: false
+last_queries:
+- id: sm89-local-attention-vllm-ada-fp8
+  architecture: sm89
+  kind: pr
+  query: repo:vllm-project/vllm is:pr fp8 sm89 cutlass is:merged
+  repo: vllm-project/vllm

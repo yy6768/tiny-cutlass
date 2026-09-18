@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/408
+repo: NVIDIA/cutlass
+number: 408
+type: issue
+retrieved_at: 20260917T154534533986Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4994
+  sha256: 6233c8552cd4c32e2f6fad7944754d5bb00feaed5083d39d6f0724e295a71d65
+- path: comments.json
+  bytes: 12743
+  sha256: d7ed0c7182e28ece024aaacee994bb0ec14e28315bc054e7faeb47ad9408b716
+- path: page.md
+  bytes: 4475
+  sha256: 26b2a581bf56c1bfa483dba616341465173c99b2bd21b456cd1b4c24e67fddde
+skipped: []
+errors: []
+truncations: []
+title: Performance of Dense vs Sparse GEMM
+updated_at: '2022-02-18T15:57:22Z'
+status: closed
+kernel_files_captured: 0

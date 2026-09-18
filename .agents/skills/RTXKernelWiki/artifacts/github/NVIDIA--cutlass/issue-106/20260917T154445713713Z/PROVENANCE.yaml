@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/106
+repo: NVIDIA/cutlass
+number: 106
+type: issue
+retrieved_at: 20260917T154445713713Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4860
+  sha256: 18e32b9ced0a3bee42bc4a70170af9897966d8042c23a947be3507ae18a54596
+- path: comments.json
+  bytes: 4913
+  sha256: aa1a5fa7bd06baff5bad082162f82c43900d59f0261e4ab2881b224b0f816851
+- path: page.md
+  bytes: 2495
+  sha256: 9bcdeb3b8634da1075d93acdabdbdc70d8dc5421b13ff7e0d8c7b679c672e04d
+skipped: []
+errors: []
+truncations: []
+title: Performance on tensor core
+updated_at: '2021-04-19T02:46:43Z'
+status: closed
+kernel_files_captured: 0

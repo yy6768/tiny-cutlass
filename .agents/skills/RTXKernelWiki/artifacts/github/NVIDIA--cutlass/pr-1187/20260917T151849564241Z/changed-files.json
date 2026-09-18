@@ -1,0 +1,14 @@
+[
+  {
+    "sha": "1002881cd653fdd73ee1128fadc8edf792ff0f44",
+    "filename": "include/cute/arch/copy_sm80.hpp",
+    "status": "modified",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2,
+    "blob_url": "https://github.com/NVIDIA/cutlass/blob/21424b0c5fa2bd31e8fa5655ee4252b7a01953d1/include%2Fcute%2Farch%2Fcopy_sm80.hpp",
+    "raw_url": "https://github.com/NVIDIA/cutlass/raw/21424b0c5fa2bd31e8fa5655ee4252b7a01953d1/include%2Fcute%2Farch%2Fcopy_sm80.hpp",
+    "contents_url": "https://api.github.com/repos/NVIDIA/cutlass/contents/include%2Fcute%2Farch%2Fcopy_sm80.hpp?ref=21424b0c5fa2bd31e8fa5655ee4252b7a01953d1",
+    "patch": "@@ -86,7 +86,7 @@ struct SM80_CP_ASYNC_CACHEGLOBAL\n #if defined(CUTE_ARCH_CP_ASYNC_SM80_ENABLED)\n     TS const* gmem_ptr    = &gmem_src;\n     uint32_t smem_int_ptr = cast_smem_ptr_to_uint(&smem_dst);\n-    asm volatile(\"cp.async.cg.shared.global.L2::128BB [%0], [%1], %2;\\n\"\n+    asm volatile(\"cp.async.cg.shared.global.L2::128B [%0], [%1], %2;\\n\"\n         :: \"r\"(smem_int_ptr),\n            \"l\"(gmem_ptr),\n            \"n\"(sizeof(TS)));"
+  }
+]

@@ -1,0 +1,64 @@
+schema_version: 1
+origin_url: https://github.com/SHI-Labs/NATTEN/pull/341
+repo: SHI-Labs/NATTEN
+number: 341
+type: pr
+retrieved_at: 20260917T165018000073Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4213
+  sha256: c298d5316c5ee19ead936ee0f765fc5a099d8c24e4b7ab2b5600ed659abbe6dc
+- path: comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: pull.json
+  bytes: 20068
+  sha256: d1a91d3b386bde645ca6601626fb58f1b5f1510390198c3e95c8d782039b167a
+- path: changed-files.json
+  bytes: 4508
+  sha256: ebbc46dd7661ab3008c292667d1136abb1e2ae150ae686bdbb7a5d4420ee292c
+- path: reviews.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 3071
+  sha256: 2449bb69f04e91f943d29131eb2e20d4d9d606d6393677308d2a45eace1b9d9c
+- path: key-files/head/csrc/include/natten/cuda/fna/kernel_backward.h
+  bytes: 106686
+  sha256: e655e24d42ef7eef8a98930292b5bc6fa1f250201893be1a2ee13aaf925b6b24
+  upstream_path: csrc/include/natten/cuda/fna/kernel_backward.h
+  source_sha: e1ed3b64087d2f230f692bc48249ef804c46bfa9
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/e1ed3b64087d2f230f692bc48249ef804c46bfa9/csrc/include/natten/cuda/fna/kernel_backward.h
+- path: key-files/head/src/natten/version.py
+  bytes: 1325
+  sha256: 0a7154ba921617df648485a1c35cea14226feea58639d7fb90a7ae4b124d3328
+  upstream_path: src/natten/version.py
+  source_sha: e1ed3b64087d2f230f692bc48249ef804c46bfa9
+  change_status: modified
+  source_url: https://github.com/SHI-Labs/NATTEN/blob/e1ed3b64087d2f230f692bc48249ef804c46bfa9/src/natten/version.py
+- path: page.md
+  bytes: 469
+  sha256: 2875ec4d0634e43a22028a6a775982f601ad4f3bfa0c42a21baef0b463c94ad3
+skipped: []
+errors: []
+truncations: []
+title: Fix/cutlass fna dv nan issue
+updated_at: '2026-06-24T14:37:20Z'
+status: merged
+head_sha: e1ed3b64087d2f230f692bc48249ef804c46bfa9
+base_sha: 734b3d0bb3e5e73d14a5faa3057058c99dc851f5
+merged_at: '2026-06-24T14:36:58Z'
+merge_commit_sha: e4177231fa4921b6582d940494734bb50cc67e2a
+changed_files: 3
+kernel_files_selected: 2
+key_file_policy: CUDA/C++/PTX/MLIR and kernel-related Python; exclude docs, CI, tests
+  and benchmarks
+kernel_files_captured: 2

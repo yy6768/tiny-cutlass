@@ -1,0 +1,561 @@
+[
+  {
+    "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112520286",
+    "pull_request_review_id": 1306599504,
+    "id": 1112520286,
+    "node_id": "PRRC_kwDOBrVDM85CT7Ze",
+    "diff_hunk": "@@ -141,6 +141,37 @@ constexpr CUTLASS_HOST_DEVICE integer align_up(integer n, integer m) {\n   return ((n + m - 1) / m) * m;\n }\n \n+inline int32_t getMaximumSharedMemoryPerBlockKb(int cc) {",
+    "path": "examples/41_fused_multi_head_attention/gemm_kernel_utils.h",
+    "commit_id": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+    "original_commit_id": "1714a4ff313ea832f48072f7a71790c2984c5084",
+    "user": {
+      "login": "hwu36",
+      "id": 57973641,
+      "node_id": "MDQ6VXNlcjU3OTczNjQx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57973641?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hwu36",
+      "html_url": "https://github.com/hwu36",
+      "followers_url": "https://api.github.com/users/hwu36/followers",
+      "following_url": "https://api.github.com/users/hwu36/following{/other_user}",
+      "gists_url": "https://api.github.com/users/hwu36/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/hwu36/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/hwu36/subscriptions",
+      "organizations_url": "https://api.github.com/users/hwu36/orgs",
+      "repos_url": "https://api.github.com/users/hwu36/repos",
+      "events_url": "https://api.github.com/users/hwu36/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/hwu36/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "@jackkosaian , there is a cuda api call that can get these numbers, correct?",
+    "created_at": "2023-02-21T04:28:36Z",
+    "updated_at": "2023-02-21T04:28:43Z",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1112520286",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112520286"
+      },
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1112520286"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112520286/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": null,
+    "original_line": 144,
+    "side": "RIGHT",
+    "author_association": "CONTRIBUTOR",
+    "original_position": 4,
+    "position": 1,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112521610",
+    "pull_request_review_id": 1306601373,
+    "id": 1112521610,
+    "node_id": "PRRC_kwDOBrVDM85CT7uK",
+    "diff_hunk": "@@ -141,6 +141,37 @@ constexpr CUTLASS_HOST_DEVICE integer align_up(integer n, integer m) {\n   return ((n + m - 1) / m) * m;\n }\n \n+inline int32_t getMaximumSharedMemoryPerBlockKb(int cc) {",
+    "path": "examples/41_fused_multi_head_attention/gemm_kernel_utils.h",
+    "commit_id": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+    "original_commit_id": "1714a4ff313ea832f48072f7a71790c2984c5084",
+    "user": {
+      "login": "hwu36",
+      "id": 57973641,
+      "node_id": "MDQ6VXNlcjU3OTczNjQx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57973641?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hwu36",
+      "html_url": "https://github.com/hwu36",
+      "followers_url": "https://api.github.com/users/hwu36/followers",
+      "following_url": "https://api.github.com/users/hwu36/following{/other_user}",
+      "gists_url": "https://api.github.com/users/hwu36/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/hwu36/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/hwu36/subscriptions",
+      "organizations_url": "https://api.github.com/users/hwu36/orgs",
+      "repos_url": "https://api.github.com/users/hwu36/repos",
+      "events_url": "https://api.github.com/users/hwu36/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/hwu36/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "i think we can query device property and get `sharedMemPerBlockOptin`",
+    "created_at": "2023-02-21T04:31:38Z",
+    "updated_at": "2023-02-21T04:31:39Z",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1112521610",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112521610"
+      },
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1112521610"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112521610/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": null,
+    "original_line": 144,
+    "side": "RIGHT",
+    "in_reply_to_id": 1112520286,
+    "author_association": "CONTRIBUTOR",
+    "original_position": 4,
+    "position": 1,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112522055",
+    "pull_request_review_id": 1306602000,
+    "id": 1112522055,
+    "node_id": "PRRC_kwDOBrVDM85CT71H",
+    "diff_hunk": "@@ -141,6 +141,37 @@ constexpr CUTLASS_HOST_DEVICE integer align_up(integer n, integer m) {\n   return ((n + m - 1) / m) * m;\n }\n \n+inline int32_t getMaximumSharedMemoryPerBlockKb(int cc) {",
+    "path": "examples/41_fused_multi_head_attention/gemm_kernel_utils.h",
+    "commit_id": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+    "original_commit_id": "1714a4ff313ea832f48072f7a71790c2984c5084",
+    "user": {
+      "login": "hwu36",
+      "id": 57973641,
+      "node_id": "MDQ6VXNlcjU3OTczNjQx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57973641?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hwu36",
+      "html_url": "https://github.com/hwu36",
+      "followers_url": "https://api.github.com/users/hwu36/followers",
+      "following_url": "https://api.github.com/users/hwu36/following{/other_user}",
+      "gists_url": "https://api.github.com/users/hwu36/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/hwu36/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/hwu36/subscriptions",
+      "organizations_url": "https://api.github.com/users/hwu36/orgs",
+      "repos_url": "https://api.github.com/users/hwu36/repos",
+      "events_url": "https://api.github.com/users/hwu36/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/hwu36/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "@danthe3rd , if we can get the value from a cuda call, is it better to call the api instead of looking up a table here?",
+    "created_at": "2023-02-21T04:32:40Z",
+    "updated_at": "2023-02-21T04:32:40Z",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1112522055",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112522055"
+      },
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1112522055"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112522055/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": null,
+    "original_line": 144,
+    "side": "RIGHT",
+    "in_reply_to_id": 1112520286,
+    "author_association": "CONTRIBUTOR",
+    "original_position": 4,
+    "position": 1,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112524231",
+    "pull_request_review_id": 1306604865,
+    "id": 1112524231,
+    "node_id": "PRRC_kwDOBrVDM85CT8XH",
+    "diff_hunk": "@@ -141,6 +141,37 @@ constexpr CUTLASS_HOST_DEVICE integer align_up(integer n, integer m) {\n   return ((n + m - 1) / m) * m;\n }\n \n+inline int32_t getMaximumSharedMemoryPerBlockKb(int cc) {",
+    "path": "examples/41_fused_multi_head_attention/gemm_kernel_utils.h",
+    "commit_id": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+    "original_commit_id": "1714a4ff313ea832f48072f7a71790c2984c5084",
+    "user": {
+      "login": "hwu36",
+      "id": 57973641,
+      "node_id": "MDQ6VXNlcjU3OTczNjQx",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57973641?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hwu36",
+      "html_url": "https://github.com/hwu36",
+      "followers_url": "https://api.github.com/users/hwu36/followers",
+      "following_url": "https://api.github.com/users/hwu36/following{/other_user}",
+      "gists_url": "https://api.github.com/users/hwu36/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/hwu36/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/hwu36/subscriptions",
+      "organizations_url": "https://api.github.com/users/hwu36/orgs",
+      "repos_url": "https://api.github.com/users/hwu36/repos",
+      "events_url": "https://api.github.com/users/hwu36/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/hwu36/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "one example usage is https://github.com/NVIDIA/cutlass/blob/master/test/unit/conv/device/conv2d_testbed.h#L211",
+    "created_at": "2023-02-21T04:36:31Z",
+    "updated_at": "2023-02-21T04:36:31Z",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1112524231",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112524231"
+      },
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1112524231"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1112524231/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": null,
+    "original_line": 144,
+    "side": "RIGHT",
+    "in_reply_to_id": 1112520286,
+    "author_association": "CONTRIBUTOR",
+    "original_position": 4,
+    "position": 1,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113223275",
+    "pull_request_review_id": 1307659986,
+    "id": 1113223275,
+    "node_id": "PRRC_kwDOBrVDM85CWnBr",
+    "diff_hunk": "@@ -141,6 +141,37 @@ constexpr CUTLASS_HOST_DEVICE integer align_up(integer n, integer m) {\n   return ((n + m - 1) / m) * m;\n }\n \n+inline int32_t getMaximumSharedMemoryPerBlockKb(int cc) {",
+    "path": "examples/41_fused_multi_head_attention/gemm_kernel_utils.h",
+    "commit_id": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+    "original_commit_id": "1714a4ff313ea832f48072f7a71790c2984c5084",
+    "user": {
+      "login": "jackkosaian",
+      "id": 5831848,
+      "node_id": "MDQ6VXNlcjU4MzE4NDg=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5831848?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jackkosaian",
+      "html_url": "https://github.com/jackkosaian",
+      "followers_url": "https://api.github.com/users/jackkosaian/followers",
+      "following_url": "https://api.github.com/users/jackkosaian/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jackkosaian/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jackkosaian/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jackkosaian/subscriptions",
+      "organizations_url": "https://api.github.com/users/jackkosaian/orgs",
+      "repos_url": "https://api.github.com/users/jackkosaian/repos",
+      "events_url": "https://api.github.com/users/jackkosaian/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jackkosaian/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "Yes, `cudaGetDeviceProperties(properties, ...)` and the `properties.sharedMemPerBlockOptin` should be what is needed.",
+    "created_at": "2023-02-21T15:28:03Z",
+    "updated_at": "2023-02-21T15:28:03Z",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1113223275",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113223275"
+      },
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1113223275"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113223275/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": null,
+    "original_line": 144,
+    "side": "RIGHT",
+    "in_reply_to_id": 1112520286,
+    "author_association": "COLLABORATOR",
+    "original_position": 4,
+    "position": 1,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113231126",
+    "pull_request_review_id": 1307671731,
+    "id": 1113231126,
+    "node_id": "PRRC_kwDOBrVDM85CWo8W",
+    "diff_hunk": "@@ -141,6 +141,37 @@ constexpr CUTLASS_HOST_DEVICE integer align_up(integer n, integer m) {\n   return ((n + m - 1) / m) * m;\n }\n \n+inline int32_t getMaximumSharedMemoryPerBlockKb(int cc) {",
+    "path": "examples/41_fused_multi_head_attention/gemm_kernel_utils.h",
+    "commit_id": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+    "original_commit_id": "1714a4ff313ea832f48072f7a71790c2984c5084",
+    "user": {
+      "login": "jackkosaian",
+      "id": 5831848,
+      "node_id": "MDQ6VXNlcjU4MzE4NDg=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5831848?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jackkosaian",
+      "html_url": "https://github.com/jackkosaian",
+      "followers_url": "https://api.github.com/users/jackkosaian/followers",
+      "following_url": "https://api.github.com/users/jackkosaian/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jackkosaian/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jackkosaian/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jackkosaian/subscriptions",
+      "organizations_url": "https://api.github.com/users/jackkosaian/orgs",
+      "repos_url": "https://api.github.com/users/jackkosaian/repos",
+      "events_url": "https://api.github.com/users/jackkosaian/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jackkosaian/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "@danthe3rd, is `getMaximumSharedMemoryPerBlockKb()` expected to be called before every kernel launch? If so, and if changing to use the CUDA API, it may be beneficial to restructure the code so that `cudaGetDeviceProperties()` is called only once and the `properties.sharedMemPerBlockOptin` property is saved somewhere. This avoids having the API call on the critical path.",
+    "created_at": "2023-02-21T15:34:05Z",
+    "updated_at": "2023-02-21T15:34:05Z",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1113231126",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113231126"
+      },
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1113231126"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113231126/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": null,
+    "original_line": 144,
+    "side": "RIGHT",
+    "in_reply_to_id": 1112520286,
+    "author_association": "COLLABORATOR",
+    "original_position": 4,
+    "position": 1,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113239317",
+    "pull_request_review_id": 1307683884,
+    "id": 1113239317,
+    "node_id": "PRRC_kwDOBrVDM85CWq8V",
+    "diff_hunk": "@@ -141,6 +141,37 @@ constexpr CUTLASS_HOST_DEVICE integer align_up(integer n, integer m) {\n   return ((n + m - 1) / m) * m;\n }\n \n+inline int32_t getMaximumSharedMemoryPerBlockKb(int cc) {",
+    "path": "examples/41_fused_multi_head_attention/gemm_kernel_utils.h",
+    "commit_id": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+    "original_commit_id": "1714a4ff313ea832f48072f7a71790c2984c5084",
+    "user": {
+      "login": "mnicely",
+      "id": 50021634,
+      "node_id": "MDQ6VXNlcjUwMDIxNjM0",
+      "avatar_url": "https://avatars.githubusercontent.com/u/50021634?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mnicely",
+      "html_url": "https://github.com/mnicely",
+      "followers_url": "https://api.github.com/users/mnicely/followers",
+      "following_url": "https://api.github.com/users/mnicely/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mnicely/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mnicely/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mnicely/subscriptions",
+      "organizations_url": "https://api.github.com/users/mnicely/orgs",
+      "repos_url": "https://api.github.com/users/mnicely/repos",
+      "events_url": "https://api.github.com/users/mnicely/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mnicely/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "You might want to use `cudaDeviceGetAttribute` for better performance. See [blog ](https://developer.nvidia.com/blog/cuda-pro-tip-the-fast-way-to-query-device-properties/) for more details",
+    "created_at": "2023-02-21T15:39:40Z",
+    "updated_at": "2023-02-21T15:39:40Z",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1113239317",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113239317"
+      },
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1113239317"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113239317/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": null,
+    "original_line": 144,
+    "side": "RIGHT",
+    "in_reply_to_id": 1112520286,
+    "author_association": "COLLABORATOR",
+    "original_position": 4,
+    "position": 1,
+    "subject_type": "line"
+  },
+  {
+    "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113310521",
+    "pull_request_review_id": 1307791702,
+    "id": 1113310521,
+    "node_id": "PRRC_kwDOBrVDM85CW8U5",
+    "diff_hunk": "@@ -141,6 +141,37 @@ constexpr CUTLASS_HOST_DEVICE integer align_up(integer n, integer m) {\n   return ((n + m - 1) / m) * m;\n }\n \n+inline int32_t getMaximumSharedMemoryPerBlockKb(int cc) {",
+    "path": "examples/41_fused_multi_head_attention/gemm_kernel_utils.h",
+    "commit_id": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+    "original_commit_id": "1714a4ff313ea832f48072f7a71790c2984c5084",
+    "user": {
+      "login": "danthe3rd",
+      "id": 43445237,
+      "node_id": "MDQ6VXNlcjQzNDQ1MjM3",
+      "avatar_url": "https://avatars.githubusercontent.com/u/43445237?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/danthe3rd",
+      "html_url": "https://github.com/danthe3rd",
+      "followers_url": "https://api.github.com/users/danthe3rd/followers",
+      "following_url": "https://api.github.com/users/danthe3rd/following{/other_user}",
+      "gists_url": "https://api.github.com/users/danthe3rd/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/danthe3rd/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/danthe3rd/subscriptions",
+      "organizations_url": "https://api.github.com/users/danthe3rd/orgs",
+      "repos_url": "https://api.github.com/users/danthe3rd/repos",
+      "events_url": "https://api.github.com/users/danthe3rd/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/danthe3rd/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "Thanks! I believe PyTorch provides[ a way to cache this](https://github.com/facebookresearch/xformers/blob/main/xformers/csrc/attention/cuda/fmha/attention_forward_generic.cu#L170) already - I'll use that.\r\nThis is not used in the CUTLASS example anyway, just on the PyTorch wrapper.",
+    "created_at": "2023-02-21T16:35:12Z",
+    "updated_at": "2023-02-21T16:35:12Z",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1113310521",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113310521"
+      },
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/828#discussion_r1113310521"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/828"
+      }
+    },
+    "reactions": {
+      "url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/comments/1113310521/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "start_line": null,
+    "original_start_line": null,
+    "start_side": null,
+    "line": null,
+    "original_line": 144,
+    "side": "RIGHT",
+    "in_reply_to_id": 1112520286,
+    "author_association": "CONTRIBUTOR",
+    "original_position": 4,
+    "position": 1,
+    "subject_type": "line"
+  }
+]

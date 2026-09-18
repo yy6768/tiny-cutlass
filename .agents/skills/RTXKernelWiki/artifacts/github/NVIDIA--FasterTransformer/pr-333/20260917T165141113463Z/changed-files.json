@@ -1,0 +1,74 @@
+[
+  {
+    "sha": "ef21a5f62fd48a5081573bd7499ca7931cc9364e",
+    "filename": "src/fastertransformer/layers/attention_layers/WindowAttention.cc",
+    "status": "modified",
+    "additions": 5,
+    "deletions": 1,
+    "changes": 6,
+    "blob_url": "https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Flayers%2Fattention_layers%2FWindowAttention.cc",
+    "raw_url": "https://github.com/NVIDIA/FasterTransformer/raw/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Flayers%2Fattention_layers%2FWindowAttention.cc",
+    "contents_url": "https://api.github.com/repos/NVIDIA/FasterTransformer/contents/src%2Ffastertransformer%2Flayers%2Fattention_layers%2FWindowAttention.cc?ref=8fc725235bf3c707945e0ccd326783a1aafdff4b",
+    "patch": "@@ -201,7 +201,11 @@ void WindowAttention<T>::forward(std::vector<fastertransformer::Tensor>*       o\n     if (use_trt_) {\n         if (dispatcher_fp16_.get() && num_head == dispatcher_fp16_num_head_) {}\n         else {\n-            dispatcher_fp16_.reset(new FusedMHARunnerFP16v2(num_head, size_per_head, sm, 1.0f));\n+            scale = 1.0f;\n+            if (fabs(qk_scale_ - 1.0f) > 0.0001) {\n+                scale = 1.0f / sqrt(size_per_head) / qk_scale_;\n+            }\n+            dispatcher_fp16_.reset(new FusedMHARunnerFP16v2(num_head, size_per_head, sm, scale));\n             dispatcher_fp16_num_head_ = num_head;\n         }\n     }"
+  },
+  {
+    "sha": "b8ba5aef430464106ce1986704a3e5f5f5cb3f4c",
+    "filename": "src/fastertransformer/models/swin/Swin.h",
+    "status": "modified",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2,
+    "blob_url": "https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Fmodels%2Fswin%2FSwin.h",
+    "raw_url": "https://github.com/NVIDIA/FasterTransformer/raw/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Fmodels%2Fswin%2FSwin.h",
+    "contents_url": "https://api.github.com/repos/NVIDIA/FasterTransformer/contents/src%2Ffastertransformer%2Fmodels%2Fswin%2FSwin.h?ref=8fc725235bf3c707945e0ccd326783a1aafdff4b",
+    "patch": "@@ -40,7 +40,7 @@ class SwinTransformer {\n     bool                   qkv_bias_           = true;\n     int                    patches_resolution_ = 56;\n     int                    layer_num_          = 4;\n-    int                    qk_scale_           = 1.0f;\n+    float                  qk_scale_           = 1.0f;\n     static constexpr float layernorm_eps_      = 1e-6f;\n     size_t                 max_buf_size_       = 0;\n     IAllocator*            allocator_          = nullptr;"
+  },
+  {
+    "sha": "02810c9118794dc1014aa5339fcb323249b10e64",
+    "filename": "src/fastertransformer/models/swin_int8/SwinINT8.h",
+    "status": "modified",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2,
+    "blob_url": "https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Fmodels%2Fswin_int8%2FSwinINT8.h",
+    "raw_url": "https://github.com/NVIDIA/FasterTransformer/raw/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Fmodels%2Fswin_int8%2FSwinINT8.h",
+    "contents_url": "https://api.github.com/repos/NVIDIA/FasterTransformer/contents/src%2Ffastertransformer%2Fmodels%2Fswin_int8%2FSwinINT8.h?ref=8fc725235bf3c707945e0ccd326783a1aafdff4b",
+    "patch": "@@ -42,7 +42,7 @@ class SwinTransformerINT8 {\n     bool                   qkv_bias_                      = true;\n     int                    patches_resolution_            = 56;\n     int                    layer_num_                     = 4;\n-    int                    qk_scale_                      = 1.0f;\n+    float                  qk_scale_                      = 1.0f;\n     size_t                 max_buf_size_                  = 0;\n     size_t                 max_basic_layer_buf_size_      = 0;\n     size_t                 max_block_buf_size_            = 0;"
+  },
+  {
+    "sha": "d1c8f77697102b6ac423beb4316c36af0e5ac587",
+    "filename": "src/fastertransformer/utils/gemm_test/decoding_gemm_func.cc",
+    "status": "modified",
+    "additions": 3,
+    "deletions": 2,
+    "changes": 5,
+    "blob_url": "https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Futils%2Fgemm_test%2Fdecoding_gemm_func.cc",
+    "raw_url": "https://github.com/NVIDIA/FasterTransformer/raw/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Futils%2Fgemm_test%2Fdecoding_gemm_func.cc",
+    "contents_url": "https://api.github.com/repos/NVIDIA/FasterTransformer/contents/src%2Ffastertransformer%2Futils%2Fgemm_test%2Fdecoding_gemm_func.cc?ref=8fc725235bf3c707945e0ccd326783a1aafdff4b",
+    "patch": "@@ -360,8 +360,9 @@ size_t calDecodingGemmTestBufSizeInByte(int            batch_size,\n     const size_t local_head_num     = head_num / tensor_para_size;\n     const size_t local_hidden_units = local_head_num * size_per_head;\n \n-    // TODO need to add bfloat16 here\n-    int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));\n+    // int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));\n+    // Because we always use float for some buffer, set the wordSize to float directly.\n+    int wordSize = sizeof(float);\n \n     size_t              m = batch_size * beam_width;\n     std::vector<size_t> buff_size;"
+  },
+  {
+    "sha": "cfc2775a8d2c3ef3914841bd51e8b04b2555f22a",
+    "filename": "src/fastertransformer/utils/gemm_test/gpt_gemm_func.cc",
+    "status": "modified",
+    "additions": 3,
+    "deletions": 2,
+    "changes": 5,
+    "blob_url": "https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Futils%2Fgemm_test%2Fgpt_gemm_func.cc",
+    "raw_url": "https://github.com/NVIDIA/FasterTransformer/raw/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Futils%2Fgemm_test%2Fgpt_gemm_func.cc",
+    "contents_url": "https://api.github.com/repos/NVIDIA/FasterTransformer/contents/src%2Ffastertransformer%2Futils%2Fgemm_test%2Fgpt_gemm_func.cc?ref=8fc725235bf3c707945e0ccd326783a1aafdff4b",
+    "patch": "@@ -653,8 +653,9 @@ size_t calGptGemmTestBufSizeInByte(int            batch_size,\n     const size_t local_head_num     = head_num / tensor_para_size;\n     const size_t local_hidden_units = local_head_num * size_per_head;\n \n-    // TODO add bfloat16\n-    int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));\n+    // int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));\n+    // Because we always use float for some buffer, set the wordSize to float directly.\n+    int wordSize = sizeof(float);\n \n     size_t              m = batch_size * beam_width * max_input_len;\n     std::vector<size_t> buff_size;"
+  },
+  {
+    "sha": "68c13004d4ba7c6a5352f741e15fc147615634ca",
+    "filename": "src/fastertransformer/utils/gemm_test/t5_gemm_func.cc",
+    "status": "modified",
+    "additions": 3,
+    "deletions": 1,
+    "changes": 4,
+    "blob_url": "https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Futils%2Fgemm_test%2Ft5_gemm_func.cc",
+    "raw_url": "https://github.com/NVIDIA/FasterTransformer/raw/8fc725235bf3c707945e0ccd326783a1aafdff4b/src%2Ffastertransformer%2Futils%2Fgemm_test%2Ft5_gemm_func.cc",
+    "contents_url": "https://api.github.com/repos/NVIDIA/FasterTransformer/contents/src%2Ffastertransformer%2Futils%2Fgemm_test%2Ft5_gemm_func.cc?ref=8fc725235bf3c707945e0ccd326783a1aafdff4b",
+    "patch": "@@ -805,7 +805,9 @@ size_t calT5GemmTestBufSizeInByte(int            batch_size,\n                         + m * decoder_vocab_size_padded / tensor_para_size);\n \n     size_t buf_size_in_byte = 0;\n-    int    wordSize         = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));\n+    // int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));\n+    // Because we always use float for some buffer, set the wordSize to float directly.\n+    int wordSize = sizeof(float);\n     for (auto t : buff_size) {\n         buf_size_in_byte = buf_size_in_byte > t ? buf_size_in_byte : t;\n     }"
+  }
+]

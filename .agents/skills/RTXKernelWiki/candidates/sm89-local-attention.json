@@ -1,0 +1,219 @@
+{
+  "focus": "sm89-local-attention",
+  "reviewed_at": "2026-09-18",
+  "queries": 13,
+  "unique_search_hits": 244,
+  "searched_repositories": [
+    "Dao-AILab/flash-attention",
+    "NVIDIA/FasterTransformer",
+    "NVIDIA/cutlass",
+    "SHI-Labs/NATTEN",
+    "facebookresearch/xformers",
+    "thu-ml/SageAttention",
+    "vllm-project/vllm"
+  ],
+  "search_errors": [],
+  "search_partial": false,
+  "inspected_prs": 23,
+  "selected": [
+    {
+      "repo": "SHI-Labs/NATTEN",
+      "number": 111,
+      "decision": "include",
+      "role": "attention-mainline",
+      "priority": "P0",
+      "reason": "FNA forward：1D/2D/3D 邻域 mask、dilation、相对位置偏置与 QK→softmax→PV 融合。",
+      "merged_at": "2024-03-08T05:35:03Z",
+      "head_sha": "ed95abfec5f1698f709d099c97baf113fbd6b2da",
+      "bundle": "artifacts/github/SHI-Labs--NATTEN/pr-111/20260917T171022986630Z",
+      "kernel_files": 202,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "SHI-Labs/NATTEN",
+      "number": 114,
+      "decision": "include",
+      "role": "resource-constraint",
+      "priority": "P0",
+      "reason": "为 SM86/SM89 排除 64×128×128 GEMM 配置，避免照搬 A100 的 shared-memory 用量。",
+      "merged_at": "2024-03-16T02:50:54Z",
+      "head_sha": "12ed5ea7ed92c64ef1327a439382525f4e35b034",
+      "bundle": "artifacts/github/SHI-Labs--NATTEN/pr-114/20260917T164959670620Z",
+      "kernel_files": 2,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "SHI-Labs/NATTEN",
+      "number": 337,
+      "decision": "include",
+      "role": "correctness-reference",
+      "priority": "P1",
+      "reason": "FNA token strides 改为 64 位；固定 head 保存较新的 forward kernel 和邻域索引实现。",
+      "merged_at": "2026-05-10T02:33:38Z",
+      "head_sha": "6fd34669017a39cd37b10d9edd3c65c88c18dfb6",
+      "bundle": "artifacts/github/SHI-Labs--NATTEN/pr-337/20260917T164959673620Z",
+      "kernel_files": 10,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "SHI-Labs/NATTEN",
+      "number": 341,
+      "decision": "include",
+      "role": "backward-reference",
+      "priority": "P2",
+      "reason": "修复 FNA backward 在 SM80+ partial tile 上遗漏 mask 边界检查而出现 dV NaN。",
+      "merged_at": "2026-06-24T14:36:58Z",
+      "head_sha": "e1ed3b64087d2f230f692bc48249ef804c46bfa9",
+      "bundle": "artifacts/github/SHI-Labs--NATTEN/pr-341/20260917T165018000073Z",
+      "kernel_files": 2,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "NVIDIA/cutlass",
+      "number": 828,
+      "decision": "include",
+      "role": "attention-mainline",
+      "priority": "P0",
+      "reason": "CUTLASS example 41 的 online softmax、attention bias 和 shared-memory PV 组件。",
+      "merged_at": "2023-02-23T04:25:31Z",
+      "head_sha": "8b0bb170c1c4c8e7d97d73871399d43de32be938",
+      "bundle": "artifacts/github/NVIDIA--cutlass/pr-828/20260917T165023228733Z",
+      "kernel_files": 12,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "NVIDIA/cutlass",
+      "number": 992,
+      "decision": "include",
+      "role": "attention-mainline",
+      "priority": "P1",
+      "reason": "example 41 更新：迭代 softmax、同步、寄存器使用和从 shared memory 执行第二次 MMA。",
+      "merged_at": "2023-07-13T02:30:47Z",
+      "head_sha": "3e535f4065bd5b8f6a464096087312760d26c567",
+      "bundle": "artifacts/github/NVIDIA--cutlass/pr-992/20260917T165045842476Z",
+      "kernel_files": 15,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "NVIDIA/cutlass",
+      "number": 3278,
+      "decision": "include",
+      "role": "indexing-component",
+      "priority": "P1",
+      "reason": "修正 2.x PredicatedTileIterator 的 ScatterD 指针推进，供 partition/reverse 组件审查。",
+      "merged_at": "2026-08-18T01:20:28Z",
+      "head_sha": "dbea1dcc4979c88353d661f898a6e2f0b047ba4e",
+      "bundle": "artifacts/github/NVIDIA--cutlass/pr-3278/20260917T165052550363Z",
+      "kernel_files": 1,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "vllm-project/vllm",
+      "number": 6677,
+      "decision": "include",
+      "role": "fp8-component",
+      "priority": "P0",
+      "reason": "Ada FP8 CUTLASS 2.x GEMM 的 M/N 分派、tile/stages 和 scale epilogue；用于 FP8 primitive 选型。",
+      "merged_at": "2024-07-29T15:42:36Z",
+      "head_sha": "163e091b3015471cf438345e430790af638588de",
+      "bundle": "artifacts/github/vllm-project--vllm/pr-6677/20260917T165110800094Z",
+      "kernel_files": 4,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "thu-ml/SageAttention",
+      "number": 196,
+      "decision": "include",
+      "role": "mixed-precision-reference",
+      "priority": "P1",
+      "reason": "SM89 的 INT8 QK + FP8 PV，以及 FP16 局部累加/FP32 缓冲的混合精度参考。",
+      "merged_at": "2025-07-01T06:09:30Z",
+      "head_sha": "a6b3b19e13388a629e7b0c0f6647265a864cd6cf",
+      "bundle": "artifacts/github/thu-ml--SageAttention/pr-196/20260917T165114654675Z",
+      "kernel_files": 15,
+      "local_validation": "not-run"
+    },
+    {
+      "repo": "NVIDIA/FasterTransformer",
+      "number": 333,
+      "decision": "include",
+      "role": "window-semantics-reference",
+      "priority": "P2",
+      "reason": "Swin WindowAttention 的 qk_scale 修正，用来检查接口 scale 和 fused runner 内部 scale 是否重复。",
+      "merged_at": "2022-09-29T05:16:02Z",
+      "head_sha": "8fc725235bf3c707945e0ccd326783a1aafdff4b",
+      "bundle": "artifacts/github/NVIDIA--FasterTransformer/pr-333/20260917T165141113463Z",
+      "kernel_files": 6,
+      "local_validation": "not-run"
+    }
+  ],
+  "excluded": [
+    {
+      "repo": "SHI-Labs/NATTEN",
+      "number": 266,
+      "reason": "FP8 仅进入 Blackwell FMHA/FNA；固定 head 的 checks.py 要求 compute capability 100/103，排除 SM89。"
+    },
+    {
+      "repo": "NVIDIA/FasterTransformer",
+      "number": 242,
+      "reason": "SM86 INT8 TRT FMHA header，不满足 SM89 FP8/CUTLASS 2.x attention 主线。"
+    },
+    {
+      "repo": "Dao-AILab/flash-attention",
+      "number": 2624,
+      "reason": "修改 flash_attn/cute/interface.py 的 scheduler 估算；不是 CUTLASS 2.x 实现。窗口 0/None 的语义可参考，但不进入本轮下载主线。"
+    },
+    {
+      "repo": "Dao-AILab/flash-attention",
+      "number": 1856,
+      "reason": "CuTe DSL Sm80 的 softcap 修正；不符合本地当前 2.x 主线。"
+    },
+    {
+      "repo": "thu-ml/SageAttention",
+      "number": 226,
+      "reason": "attn_mask 修改的是 Triton INT8-QK/FP16-PV 路径；不能作为 SM89 CUDA FP8-PV mask 已支持的证据。"
+    },
+    {
+      "repo": "vllm-project/vllm",
+      "number": 6384,
+      "reason": "历史上禁用未调优的 Ada GEMM；后续 #6677 才是本轮实现候选。保留性能退化背景，不采用禁用逻辑。"
+    }
+  ],
+  "deferred_after_inspection": [
+    {
+      "repo": "SHI-Labs/NATTEN",
+      "number": 123,
+      "reason": "以 backward 为主；本轮 forward 先读 #111/#337，#341 记录后续 backward 边界修正。"
+    },
+    {
+      "repo": "NVIDIA/cutlass",
+      "number": 662,
+      "reason": "example 42 的历史起点；优先抓后续 example 41 的 #828/#992，避免重复阅读旧版。"
+    },
+    {
+      "repo": "NVIDIA/cutlass",
+      "number": 773,
+      "reason": "BMHK 布局历史更新；先读后续 #828/#992 的完整文件。"
+    },
+    {
+      "repo": "facebookresearch/xformers",
+      "number": 362,
+      "reason": "CUTLASS attention 历史来源；实现已进入 CUTLASS example 41，优先本地库可复用的 #828/#992。"
+    },
+    {
+      "repo": "facebookresearch/xformers",
+      "number": 587,
+      "reason": "bias/dropout 变更已通过 CUTLASS #828 汇入 example 41；本轮不重复下载 xFormers 绑定及生成实例。"
+    },
+    {
+      "repo": "facebookresearch/xformers",
+      "number": 530,
+      "reason": "自定义 softmax scale 接口历史候选；当前目标优先审核本地 bias/scale 顺序与 CUTLASS #828。"
+    },
+    {
+      "repo": "thu-ml/SageAttention",
+      "number": 95,
+      "reason": "2.1.0 主要新增 Hopper；本轮抓 2.2.0 #196 的 SM89 混合累加路径。"
+    }
+  ]
+}

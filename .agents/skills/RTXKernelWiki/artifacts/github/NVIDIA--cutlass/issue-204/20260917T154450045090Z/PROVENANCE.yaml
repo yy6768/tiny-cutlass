@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/204
+repo: NVIDIA/cutlass
+number: 204
+type: issue
+retrieved_at: 20260917T154450045090Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4162
+  sha256: 811d6110c131f0d79389f943d7c6baa4a3715c027ec039b2de5b32d25fa42eb4
+- path: comments.json
+  bytes: 35326
+  sha256: 337c7778802d723accc1d0d8c9f8ac0ddf5d39a822ce6f154e21117d2fa4f196
+- path: page.md
+  bytes: 8323
+  sha256: cf31ddcf4ed7391d914ddebe2ec4a73a7356c63816d950576ba89159651bb278
+skipped: []
+errors: []
+truncations: []
+title: Batched GEMM TensorCore INT1
+updated_at: '2024-07-04T01:43:55Z'
+status: closed
+kernel_files_captured: 0

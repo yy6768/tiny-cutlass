@@ -1,0 +1,90 @@
+diff --git a/src/fastertransformer/layers/attention_layers/WindowAttention.cc b/src/fastertransformer/layers/attention_layers/WindowAttention.cc
+index ea714819a..ef21a5f62 100644
+--- a/src/fastertransformer/layers/attention_layers/WindowAttention.cc
++++ b/src/fastertransformer/layers/attention_layers/WindowAttention.cc
+@@ -201,7 +201,11 @@ void WindowAttention<T>::forward(std::vector<fastertransformer::Tensor>*       o
+     if (use_trt_) {
+         if (dispatcher_fp16_.get() && num_head == dispatcher_fp16_num_head_) {}
+         else {
+-            dispatcher_fp16_.reset(new FusedMHARunnerFP16v2(num_head, size_per_head, sm, 1.0f));
++            scale = 1.0f;
++            if (fabs(qk_scale_ - 1.0f) > 0.0001) {
++                scale = 1.0f / sqrt(size_per_head) / qk_scale_;
++            }
++            dispatcher_fp16_.reset(new FusedMHARunnerFP16v2(num_head, size_per_head, sm, scale));
+             dispatcher_fp16_num_head_ = num_head;
+         }
+     }
+diff --git a/src/fastertransformer/models/swin/Swin.h b/src/fastertransformer/models/swin/Swin.h
+index 244a755f9..b8ba5aef4 100644
+--- a/src/fastertransformer/models/swin/Swin.h
++++ b/src/fastertransformer/models/swin/Swin.h
+@@ -40,7 +40,7 @@ class SwinTransformer {
+     bool                   qkv_bias_           = true;
+     int                    patches_resolution_ = 56;
+     int                    layer_num_          = 4;
+-    int                    qk_scale_           = 1.0f;
++    float                  qk_scale_           = 1.0f;
+     static constexpr float layernorm_eps_      = 1e-6f;
+     size_t                 max_buf_size_       = 0;
+     IAllocator*            allocator_          = nullptr;
+diff --git a/src/fastertransformer/models/swin_int8/SwinINT8.h b/src/fastertransformer/models/swin_int8/SwinINT8.h
+index a9e41d937..02810c911 100644
+--- a/src/fastertransformer/models/swin_int8/SwinINT8.h
++++ b/src/fastertransformer/models/swin_int8/SwinINT8.h
+@@ -42,7 +42,7 @@ class SwinTransformerINT8 {
+     bool                   qkv_bias_                      = true;
+     int                    patches_resolution_            = 56;
+     int                    layer_num_                     = 4;
+-    int                    qk_scale_                      = 1.0f;
++    float                  qk_scale_                      = 1.0f;
+     size_t                 max_buf_size_                  = 0;
+     size_t                 max_basic_layer_buf_size_      = 0;
+     size_t                 max_block_buf_size_            = 0;
+diff --git a/src/fastertransformer/utils/gemm_test/decoding_gemm_func.cc b/src/fastertransformer/utils/gemm_test/decoding_gemm_func.cc
+index 4d4f8b86a..d1c8f7769 100644
+--- a/src/fastertransformer/utils/gemm_test/decoding_gemm_func.cc
++++ b/src/fastertransformer/utils/gemm_test/decoding_gemm_func.cc
+@@ -360,8 +360,9 @@ size_t calDecodingGemmTestBufSizeInByte(int            batch_size,
+     const size_t local_head_num     = head_num / tensor_para_size;
+     const size_t local_hidden_units = local_head_num * size_per_head;
+ 
+-    // TODO need to add bfloat16 here
+-    int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));
++    // int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));
++    // Because we always use float for some buffer, set the wordSize to float directly.
++    int wordSize = sizeof(float);
+ 
+     size_t              m = batch_size * beam_width;
+     std::vector<size_t> buff_size;
+diff --git a/src/fastertransformer/utils/gemm_test/gpt_gemm_func.cc b/src/fastertransformer/utils/gemm_test/gpt_gemm_func.cc
+index 11eb86282..cfc2775a8 100644
+--- a/src/fastertransformer/utils/gemm_test/gpt_gemm_func.cc
++++ b/src/fastertransformer/utils/gemm_test/gpt_gemm_func.cc
+@@ -653,8 +653,9 @@ size_t calGptGemmTestBufSizeInByte(int            batch_size,
+     const size_t local_head_num     = head_num / tensor_para_size;
+     const size_t local_hidden_units = local_head_num * size_per_head;
+ 
+-    // TODO add bfloat16
+-    int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));
++    // int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));
++    // Because we always use float for some buffer, set the wordSize to float directly.
++    int wordSize = sizeof(float);
+ 
+     size_t              m = batch_size * beam_width * max_input_len;
+     std::vector<size_t> buff_size;
+diff --git a/src/fastertransformer/utils/gemm_test/t5_gemm_func.cc b/src/fastertransformer/utils/gemm_test/t5_gemm_func.cc
+index e0c189eb0..68c13004d 100644
+--- a/src/fastertransformer/utils/gemm_test/t5_gemm_func.cc
++++ b/src/fastertransformer/utils/gemm_test/t5_gemm_func.cc
+@@ -805,7 +805,9 @@ size_t calT5GemmTestBufSizeInByte(int            batch_size,
+                         + m * decoder_vocab_size_padded / tensor_para_size);
+ 
+     size_t buf_size_in_byte = 0;
+-    int    wordSize         = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));
++    // int wordSize = (data_type == FLOAT_DATATYPE ? sizeof(float) : sizeof(half));
++    // Because we always use float for some buffer, set the wordSize to float directly.
++    int wordSize = sizeof(float);
+     for (auto t : buff_size) {
+         buf_size_in_byte = buf_size_in_byte > t ? buf_size_in_byte : t;
+     }

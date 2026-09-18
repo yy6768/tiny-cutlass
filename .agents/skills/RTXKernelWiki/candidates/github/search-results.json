@@ -1,0 +1,2749 @@
+{
+  "retrieved_at": "2026-09-17T16:46:43.297402+00:00",
+  "results": [
+    {
+      "recipe": {
+        "id": "sm89-local-attention-natten-cutlass",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:SHI-Labs/NATTEN is:pr cutlass is:merged",
+        "repo": "SHI-Labs/NATTEN"
+      },
+      "total_count": 26,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/344",
+          "number": 344,
+          "title": "0.21.7 release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-26T18:22:57Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/341",
+          "number": 341,
+          "title": "Fix/cutlass fna dv nan issue",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-24T14:37:20Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/337",
+          "number": 337,
+          "title": "cutlass-fna: 64b strides",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-10T02:33:42Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/333",
+          "number": 333,
+          "title": "0.21.6 Release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-14T18:16:00Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/332",
+          "number": 332,
+          "title": "Faster testing, more fixes",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-11T05:51:59Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/330",
+          "number": 330,
+          "title": "Allow partial head dims in Blackwell FNA/FMHA",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-10T21:54:51Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/329",
+          "number": 329,
+          "title": "Improve testing and error reporting",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-10T14:28:24Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/317",
+          "number": 317,
+          "title": "Fix overflowing strides",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-26T01:02:37Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/310",
+          "number": 310,
+          "title": "Release/v0.21.5",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-08T17:05:22Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/309",
+          "number": 309,
+          "title": "Bump cutlass to 4.4",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-05T19:39:27Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/303",
+          "number": 303,
+          "title": "Fix cutlass fmha varlen bugs",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-01-30T18:09:01Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/297",
+          "number": 297,
+          "title": "Token Permute Kernels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-16T01:31:42Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/296",
+          "number": 296,
+          "title": "GQA/MQA support for NA operations",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-13T02:09:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/294",
+          "number": 294,
+          "title": "Blackwell FMHA bwd bugfix",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-10T15:50:31Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/283",
+          "number": 283,
+          "title": "Varlen bug fixes",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-01T14:56:00Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/281",
+          "number": 281,
+          "title": "Extend FMHA ops",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-11-18T21:00:59Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/269",
+          "number": 269,
+          "title": "Build system and bug fixes",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-24T18:52:37Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/261",
+          "number": 261,
+          "title": "Support Blackwell Ultra (SM103)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-09T00:46:43Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/245",
+          "number": 245,
+          "title": "Release v0.21.0",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-14T22:18:11Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/38",
+          "number": 38,
+          "title": "Implicit GEMM NA and more",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-13T17:30:55Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/231",
+          "number": 231,
+          "title": "Allow different head dim for value",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-06-11T23:49:59Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/215",
+          "number": 215,
+          "title": "v0.17.5 release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-03-17T22:42:21Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/109",
+          "number": 109,
+          "title": "Fix NGC builds",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-03-06T18:32:36Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/87",
+          "number": 87,
+          "title": "Allow broadcasting cross attention tokens across batch",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-01-12T23:43:49Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/81",
+          "number": 81,
+          "title": "Fix building fat binaries",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-01-09T21:56:08Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/47",
+          "number": 47,
+          "title": "Implicit GEMM NA for SM70 and SM75",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-09-21T05:47:42Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-natten-fna",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:SHI-Labs/NATTEN is:pr FNA is:merged",
+        "repo": "SHI-Labs/NATTEN"
+      },
+      "total_count": 29,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/344",
+          "number": 344,
+          "title": "0.21.7 release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-26T18:22:57Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/341",
+          "number": 341,
+          "title": "Fix/cutlass fna dv nan issue",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-24T14:37:20Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/337",
+          "number": 337,
+          "title": "cutlass-fna: 64b strides",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-10T02:33:42Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/333",
+          "number": 333,
+          "title": "0.21.6 Release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-14T18:16:00Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/332",
+          "number": 332,
+          "title": "Faster testing, more fixes",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-11T05:51:59Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/330",
+          "number": 330,
+          "title": "Allow partial head dims in Blackwell FNA/FMHA",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-10T21:54:51Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/328",
+          "number": 328,
+          "title": "Fix ref kernel bug",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-07T16:19:16Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/320",
+          "number": 320,
+          "title": "Extend Hopper FMHA",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-17T19:47:02Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/317",
+          "number": 317,
+          "title": "Fix overflowing strides",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-26T01:02:37Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/310",
+          "number": 310,
+          "title": "Release/v0.21.5",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-08T17:05:22Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/297",
+          "number": 297,
+          "title": "Token Permute Kernels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-16T01:31:42Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/296",
+          "number": 296,
+          "title": "GQA/MQA support for NA operations",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-13T02:09:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/284",
+          "number": 284,
+          "title": "Torch compile support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-04T18:16:26Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/282",
+          "number": 282,
+          "title": "Add GQA/MQA support to Blackwell FMHA",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-11-19T20:13:28Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/266",
+          "number": 266,
+          "title": "Enable FP8 for Blackwell FMHA/FNA forward",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-10T20:30:26Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/261",
+          "number": 261,
+          "title": "Support Blackwell Ultra (SM103)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-09T00:46:43Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/245",
+          "number": 245,
+          "title": "Release v0.21.0",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-14T22:18:11Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/123",
+          "number": 123,
+          "title": "FNA backward",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-13T17:31:44Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/234",
+          "number": 234,
+          "title": "Build fix for Blackwell GPUs (Sm100 and Sm120)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-06-16T14:44:22Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/231",
+          "number": 231,
+          "title": "Allow different head dim for value",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-06-11T23:49:59Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/226",
+          "number": 226,
+          "title": "Release/v0.20.0",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-06-07T23:21:46Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/215",
+          "number": 215,
+          "title": "v0.17.5 release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-03-17T22:42:21Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/204",
+          "number": 204,
+          "title": "Add checks for Flex attention implementation, disable one test for SM89 BF16",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-03-06T21:36:36Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/189",
+          "number": 189,
+          "title": "Experimental interface for torch ops",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-01-03T14:26:35Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/185",
+          "number": 185,
+          "title": "Fix shape checks and flop counter",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-12-02T15:33:24Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/145",
+          "number": 145,
+          "title": "Fix unfused permute in docs/fna/fused-vs-unfused.md",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-06-25T23:55:39Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/138",
+          "number": 138,
+          "title": "Fix autotuner warnings",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-06-04T12:57:07Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/114",
+          "number": 114,
+          "title": "Disable 64x128x128 GEMM config for SM86 and 89",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-03-16T02:50:58Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/111",
+          "number": 111,
+          "title": "Fused neighborhood attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-03-10T18:57:14Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-natten-window",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:SHI-Labs/NATTEN is:pr window is:merged",
+        "repo": "SHI-Labs/NATTEN"
+      },
+      "total_count": 4,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/36",
+          "number": 36,
+          "title": "Windows support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-13T17:30:48Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/226",
+          "number": 226,
+          "title": "Release/v0.20.0",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-06-07T23:21:46Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/118",
+          "number": 118,
+          "title": "feat: add msvc build support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-03-26T22:36:18Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/111",
+          "number": 111,
+          "title": "Fused neighborhood attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-03-10T18:57:14Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-natten-mask",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:SHI-Labs/NATTEN is:pr mask is:merged",
+        "repo": "SHI-Labs/NATTEN"
+      },
+      "total_count": 9,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/344",
+          "number": 344,
+          "title": "0.21.7 release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-26T18:22:57Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/341",
+          "number": 341,
+          "title": "Fix/cutlass fna dv nan issue",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-24T14:37:20Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/333",
+          "number": 333,
+          "title": "0.21.6 Release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-14T18:16:00Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/320",
+          "number": 320,
+          "title": "Extend Hopper FMHA",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-17T19:47:02Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/310",
+          "number": 310,
+          "title": "Release/v0.21.5",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-08T17:05:22Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/281",
+          "number": 281,
+          "title": "Extend FMHA ops",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-11-18T21:00:59Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/76",
+          "number": 76,
+          "title": "Nested Tensor Support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-13T17:33:07Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/203",
+          "number": 203,
+          "title": "Add flex attention backend",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-03-04T23:29:02Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/SHI-Labs/NATTEN/pull/111",
+          "number": 111,
+          "title": "Fused neighborhood attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-03-10T18:57:14Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-flash-attention-local",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:Dao-AILab/flash-attention is:pr local is:merged",
+        "repo": "Dao-AILab/flash-attention"
+      },
+      "total_count": 72,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2894",
+          "number": 2894,
+          "title": "ci: registry-free GPU job (runner-local SIF) + verify the provisioned overlay from a fresh session",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-17T03:07:59Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2892",
+          "number": 2892,
+          "title": "ci: add PyTorch 2.14 to the wheel build matrix",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-16T17:30:06Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2888",
+          "number": 2888,
+          "title": "[CuTe, SM90] Fix swapped backward MMA layout and use 2-stage hdim256 config",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-14T22:26:51Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2810",
+          "number": 2810,
+          "title": "[CuTe, SM100] hd256 2-CTA: support seqused_q/seqused_k and the decoder paged-KV shape",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-11T00:20:20Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2624",
+          "number": 2624,
+          "title": "Fix `seqlen_k_loaded` treating a window bound of 0 as unbounded (sliding window)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-09T01:33:40Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2490",
+          "number": 2490,
+          "title": "cute: don't widen intentionally-empty offset windows to full attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-09T00:35:27Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2804",
+          "number": 2804,
+          "title": "[CuTe] Speed up SM100 hdim-64 bwd: dedicated P/dS TMEM slots + per-warp signaling",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-09T00:17:31Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2819",
+          "number": 2819,
+          "title": "[CuTe] Speed up scalar SM100 mask compilation",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-08-28T00:43:23Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2745",
+          "number": 2745,
+          "title": "[CuTe] Fix forward dynamic-shape correctness",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-08-07T05:26:49Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2756",
+          "number": 2756,
+          "title": "[CuTe,Bwd,Sm90] Fix: wait for bwd_preprocess on the block-sparse path, matching the dense path",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-08-05T16:58:13Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2669",
+          "number": 2669,
+          "title": "Expand FLASHATTENTION_DISABLE_DROPOUT to not bring in unneeded headers",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-24T17:58:34Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2507",
+          "number": 2507,
+          "title": "[CuTe, Bwd] Fix backward compile key churn due to pickling, max_seqlen is a tensor",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-11T22:48:55Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2696",
+          "number": 2696,
+          "title": "add tcgen.ld.red support to sm103a arch",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-11T22:03:48Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2656",
+          "number": 2656,
+          "title": "[NVIDIA][CuTe,Fwd,sm120] Implement Pack-GQA on SM120 (+ graceful SplitKV fallback)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-07T03:29:04Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2675",
+          "number": 2675,
+          "title": "[AMD ROCm] Enable RDNA backward and adopt CK unified workspace",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-06T16:40:02Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2670",
+          "number": 2670,
+          "title": "fix(hd256/sm100): forward reads actual input strides, drop .contiguous() patch",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-29T16:41:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2686",
+          "number": 2686,
+          "title": "[Cute] Assume 16B stride divisibility for SM100 backward LSE/dPsum bulk-copy inputs",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-29T00:37:02Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2676",
+          "number": 2676,
+          "title": "Update FA4 cute quack compatibility",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-27T19:45:45Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2662",
+          "number": 2662,
+          "title": "[cute] Fix int32 overflow in SM100 LPT tile scheduler for long context",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-16T22:32:29Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2636",
+          "number": 2636,
+          "title": "ci(fa4): enforce cutlass-dsl/quack dep floors and rebake cu130 image",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-10T02:09:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2590",
+          "number": 2590,
+          "title": "Include sm_110 in Blackwell-family arch gating (follow-up to #2572)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-30T06:14:16Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2595",
+          "number": 2595,
+          "title": "[CuTe,Sm100] fix: decode/prefill exp2 emulation consistency",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-28T23:50:09Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2497",
+          "number": 2497,
+          "title": "[FA4][hd256] Backward TMA bulk-store epilogue + LSE/dpsum coalesce",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-01T17:25:40Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2511",
+          "number": 2511,
+          "title": "ci: use /tmp for apptainer tmpdir to fix xattrerror on VAST",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-28T16:50:54Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2483",
+          "number": 2483,
+          "title": "[Tests,MLA] Close coverage gaps in test_flash_attn_mla_absorbed",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-28T02:12:11Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2412",
+          "number": 2412,
+          "title": "Feat([FA4][CUTE DSL]) Add head_dim=256 support (forward + backward)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-27T03:02:21Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2487",
+          "number": 2487,
+          "title": "[Cute,hd256] Post-merge cleanup: dead code, duplicate imports",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-23T22:00:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2455",
+          "number": 2455,
+          "title": "Add CLC scheduler heuristic",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-16T02:35:35Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2402",
+          "number": 2402,
+          "title": "feat(cute): implement softcap backward pass, correct math formula, and resolve JIT cache bug",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-11T13:14:52Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2428",
+          "number": 2428,
+          "title": "CI: extend FA4 test matrix with causal/non-causal correctness and fwd+bwd benchmark seqlen 1K-32K",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-04T06:15:35Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2385",
+          "number": 2385,
+          "title": "[ROCM] Fix windows issues",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-02T21:11:39Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2393",
+          "number": 2393,
+          "title": "Add FA4 CI: GitHub Actions workflow with Apptainer on B200 runner",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-02T01:41:39Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2218",
+          "number": 2218,
+          "title": "[Ai-assisted] CLC work stealing",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-31T02:30:13Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2379",
+          "number": 2379,
+          "title": "[Sm75] Add README link for initial Turing support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-25T10:44:52Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2186",
+          "number": 2186,
+          "title": "[Cute,Fwd,Sm100] support irregular qhead / kvhead ratios",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-20T10:40:29Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2347",
+          "number": 2347,
+          "title": "Support 2CTA for sliding window hdim 192",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-19T19:55:10Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2368",
+          "number": 2368,
+          "title": "[Cute] fix: FA4 paged attention kv load for DeepSeek (192,128) on SM100",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-18T09:02:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2335",
+          "number": 2335,
+          "title": "[Cute] fix: rename logging module to avoid circular import at building",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-12T14:52:50Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2313",
+          "number": 2313,
+          "title": "[Cute,Sm100] Introduce a flexible lambda-based R2P masking",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-12T04:09:40Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2297",
+          "number": 2297,
+          "title": "[CuTeDSL][Sm80] basic fix for new api",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-11T07:37:53Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2301",
+          "number": 2301,
+          "title": "Fix GQA crash in cute FLASH backend: init load_Q before conditional",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-03T17:11:27Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2270",
+          "number": 2270,
+          "title": "[Cute,Sm100,Bwd] Add hdim 192 hdimv 128 backward for sm100",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-25T08:21:10Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2251",
+          "number": 2251,
+          "title": "[Cute] Handle window_size=(-1, -1) for non-local attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-23T21:27:05Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2202",
+          "number": 2202,
+          "title": "BWD sm100 2cta",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-20T04:31:08Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1993",
+          "number": 1993,
+          "title": "[Cute,Fwd,Sm100] Support `q_stage=1` for inference",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-06T19:13:56Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2185",
+          "number": 2185,
+          "title": "[Cute,Fwd,Sm100] Add r2p for local mask",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-01-17T00:06:04Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1999",
+          "number": 1999,
+          "title": "[Cute,Fwd,Sm100] Support paged attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-01-16T17:10:16Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1940",
+          "number": 1940,
+          "title": "[Cute,Fwd,Sm100] Implement SplitKV",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-01-16T17:10:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1769",
+          "number": 1769,
+          "title": "Add torch.compile support to flash attention 3",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-01-16T17:56:28Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2104",
+          "number": 2104,
+          "title": "[Cute,Fwd,Sm100] distributed offset calculation for paged KV",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-01-15T20:11:03Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2085",
+          "number": 2085,
+          "title": "Add blocksparse support for bwd on blackwell",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-18T22:45:35Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2042",
+          "number": 2042,
+          "title": "[CUTE] Enabling TVM-FFI to reduce cpu overhead",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-15T23:40:43Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1893",
+          "number": 1893,
+          "title": "Improve causal backward determinism perf with SPT schedule",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-06T00:12:28Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2046",
+          "number": 2046,
+          "title": "[Cute,Bwd,Sm100] Add local for sm100 bwd",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-06T00:11:27Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1942",
+          "number": 1942,
+          "title": "Block Sparsity and Flex Attention mask mod support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-21T22:40:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1891",
+          "number": 1891,
+          "title": "[Cute] Bump pin for CuTeDSL",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-09-24T05:19:34Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1883",
+          "number": 1883,
+          "title": "Fix typo in flops calculation for local attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-09-13T02:38:04Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1856",
+          "number": 1856,
+          "title": "[BugFix] fix flash_fwd.FlashAttentionForwardSm80  bugs",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-09-02T13:21:10Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1835",
+          "number": 1835,
+          "title": "ci: Move build job to workflow template",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-27T09:36:00Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1823",
+          "number": 1823,
+          "title": "Add sorting and head swizzle to varlen scheduler",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-22T02:44:03Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1233",
+          "number": 1233,
+          "title": "Add local attention in Hopper FAv3",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-09-20T06:14:46Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1206",
+          "number": 1206,
+          "title": "feat: change minimal supported CUDA version to 11.7",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-09-05T17:34:35Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1033",
+          "number": 1033,
+          "title": "backwards for softcapping",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-07-22T18:06:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1025",
+          "number": 1025,
+          "title": "[WIP] First draft for softcapping.",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-07-15T01:34:22Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/788",
+          "number": 788,
+          "title": "Preprocessor switches to control functionality",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-01-30T11:12:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/540",
+          "number": 540,
+          "title": "support alibi",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-12-20T06:56:07Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/488",
+          "number": 488,
+          "title": "[ft_attention] Fix for seqlen=8136",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-08-28T17:00:23Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/461",
+          "number": 461,
+          "title": "support when num_heads is not divisible by world_size; resolves #459",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-08-18T21:10:35Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/266",
+          "number": 266,
+          "title": "Add initial support for prebuilt wheels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-08-14T00:01:06Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/299",
+          "number": 299,
+          "title": "rotary: update cos/sin cache when switching from inference mode",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-07-08T16:16:51Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/229",
+          "number": 229,
+          "title": "Allow adding an optional local version to the package version",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-05-19T15:43:24Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/75",
+          "number": 75,
+          "title": "allow for uploading to pypi",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-11-18T03:07:21Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-flash-attention-window",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:Dao-AILab/flash-attention is:pr \"sliding window\" is:merged",
+        "repo": "Dao-AILab/flash-attention"
+      },
+      "total_count": 16,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2810",
+          "number": 2810,
+          "title": "[CuTe, SM100] hd256 2-CTA: support seqused_q/seqused_k and the decoder paged-KV shape",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-11T00:20:20Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2624",
+          "number": 2624,
+          "title": "Fix `seqlen_k_loaded` treating a window bound of 0 as unbounded (sliding window)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-09T01:33:40Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2661",
+          "number": 2661,
+          "title": "Enable 2CTA for SM100 block-sparse backward",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-14T02:37:31Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2696",
+          "number": 2696,
+          "title": "add tcgen.ld.red support to sm103a arch",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-07-11T22:03:48Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2261",
+          "number": 2261,
+          "title": "[Cute,Flex,Sm100] vectorized mask_mod",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-24T01:26:36Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2253",
+          "number": 2253,
+          "title": "Deterministic backward for blocksparse impl",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-04T22:31:04Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2178",
+          "number": 2178,
+          "title": " [AMD] Triton Backend for ROCm #3",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-01T17:38:12Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2455",
+          "number": 2455,
+          "title": "Add CLC scheduler heuristic",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-16T02:35:35Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2441",
+          "number": 2441,
+          "title": "[Cute,Sm100,Fwd] add MLA 64/512 with topk sparsity for MQA 128 heads",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-15T03:42:40Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2347",
+          "number": 2347,
+          "title": "Support 2CTA for sliding window hdim 192",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-19T19:55:10Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/2313",
+          "number": 2313,
+          "title": "[Cute,Sm100] Introduce a flexible lambda-based R2P masking",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-12T04:09:40Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1940",
+          "number": 1940,
+          "title": "[Cute,Fwd,Sm100] Implement SplitKV",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-01-16T17:10:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1983",
+          "number": 1983,
+          "title": "[CuTe DSL] Block sparsity computation kernel",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-11-12T23:07:30Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1942",
+          "number": 1942,
+          "title": "Block Sparsity and Flex Attention mask mod support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-21T22:40:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1610",
+          "number": 1610,
+          "title": "[AMD] Triton Backend for ROCm #2",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-21T16:03:55Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/Dao-AILab/flash-attention/pull/1203",
+          "number": 1203,
+          "title": "[AMD] Triton Backend for ROCm",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-04-22T23:58:32Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-xformers-window",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:facebookresearch/xformers is:pr window is:merged",
+        "repo": "facebookresearch/xformers"
+      },
+      "total_count": 31,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1398",
+          "number": 1398,
+          "title": "tests(mac): guard fatal signal handler setup",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-06-15T09:53:18Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/534",
+          "number": 534,
+          "title": "Build windows pip wheels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-05T23:52:36Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1344",
+          "number": 1344,
+          "title": "[NVIDIA] Fix build xformers >= cu129 (torch 2.9.0)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-30T21:18:17Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1336",
+          "number": 1336,
+          "title": "[Cutlass Blackwell Attn] xformers integration of inference masks",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-09-26T17:50:34Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1309",
+          "number": 1309,
+          "title": "wheels/windows timeout",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-14T12:12:58Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1306",
+          "number": 1306,
+          "title": "Add install troubleshooting tip about longpaths error on Windows when trying to compile",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-14T09:47:17Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/460",
+          "number": 460,
+          "title": "Fix compiler errors on Windows",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-01T05:15:13Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/93",
+          "number": 93,
+          "title": "Take 2: use Hydra to build xformer model",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-11T08:44:24Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1284",
+          "number": 1284,
+          "title": "Windows compile Fix",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-03T17:25:26Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1254",
+          "number": 1254,
+          "title": "Enabling Blackwell support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-06-30T17:57:50Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1235",
+          "number": 1235,
+          "title": "Fixed RTX 5090 build issue",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-03-26T12:37:28Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1217",
+          "number": 1217,
+          "title": "Fix missing release for CUDA 12.6 on Windows",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-02-10T10:12:05Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1091",
+          "number": 1091,
+          "title": "[ROCm] tweak rocm wheel build workflow to avoid ci timeouts",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-09-06T08:23:38Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/978",
+          "number": 978,
+          "title": "Fast Multi-ahead Attention support on AMD ROCM",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-03-19T09:10:10Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/985",
+          "number": 985,
+          "title": "Make Triton import conditional",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-02-23T14:57:10Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/896",
+          "number": 896,
+          "title": "Use large runners on Windows to build with FA",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-10-23T12:54:02Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/884",
+          "number": 884,
+          "title": "[ci] Disable Flash-Attention build on CI for windows, as we timeout",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-10-15T01:47:01Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/824",
+          "number": 824,
+          "title": "Update flash attention to v2.0.6",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-08-16T09:42:05Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/482",
+          "number": 482,
+          "title": "Enable selective build for mem-efficient kernels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-01-24T21:38:38Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/587",
+          "number": 587,
+          "title": "[feat] cutlass FlashAttention bias+dropout support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-01-18T07:32:09Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/621",
+          "number": 621,
+          "title": "Windows build with Flash-Attention v0.2.4",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-01-07T11:45:15Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/602",
+          "number": 602,
+          "title": "Relax pytorch dependency version",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-26T08:18:53Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/600",
+          "number": 600,
+          "title": "Consolidate Windows Runners' Setup",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-20T11:50:50Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/601",
+          "number": 601,
+          "title": "Fix issue with import order changing in 1191f03 breaking windows builds",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-20T03:21:30Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/591",
+          "number": 591,
+          "title": "Publish to PyPi on Git Tag",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-15T10:14:03Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/582",
+          "number": 582,
+          "title": "Windows: copy files rather than symlink",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-14T08:03:06Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/551",
+          "number": 551,
+          "title": "[CI] Ensure we don't break windows build",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-01T12:03:39Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/523",
+          "number": 523,
+          "title": "Build Pip Wheels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-11-21T10:37:39Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/465",
+          "number": 465,
+          "title": "fix failing tests #464 due to windows distributed using gloo not nccl",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-10-06T22:54:34Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/375",
+          "number": 375,
+          "title": "Parallelize build of 16 backward kernels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-09-06T11:43:15Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/263",
+          "number": 263,
+          "title": "Added SmeLU",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-05-10T22:01:27Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-xformers-cutlass",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:facebookresearch/xformers is:pr cutlass attention is:merged",
+        "repo": "facebookresearch/xformers"
+      },
+      "total_count": 29,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1344",
+          "number": 1344,
+          "title": "[NVIDIA] Fix build xformers >= cu129 (torch 2.9.0)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-30T21:18:17Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1332",
+          "number": 1332,
+          "title": "Enable Cutlass Blackwell attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-09-11T17:40:06Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/459",
+          "number": 459,
+          "title": "info: Add 'python -m xformers.info' to debug setup",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-02T06:36:28Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/454",
+          "number": 454,
+          "title": "bwpacked: Support non-contiguous Q/K/V for backward",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-30T10:25:31Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/1254",
+          "number": 1254,
+          "title": "Enabling Blackwell support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-06-30T17:57:50Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/978",
+          "number": 978,
+          "title": "Fast Multi-ahead Attention support on AMD ROCM",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-03-19T09:10:10Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/816",
+          "number": 816,
+          "title": "Bump flash-attn to v2.0.4",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-08-17T12:58:18Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/824",
+          "number": 824,
+          "title": "Update flash attention to v2.0.6",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-08-16T09:42:05Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/482",
+          "number": 482,
+          "title": "Enable selective build for mem-efficient kernels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-01-24T21:38:38Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/587",
+          "number": 587,
+          "title": "[feat] cutlass FlashAttention bias+dropout support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-01-18T07:32:09Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/602",
+          "number": 602,
+          "title": "Relax pytorch dependency version",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-26T08:18:53Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/601",
+          "number": 601,
+          "title": "Fix issue with import order changing in 1191f03 breaking windows builds",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-20T03:21:30Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/578",
+          "number": 578,
+          "title": "fix cutlass SUPPORTED_MAX_K",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-15T10:27:35Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/560",
+          "number": 560,
+          "title": "Refactor4: Split fw/bw operators",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-09T15:17:32Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/557",
+          "number": 557,
+          "title": "Refactor3: Embed flash's PY files as xformers._flash_attn",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-09T15:17:32Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/569",
+          "number": 569,
+          "title": "C++17: Remove register kw",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-08T20:16:05Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/479",
+          "number": 479,
+          "title": "Add Triton Flash Attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-06T15:37:09Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/467",
+          "number": 467,
+          "title": "MemEff: Accumulate in f32 for bw",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-12-06T14:00:08Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/540",
+          "number": 540,
+          "title": "MmaFromSmem[A100]: Accept transposed operand A",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-11-29T17:34:37Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/530",
+          "number": 530,
+          "title": "Allow custom softmax in memory efficient attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-11-17T19:42:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/490",
+          "number": 490,
+          "title": "SwiGLU optimized fw/bw",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-11-10T18:11:31Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/480",
+          "number": 480,
+          "title": "cleanup_cutlass: Cleanup code before PR to cutlass [1-2% perf improvement]",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-10-18T08:18:32Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/469",
+          "number": 469,
+          "title": "fctls_bflsh: New OP that combines cutlass's fw + flash's bw",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-10-07T11:40:21Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/461",
+          "number": 461,
+          "title": "Pack dQ/dK/dV for flash's bw",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-10-07T08:37:07Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/449",
+          "number": 449,
+          "title": "packed: Support (some) non-contiguous Q,K,V",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-10-03T12:14:32Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/445",
+          "number": 445,
+          "title": "regfix: Fix regression with cu seqlen PR",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-10-03T12:14:29Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/439",
+          "number": 439,
+          "title": "noqs: Advance pointers to block position",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-09-29T12:57:51Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/393",
+          "number": 393,
+          "title": "[MMA_FROM_SMEM_IT_RES] Change how residuals are handled",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-09-15T12:30:15Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/facebookresearch/xformers/pull/362",
+          "number": 362,
+          "title": "Use cutlass for memory-efficient attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-08-25T08:24:11Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-cutlass-attention",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:NVIDIA/cutlass is:pr attention is:merged",
+        "repo": "NVIDIA/cutlass"
+      },
+      "total_count": 19,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/3436",
+          "number": 3436,
+          "title": "Fix sixteen broken relative links in the docs",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-03T01:15:25Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/3278",
+          "number": 3278,
+          "title": "Fix the ScatterD issue in predicated_tile_iterator",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-08-18T01:20:28Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/3251",
+          "number": 3251,
+          "title": "[CLI] Update FMHA & improve perf",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-25T07:56:09Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/2928",
+          "number": 2928,
+          "title": "Replace CUDA driver API with runtime API",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-01-11T18:37:04Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/2324",
+          "number": 2324,
+          "title": "Ensure compatibility with \"-Wimplicit-fallthrough\" when compiling with Clang",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-09-22T17:52:53Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/2466",
+          "number": 2466,
+          "title": "Example 77 add blackwell fmha bwd for MLA shape",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-24T22:41:12Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/2276",
+          "number": 2276,
+          "title": "[CUTLASS] Add GNA to PUBLICATIONS.md",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-05-02T20:57:20Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/2130",
+          "number": 2130,
+          "title": "Flash MLA support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-02-26T03:43:34Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/1471",
+          "number": 1471,
+          "title": "Add Faster Neighborhood Attention to PUBLICATIONS",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-07-10T15:09:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/1328",
+          "number": 1328,
+          "title": "Add a missing platform include",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-02-03T06:30:33Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/1084",
+          "number": 1084,
+          "title": "Support for Mixed Input TensorOp ",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-09-29T09:59:16Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/992",
+          "number": 992,
+          "title": "Update fMHA kernels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-07-13T02:30:47Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/844",
+          "number": 844,
+          "title": "fMHA: Add backward pass",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-04-07T00:44:59Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/828",
+          "number": 828,
+          "title": "fMHA: Sync FW with xFormers",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-02-23T04:25:32Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/773",
+          "number": 773,
+          "title": "xFormer updates to fMHA FW",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2023-02-09T04:00:11Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/669",
+          "number": 669,
+          "title": "Remove excessive includes from examples/41_multi_head_attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-10-22T02:23:15Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/662",
+          "number": 662,
+          "title": "ex42: Fused MHA imported from xFormers",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-10-17T14:49:34Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/620",
+          "number": 620,
+          "title": "fix broken link - groued-gemm attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-09-06T20:32:44Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/403",
+          "number": 403,
+          "title": "[hardswish] correct implmentation",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-02-09T19:28:54Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-cutlass-ada-fp8",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:NVIDIA/cutlass is:pr fp8 sm89 is:merged",
+        "repo": "NVIDIA/cutlass"
+      },
+      "total_count": 2,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/3394",
+          "number": 3394,
+          "title": "Fix SM89 FP8 blockwise scale indexing under threadblock swizzling",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-08-06T02:01:32Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/cutlass/pull/2378",
+          "number": 2378,
+          "title": "support fp16 accmulator for sm89 fp8 mma",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-31T02:12:09Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-vllm-ada-fp8",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:vllm-project/vllm is:pr fp8 sm89 cutlass is:merged",
+        "repo": "vllm-project/vllm"
+      },
+      "total_count": 14,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/53896",
+          "number": 53896,
+          "title": "[Model] Support Qwen3.8-Flash-Next",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-17T14:55:27Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/53906",
+          "number": 53906,
+          "title": "[Model] add GLM-5.3-Flash support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-09-09T12:29:01Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/40923",
+          "number": 40923,
+          "title": "[Kernel] Marlin MoE: include SM 12.x in default arch list",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-28T07:30:27Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/35568",
+          "number": 35568,
+          "title": "[Bugfix] Fix SM121 (DGX Spark) exclusion from Marlin/CUTLASS FP8 paths",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-15T17:59:01Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/22131",
+          "number": 22131,
+          "title": "[Kernel] Add support for block FP8 on SM120 (NVIDIA 5090 and RTX PRO 6000)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-05-06T20:25:48Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/34556",
+          "number": 34556,
+          "title": "[Quantization] add humming quantization kernel",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-04-24T13:29:44Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/38423",
+          "number": 38423,
+          "title": "[NVIDIA] Bugfix NVFP4 DGX Spark and RTX50",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-30T16:36:24Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/36976",
+          "number": 36976,
+          "title": "[Bugfix][LoRA] Fix  Qwen35 LoRA",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-23T15:58:50Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/35538",
+          "number": 35538,
+          "title": "[docs][torch.compile] Add fusions.md — kernel/operator fusion reference page",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-03-06T23:55:07Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/34302",
+          "number": 34302,
+          "title": "[ModelBash][DSV3] Add TRTLLM DSV3 Router GEMM kernel (6% B1 Speedup)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2026-02-24T23:29:56Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/9932",
+          "number": 9932,
+          "title": "[CI] Prune back the number of tests in tests/kernels/*",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-11-05T21:02:38Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/6677",
+          "number": 6677,
+          "title": "[Kernel] Tuned FP8 Kernels for Ada Lovelace",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-07-29T15:42:38Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/6384",
+          "number": 6384,
+          "title": "[Kernel] Turn off CUTLASS scaled_mm for Ada Lovelace",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-07-14T13:37:20Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/vllm-project/vllm/pull/5183",
+          "number": 5183,
+          "title": "[Kernel] Switch fp8 layers to use the CUTLASS kernels",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-06-14T17:20:02Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-sageattention",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:thu-ml/SageAttention is:pr is:merged",
+        "repo": "thu-ml/SageAttention"
+      },
+      "total_count": 29,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/307",
+          "number": 307,
+          "title": "fix same name issue in sm09_compile.py",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-12-22T06:25:16Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/297",
+          "number": 297,
+          "title": "Add support for DGX Spark (Cuda Capability 12.1)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-11-29T00:10:21Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/306",
+          "number": 306,
+          "title": "sageattention: calculate Q/K head numbers as per tensor layouts",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-11-28T04:40:42Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/315",
+          "number": 315,
+          "title": "fix bug when use 12.0",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-11-28T03:50:23Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/295",
+          "number": 295,
+          "title": "add compile support for B200",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-11-06T07:10:25Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/279",
+          "number": 279,
+          "title": "Set device to `query.device` to be consistent with C code",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-27T18:16:07Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/218",
+          "number": 218,
+          "title": "Add `torch.compile` support to SageAttention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-14T05:15:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/275",
+          "number": 275,
+          "title": "Update setup.py for sm100",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-10-13T08:22:37Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/266",
+          "number": 266,
+          "title": "update for sageattention3",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-09-27T17:33:23Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/252",
+          "number": 252,
+          "title": "Fix gqa case for smooth_k",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-09-27T17:31:44Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/230",
+          "number": 230,
+          "title": "fix bug for pull request #226: no skip when mask_dtype is float",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-05T08:45:51Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/231",
+          "number": 231,
+          "title": "fix bug for pull request #227: no skip when mask_dtype is float",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-05T08:45:43Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/226",
+          "number": 226,
+          "title": "Add attn_mask to sageattn",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-05T07:18:41Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/227",
+          "number": 227,
+          "title": "Add attn_mask to sageattn_qk_int8_pv_fp16_triton",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-05T07:18:25Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/225",
+          "number": 225,
+          "title": "Fix mask computation for better precision",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-04T11:59:15Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/224",
+          "number": 224,
+          "title": "Fix mask computation for better precision",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-08-04T11:51:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/207",
+          "number": 207,
+          "title": "Build extensions in parallel (NVIDIA/apex#1882)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-18T10:39:56Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/196",
+          "number": 196,
+          "title": "Update to SageAttention v2.2.0 (sage2++)",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-08T12:01:10Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/193",
+          "number": 193,
+          "title": "Update README.md",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-07-05T11:03:18Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/109",
+          "number": 109,
+          "title": "Sm120 compilation",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-02-15T07:57:40Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/95",
+          "number": 95,
+          "title": "SageAttention 2.1.0 Release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-01-29T16:43:05Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/91",
+          "number": 91,
+          "title": "(windows): Add ushort type definition for CUDA compilation for Sageattention 2.x",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2025-01-28T03:49:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/76",
+          "number": 76,
+          "title": "2.0.1 release",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-12-21T07:07:19Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/50",
+          "number": 50,
+          "title": "Parallel SageAttention Inference",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-12-14T10:59:58Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/39",
+          "number": 39,
+          "title": "update license",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-11-12T03:56:52Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/38",
+          "number": 38,
+          "title": "v1.0.4",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-11-11T16:33:21Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/36",
+          "number": 36,
+          "title": "add sageattn_varlen support",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-11-11T15:04:08Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/35",
+          "number": 35,
+          "title": "better support for hd96",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-11-11T03:45:17Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/thu-ml/SageAttention/pull/33",
+          "number": 33,
+          "title": "[update] support non-contiguous input, different qo_len and kv_len, HND and NHD layout, group query attention",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2024-11-11T02:36:10Z",
+          "review": "unreviewed"
+        }
+      ]
+    },
+    {
+      "recipe": {
+        "id": "sm89-local-attention-fastertransformer-swin",
+        "architecture": "sm89",
+        "kind": "pr",
+        "query": "repo:NVIDIA/FasterTransformer is:pr swin is:merged",
+        "repo": "NVIDIA/FasterTransformer"
+      },
+      "total_count": 3,
+      "fetched_pages": 1,
+      "incomplete_results": false,
+      "truncated": false,
+      "items": [
+        {
+          "url": "https://github.com/NVIDIA/FasterTransformer/pull/333",
+          "number": 333,
+          "title": "Fix/swin qk scale",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-09-29T05:16:14Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/FasterTransformer/pull/242",
+          "number": 242,
+          "title": "add int8 fmha for int8 swin on SM86",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-06-24T05:19:33Z",
+          "review": "unreviewed"
+        },
+        {
+          "url": "https://github.com/NVIDIA/FasterTransformer/pull/219",
+          "number": 219,
+          "title": "fix: fix bug of submodule for vit and swin transformer",
+          "kind": "pr",
+          "state": "closed",
+          "updated_at": "2022-05-10T05:34:17Z",
+          "review": "unreviewed"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "captures": []
+}

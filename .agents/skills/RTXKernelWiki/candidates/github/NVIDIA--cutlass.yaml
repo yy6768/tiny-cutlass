@@ -1,0 +1,3635 @@
+repo: NVIDIA/cutlass
+candidates:
+- kind: issue
+  number: 106
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/106
+  title: Performance on tensor core
+  state: closed
+  updated_at: '2021-04-19T02:46:43Z'
+- kind: issue
+  number: 204
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/204
+  title: Batched GEMM TensorCore INT1
+  state: closed
+  updated_at: '2024-07-04T01:43:55Z'
+- kind: issue
+  number: 221
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/221
+  title: Fail on Fused back-to-back INT8 NT interleaved GEMMs
+  state: closed
+  updated_at: '2021-11-27T13:36:23Z'
+- kind: issue
+  number: 289
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/289
+  title: Disabling Tensor Core for Specific CUDA Stream
+  state: closed
+  updated_at: '2021-11-27T13:35:51Z'
+- kind: issue
+  number: 319
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/319
+  title: Cutlass compile fail with message "relocation truncated to fit..."
+  state: closed
+  updated_at: '2023-03-28T15:35:01Z'
+- kind: issue
+  number: 335
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/335
+  title: Tensor Core GEMM and CUDA core kernels
+  state: closed
+  updated_at: '2023-04-06T12:05:10Z'
+- kind: issue
+  number: 339
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/339
+  title: Error in Build of CUTLASS Unit Tests
+  state: closed
+  updated_at: '2022-04-20T01:29:44Z'
+- kind: issue
+  number: 342
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/342
+  title: Use cutlass in MAGMA
+  state: closed
+  updated_at: '2024-01-03T05:43:52Z'
+- kind: issue
+  number: 374
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/374
+  title: Mixed precision GEMM Performance (A100 & V100)
+  state: closed
+  updated_at: '2021-12-07T16:05:29Z'
+- kind: issue
+  number: 408
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/408
+  title: Performance of Dense vs Sparse GEMM
+  state: closed
+  updated_at: '2022-02-18T15:57:22Z'
+- kind: issue
+  number: 428
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/428
+  title: '[BUG] Example ''15_ampere_sparse_tensorop_gemm'' is not working'
+  state: closed
+  updated_at: '2022-06-11T12:10:02Z'
+- kind: issue
+  number: 430
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/430
+  title: '[QST] Slower than cublas kernel with same tile size on A100'
+  state: closed
+  updated_at: '2022-03-31T18:51:15Z'
+- kind: issue
+  number: 436
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/436
+  title: '[QST] "Error: incomplete type is not allowed" when instantiating INT4 TensorCore
+    GEMM'
+  state: closed
+  updated_at: '2022-05-05T15:37:24Z'
+- kind: issue
+  number: 458
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/458
+  title: '[QST] the overhead of element-wise fusion in the prologue'
+  state: closed
+  updated_at: '2022-04-13T15:53:25Z'
+- kind: issue
+  number: 485
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/485
+  title: '[BUG] Error encountered in fast_math.h'
+  state: closed
+  updated_at: '2022-06-17T01:14:19Z'
+- kind: issue
+  number: 492
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/492
+  title: '[QST] Wrong numeric results for int8mm'
+  state: closed
+  updated_at: '2022-05-23T17:11:31Z'
+- kind: issue
+  number: 519
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/519
+  title: '[BUG] batch GEMM execution via cutlass_profiler gives weird outputs'
+  state: closed
+  updated_at: '2022-10-07T16:22:14Z'
+- kind: issue
+  number: 533
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/533
+  title: '[QST] How slice K reduce the value?'
+  state: closed
+  updated_at: '2022-09-17T12:21:49Z'
+- kind: issue
+  number: 536
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/536
+  title: '[QST] A100 double-precision Tensor Cores ?'
+  state: closed
+  updated_at: '2022-09-17T11:59:58Z'
+- kind: issue
+  number: 565
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/565
+  title: '[QST] How to get `OutputTileThreadMap` for a given threadblock Mma ?'
+  state: closed
+  updated_at: '2022-07-12T17:43:49Z'
+- kind: issue
+  number: 569
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/569
+  title: '[BUG] Fused GEMM example gives wrong result with some shapes'
+  state: closed
+  updated_at: '2022-08-22T21:24:31Z'
+- kind: issue
+  number: 580
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/580
+  title: '[QST] set different stages has different accuracy'
+  state: closed
+  updated_at: '2022-11-06T12:34:58Z'
+- kind: issue
+  number: 588
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/588
+  title: '[QST] CUDA_ERROR_ILLEGAL_ADDRESS error'
+  state: closed
+  updated_at: '2022-08-02T01:40:42Z'
+- kind: issue
+  number: 600
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/600
+  title: '[QST]Cutlass Profiler build issue on Linux'
+  state: closed
+  updated_at: '2022-08-18T17:26:04Z'
+- kind: issue
+  number: 609
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/609
+  title: '[QST]"Error: incomplete type is not allowed" when change CUDA SM architecture
+    number in examples/36_gather_scatter_fusion'
+  state: closed
+  updated_at: '2022-09-01T03:23:54Z'
+- kind: issue
+  number: 619
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/619
+  title: '[BUG] Wrong result in integer matrix multiply on ampere'
+  state: closed
+  updated_at: '2022-09-17T12:32:38Z'
+- kind: issue
+  number: 687
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/687
+  title: '[BUG]Invoked sm75-specific memory operator on NVIDIA A100'
+  state: closed
+  updated_at: '2022-11-05T07:27:31Z'
+- kind: issue
+  number: 695
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/695
+  title: '[QST] Support for Ada Lovelace Architecture'
+  state: closed
+  updated_at: '2023-11-03T23:40:34Z'
+- kind: issue
+  number: 708
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/708
+  title: '[QST] Does PyCUTLASS support sm!=80?'
+  state: closed
+  updated_at: '2022-11-30T21:47:47Z'
+- kind: issue
+  number: 757
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/757
+  title: '[FEA] Performace of depthwise conv2d is much worse than cuDNN'
+  state: closed
+  updated_at: '2023-02-13T03:45:27Z'
+- kind: issue
+  number: 782
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/782
+  title: '[QST] is rank_k supported on sm_75?'
+  state: closed
+  updated_at: '2023-01-29T03:41:33Z'
+- kind: issue
+  number: 788
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/788
+  title: '[BUG] cutlass 3 build errors'
+  state: closed
+  updated_at: '2023-01-27T14:19:01Z'
+- kind: issue
+  number: 793
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/793
+  title: '[QST] Conv2d Wgrad has low performance when C=4 than cuDNN'
+  state: closed
+  updated_at: '2023-02-22T04:46:18Z'
+- kind: issue
+  number: 799
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/799
+  title: '[BUG] Int8 + align1 potentialy broken'
+  state: closed
+  updated_at: '2023-02-07T03:54:43Z'
+- kind: issue
+  number: 804
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/804
+  title: '[QST] How to use matrix multiply-add operation: F32 = F16 * F16 + F32 of
+    matrix size 8 * 8 * 4 when SmArch = SM80?'
+  state: closed
+  updated_at: '2023-02-07T06:34:17Z'
+- kind: issue
+  number: 810
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/810
+  title: '[QST] LinearCombinationBiasElementWise with different ElementZ_ from ElementC?'
+  state: closed
+  updated_at: '2023-02-24T16:01:03Z'
+- kind: issue
+  number: 811
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/811
+  title: '[QST]Can I reproduce the performance on ResNet50?'
+  state: closed
+  updated_at: '2023-02-10T01:48:51Z'
+- kind: issue
+  number: 815
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/815
+  title: '[QST] Compile errors for conv kernels on A100 with CUDA'
+  state: closed
+  updated_at: '2023-05-10T17:04:37Z'
+- kind: issue
+  number: 818
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/818
+  title: '[BUG] matmul_rrr + bias + eltadd gives wrong result'
+  state: closed
+  updated_at: '2023-03-14T02:53:44Z'
+- kind: issue
+  number: 827
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/827
+  title: '[QST] CUTLASS kernels 8x slower in a model than in a single-kernel benchmark'
+  state: closed
+  updated_at: '2023-02-17T19:52:58Z'
+- kind: issue
+  number: 831
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/831
+  title: '[QST] How does CUTLASS solve the problem that the problem size cannot be
+    divisible by ShapeMMAThreadBlock?'
+  state: closed
+  updated_at: '2023-03-08T13:52:14Z'
+- kind: issue
+  number: 834
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/834
+  title: '[FEA] Store CUDA kernel launch status / error'
+  state: closed
+  updated_at: '2023-05-10T16:44:29Z'
+- kind: issue
+  number: 843
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/843
+  title: '[QST] Why we can''t achieve the same performance as cutlass_profiler even
+    if the Gemm arguments are consistent?'
+  state: closed
+  updated_at: '2023-03-03T03:41:25Z'
+- kind: issue
+  number: 848
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-rtx4090-issue
+  url: https://github.com/NVIDIA/cutlass/issues/848
+  title: '[BUG] Unhandled cudaErrorMisalignedAddress on host_sync'
+  state: closed
+  updated_at: '2023-03-06T20:35:29Z'
+- kind: issue
+  number: 852
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/852
+  title: '[BUG] Ex 13 (two_tensor_op_fusion) does not work with fp32 accum'
+  state: closed
+  updated_at: '2023-05-10T16:29:31Z'
+- kind: issue
+  number: 873
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/873
+  title: '[BUG] CUTLASS Profiler crashes when --batch_count > 1'
+  state: closed
+  updated_at: '2023-03-20T21:07:49Z'
+- kind: issue
+  number: 876
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/876
+  title: '[QST] Does splitK cause computation errors on shapes with very large k? '
+  state: closed
+  updated_at: '2023-04-23T02:18:09Z'
+- kind: issue
+  number: 880
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/880
+  title: '[QST] Why some ShapeMMAThreadBlock and ShapeMMAWarp will output an inaccurate
+    result or NAN when doing FP16 * FP16 = FP32 for some problem size? '
+  state: closed
+  updated_at: '2023-03-23T18:39:38Z'
+- kind: issue
+  number: 884
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/884
+  title: '[BUG] DefaultConv2dFpropWithBroadcast 7x slower than DefaultConv2dFprop
+    with FewChannel mode '
+  state: closed
+  updated_at: '2023-05-25T19:43:28Z'
+- kind: issue
+  number: 886
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/886
+  title: '[BUG] In example''13_two_tensor_op_fusion'' the fused version is slower
+    than the non-fused version'
+  state: closed
+  updated_at: '2023-03-31T23:34:38Z'
+- kind: issue
+  number: 888
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/888
+  title: '[QST] Does gemm_grouped applies to Volta 100 GPUs?'
+  state: closed
+  updated_at: '2023-03-23T16:01:39Z'
+- kind: issue
+  number: 904
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/904
+  title: '[QST] The `Column Major` constraint of A in Gemv implementation'
+  state: closed
+  updated_at: '2023-04-06T02:20:48Z'
+- kind: issue
+  number: 909
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/909
+  title: '[FEA] splitK support for Gemv kernel'
+  state: closed
+  updated_at: '2023-05-30T20:22:29Z'
+- kind: issue
+  number: 922
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/922
+  title: '[QST] Limiting GEMM and specifying stream'
+  state: closed
+  updated_at: '2023-07-26T19:08:44Z'
+- kind: issue
+  number: 924
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/924
+  title: '[BUG] Possible wrong thread block shape for DGEMM on A100.'
+  state: closed
+  updated_at: '2023-04-27T14:40:10Z'
+- kind: issue
+  number: 928
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/928
+  title: '[QST]How to calculate Dgrad and Wgrad of convolution?'
+  state: closed
+  updated_at: '2023-04-28T18:04:54Z'
+- kind: issue
+  number: 934
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/934
+  title: '[QST] Use visual studio 2022 to build cutlass(on windows 11)'
+  state: closed
+  updated_at: '2023-05-10T09:44:00Z'
+- kind: issue
+  number: 941
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/941
+  title: '[BUG] A10  Cutlass SGEMM  result 12470 GFLOP/s  lower than A10 spec 31.2
+    TFLOPS'
+  state: closed
+  updated_at: '2023-06-26T17:40:44Z'
+- kind: issue
+  number: 948
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/948
+  title: '[FEA] Request for filter-compressed tiled matrix multiply'
+  state: closed
+  updated_at: '2023-08-29T07:06:17Z'
+- kind: issue
+  number: 956
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/956
+  title: '[QST] Tensor Op GEMM performance on A100-PCIE-40GB'
+  state: closed
+  updated_at: '2023-07-28T14:35:05Z'
+- kind: issue
+  number: 981
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/981
+  title: '[QST] Why cutlass profiler for GEMV shows best perf for s16816gemm & relationship
+    with `mma.sync.aligned`'
+  state: closed
+  updated_at: '2023-06-28T04:43:22Z'
+- kind: issue
+  number: 997
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/997
+  title: '[QST]Error problem referencing cutlass library'
+  state: closed
+  updated_at: '2023-07-12T07:36:25Z'
+- kind: issue
+  number: 1010
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1010
+  title: '[QST] Misaligned address when using AlignedBuffer'
+  state: closed
+  updated_at: '2023-07-24T04:36:51Z'
+- kind: issue
+  number: 1025
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1025
+  title: '[QST]What is the meaning of each part in the kernel name?'
+  state: closed
+  updated_at: '2023-08-14T01:13:10Z'
+- kind: issue
+  number: 1031
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1031
+  title: '[BUG] StaticAssert "No static/dynamic overlap allowed in MixedBits." with
+    NVHPC 23.1 / CUDA 11.8 for A100'
+  state: closed
+  updated_at: '2023-09-26T14:53:59Z'
+- kind: issue
+  number: 1038
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1038
+  title: '[QST]How to use Swizzle to design memory layout while using TensorCore MMA'
+  state: closed
+  updated_at: '2024-05-22T02:14:57Z'
+- kind: issue
+  number: 1066
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1066
+  title: '[BUG] Compile error with cutlass 3.1.0'
+  state: closed
+  updated_at: '2023-08-30T00:26:05Z'
+- kind: issue
+  number: 1070
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1070
+  title: '[BUG] Compile Error when upgrading cutlass from 3.1.0 to 3.2.0 in PyTorch'
+  state: closed
+  updated_at: '2023-09-07T17:00:48Z'
+- kind: issue
+  number: 1094
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1094
+  title: '[BUG] Regression in examples/45_dual_gemm on H100'
+  state: closed
+  updated_at: '2023-09-21T01:06:54Z'
+- kind: issue
+  number: 1099
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1099
+  title: '[BUG] Init and TensorFill a host tensor with element larger than INT_MAX
+    would give Segmentation fault (core dumped)'
+  state: closed
+  updated_at: '2023-12-06T15:09:45Z'
+- kind: issue
+  number: 1106
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1106
+  title: '[QST] Lots of "incomplete type is not allowed" when changing ElementInput
+    type from int4 to half'
+  state: closed
+  updated_at: '2024-04-17T01:02:03Z'
+- kind: issue
+  number: 1118
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1118
+  title: '[BUG] cuDNN error when building profiler '
+  state: closed
+  updated_at: '2023-10-03T01:41:26Z'
+- kind: issue
+  number: 1122
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1122
+  title: '[FEA] De-quantization and int4 support for mixed dtypes GEMM'
+  state: closed
+  updated_at: '2024-01-05T15:53:58Z'
+- kind: issue
+  number: 1136
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1136
+  title: '[QST] Error trying to install CUTLASS examples'
+  state: closed
+  updated_at: '2023-10-13T07:18:21Z'
+- kind: issue
+  number: 1138
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1138
+  title: '[QST] IMA when attempting to update PyTorch to 3.2.1'
+  state: closed
+  updated_at: '2023-11-26T16:38:38Z'
+- kind: issue
+  number: 1141
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1141
+  title: '[QST]how to use "examples/06_splitK_gemm" on A100 correctly?'
+  state: closed
+  updated_at: '2023-10-16T11:14:40Z'
+- kind: issue
+  number: 1145
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1145
+  title: '[BUG] EVT-based GEMM in example 47 produces wrong results when `m!=n` in
+    the problem size'
+  state: closed
+  updated_at: '2023-10-16T16:29:50Z'
+- kind: issue
+  number: 1164
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1164
+  title: '[QST] How to call cutlass API within a cuda kernel?'
+  state: closed
+  updated_at: '2024-02-22T15:52:59Z'
+- kind: issue
+  number: 1181
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  - cutlass-sm89-rtx4090-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1181
+  title: '[QST] What is the usage of Sm86?'
+  state: closed
+  updated_at: '2023-11-11T02:22:55Z'
+- kind: issue
+  number: 1182
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1182
+  title: '[QST] Example `06_splitK_gemm` error in A100.'
+  state: closed
+  updated_at: '2023-11-13T04:36:20Z'
+- kind: issue
+  number: 1214
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1214
+  title: '[QST] question about cutlass profiler result'
+  state: closed
+  updated_at: '2023-12-08T02:48:40Z'
+- kind: issue
+  number: 1231
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1231
+  title: '[BUG] Implicitly generate unexpected LDGSTS instructions for A100'
+  state: open
+  updated_at: '2024-04-03T00:17:46Z'
+- kind: issue
+  number: 1272
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-rtx4090-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1272
+  title: '[BUG] Copy_Atom with DefaultCopy cause misaligned address'
+  state: closed
+  updated_at: '2024-02-22T15:06:24Z'
+- kind: issue
+  number: 1288
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1288
+  title: '[QST]question about cutlass epilogue customization'
+  state: closed
+  updated_at: '2024-07-27T18:15:31Z'
+- kind: issue
+  number: 1295
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1295
+  title: '[QST] How to use splitk in cutlass python?'
+  state: closed
+  updated_at: '2024-02-17T15:35:48Z'
+- kind: issue
+  number: 1298
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1298
+  title: '[QST] How to make the performance of cutlass kernel achieve what cutlass_profiler
+    claims?'
+  state: closed
+  updated_at: '2024-01-18T06:33:34Z'
+- kind: issue
+  number: 1301
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1301
+  title: '[QST] Question on customize epilogue reduction'
+  state: closed
+  updated_at: '2024-02-23T06:07:09Z'
+- kind: issue
+  number: 1304
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1304
+  title: '[QST]Is this the complete set of valid parameters for performing fp16 matrix
+    multiplication using tensor cores?'
+  state: closed
+  updated_at: '2024-02-22T17:10:10Z'
+- kind: issue
+  number: 1309
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1309
+  title: '[QST] Any experience to help me optimize on a particular problem size(a
+    small M)?'
+  state: closed
+  updated_at: '2024-02-22T15:13:46Z'
+- kind: issue
+  number: 1312
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1312
+  title: '[QST] arch::Mma error: incomplete type'
+  state: closed
+  updated_at: '2024-01-20T12:55:00Z'
+- kind: issue
+  number: 1330
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1330
+  title: '[QST] Gather/Scatter in cute/cutlass 3'
+  state: closed
+  updated_at: '2024-04-05T16:21:44Z'
+- kind: issue
+  number: 1335
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1335
+  title: '[QST] Sparse GEMM runs much worse than Dense GEMM in some cases'
+  state: closed
+  updated_at: '2024-07-27T18:09:33Z'
+- kind: issue
+  number: 1341
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1341
+  title: '[QST] Any rules to follow when set instruction shape for GemmTensorOp?'
+  state: closed
+  updated_at: '2024-02-12T18:23:01Z'
+- kind: issue
+  number: 1369
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-rtx4090-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1369
+  title: '[BUG] Error Internal with large batch size in gemm::device::GemmBatched '
+  state: closed
+  updated_at: '2024-03-01T07:10:36Z'
+- kind: issue
+  number: 1370
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1370
+  title: '[QST] how can i do w4a8 (int4 * int8) using cutlass?'
+  state: closed
+  updated_at: '2024-03-20T03:11:57Z'
+- kind: issue
+  number: 1403
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1403
+  title: '[BUG] Unable to build against CUDA 12.4 without '
+  state: closed
+  updated_at: '2024-07-27T18:08:29Z'
+- kind: issue
+  number: 1406
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1406
+  title: '[QST] How are DRAM accesses optimized during Split K - reduction across
+    threadblocks?'
+  state: closed
+  updated_at: '2024-07-27T18:17:54Z'
+- kind: issue
+  number: 1412
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1412
+  title: '[BUG] GEMM silently miscalculates on some specific shapes'
+  state: closed
+  updated_at: '2024-03-22T08:34:51Z'
+- kind: issue
+  number: 1442
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1442
+  title: '[QST] Why we use three sync in sgemm_1?'
+  state: closed
+  updated_at: '2026-02-18T17:39:16Z'
+- kind: issue
+  number: 1444
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1444
+  title: '[QST]How to use print_latex??'
+  state: closed
+  updated_at: '2024-03-30T07:50:17Z'
+- kind: issue
+  number: 1445
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1445
+  title: '[QST] In cute, what is MMA_K''s meaning?'
+  state: closed
+  updated_at: '2024-03-31T08:37:28Z'
+- kind: issue
+  number: 1520
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1520
+  title: '[QST] sm70 and sm80 CuTe examples are tiling ordinary float multiplication?'
+  state: closed
+  updated_at: '2024-05-01T05:57:48Z'
+- kind: issue
+  number: 1547
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1547
+  title: '[BUG] Cutlass Python API silently fails in (suspected) unsupported case'
+  state: open
+  updated_at: '2024-12-30T16:06:12Z'
+- kind: issue
+  number: 1556
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1556
+  title: '[QST/BUG] why cute kernel transfers so much data between L2 and gmen than
+    cublas kernel'
+  state: closed
+  updated_at: '2024-11-28T08:36:22Z'
+- kind: issue
+  number: 1580
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1580
+  title: '[BUG] CUTE: zipped_divide function returns different results on cuda device
+    and on host'
+  state: closed
+  updated_at: '2024-06-09T17:35:51Z'
+- kind: issue
+  number: 1589
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1589
+  title: '[QST]error: too few arguments for class template "cutlass::epilogue::collective::DefaultEpilogue"'
+  state: open
+  updated_at: '2024-11-25T01:27:36Z'
+- kind: issue
+  number: 1594
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1594
+  title: '[QST] How to get Cutlass to run on Windows 11 in Visual Studio?'
+  state: closed
+  updated_at: '2024-07-18T19:58:30Z'
+- kind: issue
+  number: 1597
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1597
+  title: '[QST]41_fused_multi_head_attention on sm89'
+  state: open
+  updated_at: '2024-11-12T18:06:24Z'
+- kind: issue
+  number: 1610
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1610
+  title: '[QST] Benchmark #15 error. "void cutlass::arch::ldsm not implemented"'
+  state: closed
+  updated_at: '2025-01-22T04:08:49Z'
+- kind: issue
+  number: 1672
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1672
+  title: '[FEA] Passing the copy type as a parameter to `copy`'
+  state: open
+  updated_at: '2024-11-29T16:06:31Z'
+- kind: issue
+  number: 1686
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1686
+  title: '[QST] Is there any fp16xfp16 GEMM sample using CUTE with a performance comparable
+    to cublas?'
+  state: open
+  updated_at: '2025-12-10T20:11:25Z'
+- kind: issue
+  number: 1689
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1689
+  title: '[QST] cute::abs_fn of cute::C fails to build on Windows with CUDA 11.8'
+  state: open
+  updated_at: '2025-01-07T17:05:22Z'
+- kind: issue
+  number: 1697
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-rtx4090-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1697
+  title: '[QST] Dose CuTe supports FP8 in Ada lovelace?'
+  state: closed
+  updated_at: '2024-08-09T03:40:27Z'
+- kind: issue
+  number: 1698
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  - cutlass-sm89-rtx4090-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1698
+  title: '[QST] Dose CuTe supports FP8 in Ada lovelace?'
+  state: open
+  updated_at: '2025-03-15T08:06:55Z'
+- kind: issue
+  number: 1715
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1715
+  title: '[QST] possibly typo in DefaultGemmConfiguration for TensorOp and Sm80'
+  state: open
+  updated_at: '2024-12-14T09:05:17Z'
+- kind: issue
+  number: 1716
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1716
+  title: '[BUG] Non-ZFILL CP_ASYNC copy trait cause buffer overwriting with predicated
+    copy'
+  state: open
+  updated_at: '2024-12-27T16:05:47Z'
+- kind: issue
+  number: 1737
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1737
+  title: '[QST] GEMV implementation with CuTe'
+  state: closed
+  updated_at: '2024-09-21T00:49:23Z'
+- kind: issue
+  number: 1738
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1738
+  title: '[QST] How to dump the IRs after each stage of `cicc`?'
+  state: open
+  updated_at: '2025-01-02T22:04:56Z'
+- kind: issue
+  number: 1740
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1740
+  title: '[QST] how to fix the compiling error: static assertion failed with "Vectors
+    implied by the thread map must be divisible by the access type."'
+  state: open
+  updated_at: '2024-12-21T12:07:56Z'
+- kind: issue
+  number: 1746
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1746
+  title: '[QST] some confusion about layout '
+  state: open
+  updated_at: '2024-12-24T07:05:19Z'
+- kind: issue
+  number: 1780
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1780
+  title: '[FEA] transpose in epilogue/prologue'
+  state: open
+  updated_at: '2025-01-07T14:57:15Z'
+- kind: issue
+  number: 1804
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1804
+  title: '[BUG] my code compiles well in `git reset --hard v3.2.1`, but errors `git
+    reset --hard v3.4.1`'
+  state: closed
+  updated_at: '2025-01-09T17:21:20Z'
+- kind: issue
+  number: 1827
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1827
+  title: '[BUG] Some CUTLASS headers are not self-contained'
+  state: open
+  updated_at: '2025-03-07T00:48:34Z'
+- kind: issue
+  number: 1829
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1829
+  title: '[BUG] Computing result error in cutlass gemm with specfied shape'
+  state: open
+  updated_at: '2025-01-20T08:07:39Z'
+- kind: issue
+  number: 1838
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1838
+  title: '[QST] Where is FlashAttention-2 CUTLASS kernel'
+  state: closed
+  updated_at: '2025-01-25T13:15:32Z'
+- kind: issue
+  number: 1840
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1840
+  title: '[QST] wgmma.mma_async instructions are serialized due to insufficient register
+    resources'
+  state: open
+  updated_at: '2025-02-14T12:08:45Z'
+- kind: issue
+  number: 1842
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1842
+  title: '[QST] SmemCopyAtom and MMA_Atom for fp32?'
+  state: open
+  updated_at: '2025-02-07T15:05:22Z'
+- kind: issue
+  number: 1858
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1858
+  title: '[QST] Performance Issue of doing GEMM on A100 using CuTe'
+  state: closed
+  updated_at: '2025-08-05T11:19:31Z'
+- kind: issue
+  number: 1866
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1866
+  title: '[QST] Incorrect matrix multiplication result with CuTe library'
+  state: closed
+  updated_at: '2025-01-28T13:00:37Z'
+- kind: issue
+  number: 1872
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-rtx4090-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1872
+  title: '[QST] Conv2D PyTorch Extension, leading wrong results.'
+  state: closed
+  updated_at: '2024-11-11T08:48:52Z'
+- kind: issue
+  number: 1875
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1875
+  title: '[QST] Can we use Ampere architecture Sparse Tensor Operations through CuTe
+    API?'
+  state: closed
+  updated_at: '2025-05-23T16:50:32Z'
+- kind: issue
+  number: 1889
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1889
+  title: how to use nvrtc to run a sm90 kernel
+  state: open
+  updated_at: '2025-02-20T07:05:46Z'
+- kind: issue
+  number: 1919
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1919
+  title: '[BUG] Cutlass python does not detect GPU'
+  state: open
+  updated_at: '2025-03-07T01:33:10Z'
+- kind: issue
+  number: 1924
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1924
+  title: '[QST] Why did I get a wrong result from GemmGrouped?'
+  state: open
+  updated_at: '2025-03-08T05:04:55Z'
+- kind: issue
+  number: 1927
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1927
+  title: '[QST] Question Regarding To The Use Of `Swizzle`'
+  state: closed
+  updated_at: '2024-12-08T13:59:57Z'
+- kind: issue
+  number: 1936
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1936
+  title: '[QST] bfloat16 x int8 GEMM'
+  state: open
+  updated_at: '2025-03-11T15:05:53Z'
+- kind: issue
+  number: 1937
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1937
+  title: '[QST] FP8 with row-wise scaling on Ada-Lovelace'
+  state: open
+  updated_at: '2025-03-14T23:05:57Z'
+- kind: issue
+  number: 1952
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1952
+  title: '[BUG] Example 09_turing_tensorop_conv2dfprop does not work'
+  state: open
+  updated_at: '2025-04-11T03:18:59Z'
+- kind: issue
+  number: 1953
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1953
+  title: '[QST] make_tiled_copy_B generates incompatible layouts'
+  state: open
+  updated_at: '2025-07-09T14:06:19Z'
+- kind: issue
+  number: 1965
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1965
+  title: '[QST] CUDA free failed when executing  example 59_ampere_gather_scatter_conv'
+  state: open
+  updated_at: '2025-04-16T04:06:59Z'
+- kind: issue
+  number: 1973
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1973
+  title: '[QST]compiling error when use cutlass::arch::OpClassSimt in cutlass::gemm::kernel::DefaultGemmGrouped'
+  state: closed
+  updated_at: '2024-12-07T01:28:12Z'
+- kind: issue
+  number: 1981
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1981
+  title: '[BUG] Funcionality TensorOp 80+ s8 * s8 + s32 => {s32, s8} not working'
+  state: open
+  updated_at: '2025-06-11T10:06:52Z'
+- kind: issue
+  number: 1986
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1986
+  title: '[QST] fp8 gemm'
+  state: closed
+  updated_at: '2025-12-11T01:29:42Z'
+- kind: issue
+  number: 1987
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1987
+  title: '[QST] Global variable inside conv2d kernel'
+  state: open
+  updated_at: '2025-07-10T18:08:20Z'
+- kind: issue
+  number: 1996
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/1996
+  title: '[QST] Gemm got ''incomplete type is not allowed'' when use Sm90'
+  state: open
+  updated_at: '2025-04-17T09:06:18Z'
+- kind: issue
+  number: 2006
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2006
+  title: '[BUG] wmma should be enabled w/ clang.'
+  state: closed
+  updated_at: '2025-05-28T17:42:39Z'
+- kind: issue
+  number: 2009
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2009
+  title: '[BUG] Removal of OpMultiplyAdd template substitutions from mma_sm80.h in
+    3.5.1'
+  state: closed
+  updated_at: '2025-01-24T13:22:55Z'
+- kind: issue
+  number: 2011
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2011
+  title: '[QST] why kElementsPerAccess > 1 is not permanent in default_mma_sm80_core.h'
+  state: closed
+  updated_at: '2024-12-24T02:32:37Z'
+- kind: issue
+  number: 2014
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2014
+  title: '[BUG] Precision issue with python cutlass gemm'
+  state: closed
+  updated_at: '2024-12-30T15:52:52Z'
+- kind: issue
+  number: 2017
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2017
+  title: '[BUG] Memory corruption/undefined behavior on GemmUniversal in 3.4.0 - 3.6.0
+    🐛'
+  state: open
+  updated_at: '2025-05-03T12:08:44Z'
+- kind: issue
+  number: 2022
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2022
+  title: '[QST] why the implementation of f16xs8 mixed gemm is different between TRT-LLM
+    and native cutlass mixed gemm example?'
+  state: open
+  updated_at: '2025-05-06T09:06:26Z'
+- kind: issue
+  number: 2029
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2029
+  title: '[QST]CUTLASS support for fp8 sparse matrix(for W) multiplication for A*W=Y
+    with GPU（SM90a/89）sparse tensor core'
+  state: closed
+  updated_at: '2025-01-13T06:31:51Z'
+- kind: issue
+  number: 2040
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2040
+  title: '[BUG]MMA FP8'
+  state: closed
+  updated_at: '2025-01-16T04:13:03Z'
+- kind: issue
+  number: 2041
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2041
+  title: '[BUG] Modifying the block/warptile shapes and the output datatype in the
+    unit test causes the tests to fail.'
+  state: open
+  updated_at: '2025-06-06T03:26:48Z'
+- kind: issue
+  number: 2043
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2043
+  title: '[QST] Can Sm80EVT used in ada lovelace?'
+  state: closed
+  updated_at: '2025-01-17T13:58:26Z'
+- kind: issue
+  number: 2053
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2053
+  title: '[QST] Grouped GEMM on A10 GPUs'
+  state: closed
+  updated_at: '2025-01-24T21:16:29Z'
+- kind: issue
+  number: 2062
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2062
+  title: '[QST] Fused mma and outer product'
+  state: closed
+  updated_at: '2025-02-02T14:38:55Z'
+- kind: issue
+  number: 2063
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2063
+  title: '[QST] Cute docs need a concrete example using tensor cores'
+  state: closed
+  updated_at: '2025-02-23T17:14:27Z'
+- kind: issue
+  number: 2077
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2077
+  title: '[QST] Getting a template error trying to use cutlass''s depthwise 2D convolution
+    with pytorch'
+  state: open
+  updated_at: '2025-06-06T14:06:03Z'
+- kind: issue
+  number: 2093
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2093
+  title: '[QST] TiledCopy'
+  state: closed
+  updated_at: '2025-02-10T06:24:46Z'
+- kind: issue
+  number: 2107
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2107
+  title: '[QST] Questions from a newbie, How to convert my linear layer to a cuda
+    based inference system? a simple linear layer'
+  state: closed
+  updated_at: '2025-02-21T16:56:44Z'
+- kind: issue
+  number: 2114
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2114
+  title: '[QST] NT layout for SM80_16x8x8_F32TF32TF32F32_TN and SM75_U32x4_LDSM_N'
+  state: closed
+  updated_at: '2025-02-15T15:58:56Z'
+- kind: issue
+  number: 2116
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2116
+  title: '[QST] TF32 tensor core bank conflicts'
+  state: closed
+  updated_at: '2025-02-21T23:31:44Z'
+- kind: issue
+  number: 2127
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2127
+  title: '[QST] Permutation layout for contiguous stores'
+  state: open
+  updated_at: '2025-07-12T10:05:49Z'
+- kind: issue
+  number: 2158
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2158
+  title: '[DOC] CUTLASS INT4 GEMM: Missing SM89 Dispatch Configuration for L40S/4090'
+  state: open
+  updated_at: '2025-07-08T16:07:15Z'
+- kind: issue
+  number: 2165
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2165
+  title: '[QST] Quickstart guide for 5080.'
+  state: closed
+  updated_at: '2025-03-12T15:22:34Z'
+- kind: issue
+  number: 2166
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2166
+  title: '[QST] Adding new parameter to Conv2dFprop in Python'
+  state: open
+  updated_at: '2025-08-07T20:07:07Z'
+- kind: issue
+  number: 2168
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2168
+  title: '[QST]How can I implement W4A16 gemm kernel with cute api?'
+  state: open
+  updated_at: '2025-07-29T23:06:23Z'
+- kind: issue
+  number: 2173
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2173
+  title: '[QST] `wgmma_sm90.cu` tutorial pipelining'
+  state: closed
+  updated_at: '2025-03-14T19:14:36Z'
+- kind: issue
+  number: 2186
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2186
+  title: '[QST] Support for GEMM with arch 120'
+  state: closed
+  updated_at: '2025-12-02T07:15:02Z'
+- kind: issue
+  number: 2189
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2189
+  title: '[QST] Fusion paths on Ada/SM89'
+  state: closed
+  updated_at: '2025-04-09T23:02:59Z'
+- kind: issue
+  number: 2201
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2201
+  title: '[QST] Ampere GEMM 2.x vs 3.x Performance Gap'
+  state: closed
+  updated_at: '2025-04-24T17:11:10Z'
+- kind: issue
+  number: 2202
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2202
+  title: '[QST] uncoalesced shared accesses via Copy_Atom<SM80_CP_ASYNC_CACHEALWAYS<uint128_t>,
+    ElementA>'
+  state: open
+  updated_at: '2025-07-30T03:35:29Z'
+- kind: issue
+  number: 2210
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2210
+  title: '[FEA] When sm < 90, no CUTLASS 3.0 GEMM templates'
+  state: open
+  updated_at: '2025-08-28T04:07:03Z'
+- kind: issue
+  number: 2212
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2212
+  title: '[QST]Why cp.async.ca will influence bank conflcit of Shared Store From Global
+    Load ?'
+  state: open
+  updated_at: '2026-01-30T05:20:49Z'
+- kind: issue
+  number: 2214
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2214
+  title: '[QST] Cute fp16 tensorecore matmul result not matched with torch.matmul
+    in A100 GPU'
+  state: closed
+  updated_at: '2025-04-03T15:15:20Z'
+- kind: issue
+  number: 2232
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2232
+  title: '[QST] How does make_tiled_copy_A determine the source address for copying？'
+  state: closed
+  updated_at: '2025-05-04T02:21:03Z'
+- kind: issue
+  number: 2236
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2236
+  title: '[QST] Why does cute::TiledMMA seem to transpose B in this kernel?'
+  state: closed
+  updated_at: '2025-04-13T02:06:12Z'
+- kind: issue
+  number: 2246
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2246
+  title: '[QST] whats the difference between OpMultiplyAddFastAccum and OpMultiplyAdd
+    tag?'
+  state: closed
+  updated_at: '2025-04-30T06:05:05Z'
+- kind: issue
+  number: 2247
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2247
+  title: '[QST] Compilation Error When Using copy.async with uint16_t'
+  state: closed
+  updated_at: '2025-04-18T10:07:05Z'
+- kind: issue
+  number: 2254
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2254
+  title: '[FEA] CVT F32 -> TF32 PTX for sm80'
+  state: open
+  updated_at: '2025-08-28T03:20:24Z'
+- kind: issue
+  number: 2258
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2258
+  title: '[QST]How to write column major output epilogue in cutlass2.x'
+  state: open
+  updated_at: '2025-08-27T04:06:58Z'
+- kind: issue
+  number: 2264
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2264
+  title: '[QST] Will cutlass add MLA implementation for non Blackwell?'
+  state: closed
+  updated_at: '2025-04-26T19:47:53Z'
+- kind: issue
+  number: 2272
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2272
+  title: '[QST] Need help debugging a kernel'
+  state: closed
+  updated_at: '2025-04-30T21:49:35Z'
+- kind: issue
+  number: 2277
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2277
+  title: '[QST] Canonical Cute way of handling tiled copies that are smaller than
+    cta size'
+  state: closed
+  updated_at: '2025-06-01T01:00:20Z'
+- kind: issue
+  number: 2278
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2278
+  title: '[QST]Using customized operators in gemm kernel'
+  state: open
+  updated_at: '2025-10-03T05:06:08Z'
+- kind: issue
+  number: 2288
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2288
+  title: '[BUG][Inductor-EVT] Python EVT tracer generates incorrect code when assigning
+    accumulator to output D'
+  state: open
+  updated_at: '2025-10-17T16:07:10Z'
+- kind: issue
+  number: 2289
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2289
+  title: '[FEA][Inductor-EVT] tanh, sigmoid, exp, gelu are not supported in python
+    evt tracer'
+  state: closed
+  updated_at: '2025-09-14T06:58:30Z'
+- kind: issue
+  number: 2301
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2301
+  title: '[QST] CuTE - how to emit SASS loads with ".constant" suffix?'
+  state: open
+  updated_at: '2025-09-18T21:05:45Z'
+- kind: issue
+  number: 2309
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2309
+  title: '[BUG][Inductor-EVT] EVT python tracer: No LCA found when it appears that
+    there is an LCA'
+  state: open
+  updated_at: '2025-10-16T22:04:59Z'
+- kind: issue
+  number: 2344
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2344
+  title: '[QST] tf32 grouped gemm default template instantiation failure'
+  state: closed
+  updated_at: '2025-05-29T03:20:49Z'
+- kind: issue
+  number: 2348
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2348
+  title: '[QST] Sm80 TF32/BF16/FP16 grouped gemm encounter illegal memory access'
+  state: closed
+  updated_at: '2025-06-01T12:55:24Z'
+- kind: issue
+  number: 2349
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2349
+  title: '[BUG][Inductor-EVT] Compilation error with usage of same var twice in expression'
+  state: closed
+  updated_at: '2026-01-07T08:14:03Z'
+- kind: issue
+  number: 2363
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2363
+  title: '[QST] SM80 grouped gemm encountered misaligned address'
+  state: closed
+  updated_at: '2025-06-04T03:51:13Z'
+- kind: issue
+  number: 2380
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2380
+  title: '[BUG] FP32 Grouped GEMM encounters illegal memory access'
+  state: closed
+  updated_at: '2025-07-23T12:42:39Z'
+- kind: issue
+  number: 2389
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2389
+  title: '[BUG+FIX] sgemm_sm80: s2r_atom_* type is incomplete'
+  state: closed
+  updated_at: '2025-09-17T17:50:16Z'
+- kind: issue
+  number: 2434
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2434
+  title: '[QST][Cute] How to reduce custom tiled_ma in the k-dimension'
+  state: closed
+  updated_at: '2025-07-13T12:00:00Z'
+- kind: issue
+  number: 2445
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2445
+  title: '[BUG] [CuTeDSL] `cute.print_tensor` failed'
+  state: closed
+  updated_at: '2025-07-08T13:28:21Z'
+- kind: issue
+  number: 2450
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2450
+  title: '[BUG]why swizzle will change register static layout to dynamic layout?'
+  state: closed
+  updated_at: '2025-07-23T12:42:39Z'
+- kind: issue
+  number: 2461
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2461
+  title: '[QST] incomplete type "cutlass::gemm::device::DefaultGemmConfiguration<MMAOp,
+    SmArch, ElementInputA, ElementInputB, ElementOutput, ElementAccumulator>"'
+  state: closed
+  updated_at: '2026-05-11T17:03:15Z'
+- kind: issue
+  number: 2471
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2471
+  title: '[FEA] Dynamic tile scheduler for Hopper'
+  state: closed
+  updated_at: '2026-07-20T17:10:09Z'
+- kind: issue
+  number: 2498
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2498
+  title: '[BUG] `cute::_` and `_` in C+= structured binding used together  cause runtime
+    issues.'
+  state: closed
+  updated_at: '2025-07-28T17:28:46Z'
+- kind: issue
+  number: 2499
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2499
+  title: '[BUG] The result of `tiled_divide` on a `Tensor` causes layout issues when
+    used for `Tensor` slicing.'
+  state: closed
+  updated_at: '2026-05-24T17:17:59Z'
+- kind: issue
+  number: 2507
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2507
+  title: '[QST] [CuTeDSL] DSLCudaRuntimeError: Unknown CUDA error'
+  state: closed
+  updated_at: '2025-07-27T03:30:33Z'
+- kind: issue
+  number: 2513
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2513
+  title: '[QST]Why does the 77_blackwell_fmha example not work on Blackwell architecture
+    RTX5090 GPUs?'
+  state: closed
+  updated_at: '2025-07-29T01:50:52Z'
+- kind: issue
+  number: 2542
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2542
+  title: '[QST] [CUTE] Failed to use vectorized copy for copying the result of a MMA
+    to global memory'
+  state: closed
+  updated_at: '2025-08-06T01:41:26Z'
+- kind: issue
+  number: 2566
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2566
+  title: '[QST]How to optimize the tensorrt-llm''s mixed gemm'
+  state: open
+  updated_at: '2025-12-27T03:33:09Z'
+- kind: issue
+  number: 2608
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2608
+  title: '[QST] Errors putting together a SplitK GEMM that takes single precision
+    input, accumulates and outputs in double.'
+  state: closed
+  updated_at: '2026-07-01T17:43:12Z'
+- kind: issue
+  number: 2697
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2697
+  title: '[BUG] examples/cute/tutorial/sgemm_sm80.cu does not produce the correct
+    result.'
+  state: closed
+  updated_at: '2025-10-14T16:33:17Z'
+- kind: issue
+  number: 2716
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2716
+  title: '[BUG] [CUTLASS] Integer-Gemm gives incorrect results'
+  state: open
+  updated_at: '2026-08-07T15:17:27Z'
+- kind: issue
+  number: 2766
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2766
+  title: '[QST] Does sm120 gemm kernels support fp16/tf32 inputs?'
+  state: closed
+  updated_at: '2026-07-22T17:05:04Z'
+- kind: issue
+  number: 2793
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2793
+  title: Issues with IDE Setup documentation and VSCode IntelliSense navigation in
+    `__device__` code
+  state: open
+  updated_at: '2026-03-21T07:16:33Z'
+- kind: issue
+  number: 2800
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2800
+  title: '[BUG] [Python DSL] BlockScaledMmaOp restricts FP4 operations to sm_100a
+    only, blocks sm_120/sm_121'
+  state: closed
+  updated_at: '2026-07-02T05:59:02Z'
+- kind: issue
+  number: 2902
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2902
+  title: '[QST][CUTEDSL] Address Misalignment in FP8 Gemm '
+  state: open
+  updated_at: '2026-05-15T17:34:39Z'
+- kind: issue
+  number: 2937
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2937
+  title: '[BUG] Epilogue: Memory access width exceeds width of the output tile'
+  state: closed
+  updated_at: '2026-08-07T14:49:35Z'
+- kind: issue
+  number: 2947
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2947
+  title: '[BUG] [Blackwell] Enable FP4/tcgen05 support for sm_121 (DGX Spark) in CuTe
+    DSL'
+  state: closed
+  updated_at: '2026-08-17T07:16:38Z'
+- kind: issue
+  number: 2996
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/2996
+  title: '[QST] How to optimize cutlass int8 fprop2d kernel with NCxHWx interleaved
+    layout, which is ~12% slower than TensorRT on Jetson Orin'
+  state: open
+  updated_at: '2026-06-03T09:43:53Z'
+- kind: issue
+  number: 3039
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3039
+  title: '[QST][CuTe] Unable to get batched gemm work by modifying the sgemm_2.cu
+    example'
+  state: closed
+  updated_at: '2026-02-18T01:52:40Z'
+- kind: issue
+  number: 3044
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-issue
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3044
+  title: 'CuTe DSL: FP8 MMA segfaults on SM120 — MmaAtomSM80Type missing kind::f8f6f4
+    lowering'
+  state: closed
+  updated_at: '2026-07-04T09:40:23Z'
+- kind: issue
+  number: 3076
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3076
+  title: '[DOC] Storing 2D Tile From Accumulator Registers  To Global Memory Using
+    TMA.'
+  state: closed
+  updated_at: '2026-03-28T21:38:56Z'
+- kind: issue
+  number: 3107
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3107
+  title: '[QST][CuTe] W4A16 mixed dtype GEMM'
+  state: closed
+  updated_at: '2026-03-17T02:21:41Z'
+- kind: issue
+  number: 3125
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3125
+  title: '[QST]`print_tensor` cause  "an illegal instruction was encountered"'
+  state: open
+  updated_at: '2026-07-22T10:45:41Z'
+- kind: issue
+  number: 3172
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3172
+  title: '[QST]Swizzle could not eliminate bank conflicts of ldmatrix'
+  state: open
+  updated_at: '2026-08-15T06:09:45Z'
+- kind: issue
+  number: 3191
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3191
+  title: '[BUG] SM70 kernel does not work when more than 1 tile is used'
+  state: closed
+  updated_at: '2026-05-08T10:57:47Z'
+- kind: issue
+  number: 3281
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3281
+  title: '[BUG] CuTeDSL 4.5.2: MmaFP8Op.make_fragment_A segfaults on SM120 (Blackwell)'
+  state: open
+  updated_at: '2026-06-28T03:15:43Z'
+- kind: issue
+  number: 3340
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3340
+  title: Stale comment in `examples/cute/tutorial/hopper/wgmma_sm90.cu`
+  state: open
+  updated_at: '2026-08-22T03:18:25Z'
+- kind: issue
+  number: 3354
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3354
+  title: '[BUG] cvt int8/uint8 -> bfloat16 emits a sm_90-only instruction on Ampere/Ada
+    instead of the software fallback (arch gate too loose)'
+  state: open
+  updated_at: '2026-07-29T03:06:14Z'
+- kind: issue
+  number: 3390
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3390
+  title: '[QST] Public SIMT SGEMM is slower than cuBLAS on sm_89'
+  state: closed
+  updated_at: '2026-08-21T15:11:38Z'
+- kind: issue
+  number: 3537
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3537
+  title: Blockwise-scaled split-K GEMM applies slice-0 scale factors to every K slice
+  state: open
+  updated_at: '2026-09-12T02:54:13Z'
+- kind: issue
+  number: 3542
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3542
+  title: 'Validation gaps: grouped/split-K can_implement accept crashing configs;
+    batch grid wraps at 65536; Sm80 EVT mode gates are assert-only'
+  state: open
+  updated_at: '2026-08-31T01:18:38Z'
+- kind: issue
+  number: 3581
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3581
+  title: '[BUG] 02_dump_reg_shmem faults on sm_120: Fragment is 2-byte aligned but
+    accessed through a 16-byte-aligned pointer'
+  state: open
+  updated_at: '2026-09-13T07:55:58Z'
+- kind: issue
+  number: 3594
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-issue
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3594
+  title: '[BUG] CuTe DSL 4.8 dev regresses SM80 SDPA backward compilation (NVVM constraint
+    ''n'')'
+  state: open
+  updated_at: '2026-09-08T17:24:28Z'
+- kind: issue
+  number: 3595
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-issue
+  url: https://github.com/NVIDIA/cutlass/issues/3595
+  title: '[BUG] CuTe DSL 4.8 dev SIGABRTs in TVM-FFI launch for SM100 ragged SDPA
+    (4.7 passes)'
+  state: open
+  updated_at: '2026-09-17T14:10:34Z'
+- kind: pr
+  number: 100
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/100
+  title: Updated mma_sm80.h to avoid perf penalty due to reinterpret_cast<>.
+  state: closed
+  updated_at: '2020-06-15T17:47:13Z'
+- kind: pr
+  number: 220
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/220
+  title: 'Bugfix: typo, make reduction device cases passed'
+  state: closed
+  updated_at: '2021-04-02T13:00:49Z'
+- kind: pr
+  number: 246
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/246
+  title: 'support unalignment input for conv2d fprop stage=2 Fix for issue #242'
+  state: closed
+  updated_at: '2021-09-08T15:40:54Z'
+- kind: pr
+  number: 363
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  url: https://github.com/NVIDIA/cutlass/pull/363
+  title: CUTLASS 2.8
+  state: closed
+  updated_at: '2021-11-19T21:26:40Z'
+- kind: pr
+  number: 366
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  url: https://github.com/NVIDIA/cutlass/pull/366
+  title: Removed trivial copy constructors on parameter classes to enable devi…
+  state: closed
+  updated_at: '2022-03-01T02:34:03Z'
+- kind: pr
+  number: 375
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  url: https://github.com/NVIDIA/cutlass/pull/375
+  title: Updated GEMM performance plot with CUTLASS 2.8 compiled with CUDA 11.5 Toolkit
+  state: closed
+  updated_at: '2021-12-06T19:21:36Z'
+- kind: pr
+  number: 403
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/403
+  title: '[hardswish] correct implmentation'
+  state: closed
+  updated_at: '2022-02-09T19:28:54Z'
+- kind: pr
+  number: 433
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/433
+  title: Fix separate compilation `-dc`
+  state: closed
+  updated_at: '2022-03-22T17:17:38Z'
+- kind: pr
+  number: 616
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  url: https://github.com/NVIDIA/cutlass/pull/616
+  title: upstream applyshape optimization
+  state: closed
+  updated_at: '2022-09-05T03:05:10Z'
+- kind: pr
+  number: 620
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/620
+  title: fix broken link - groued-gemm attention
+  state: closed
+  updated_at: '2022-09-06T20:32:44Z'
+- kind: pr
+  number: 662
+  decision: defer
+  reason: 'example 42 的历史起点；优先抓后续 example 41 的 #828/#992，避免重复阅读旧版。'
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/662
+  title: 'ex42: Fused MHA imported from xFormers'
+  state: closed
+  updated_at: '2022-10-17T14:49:34Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 669
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/669
+  title: Remove excessive includes from examples/41_multi_head_attention
+  state: closed
+  updated_at: '2022-10-22T02:23:15Z'
+- kind: pr
+  number: 670
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  url: https://github.com/NVIDIA/cutlass/pull/670
+  title: Example 43 - DualGemm
+  state: closed
+  updated_at: '2022-10-26T18:04:42Z'
+- kind: pr
+  number: 726
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  - cutlass-sm80-underscore-pr
+  url: https://github.com/NVIDIA/cutlass/pull/726
+  title: Make Python interface work for non-SM80 targets
+  state: closed
+  updated_at: '2022-12-08T02:53:34Z'
+- kind: pr
+  number: 727
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/727
+  title: 'Add missing #include directive'
+  state: closed
+  updated_at: '2022-12-08T23:58:32Z'
+- kind: pr
+  number: 773
+  decision: defer
+  reason: 'BMHK 布局历史更新；先读后续 #828/#992 的完整文件。'
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/773
+  title: xFormer updates to fMHA FW
+  state: closed
+  updated_at: '2023-02-09T04:00:11Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 828
+  decision: include
+  reason: CUTLASS example 41 的 online softmax、attention bias 和 shared-memory PV 组件。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/828
+  title: 'fMHA: Sync FW with xFormers'
+  state: closed
+  updated_at: '2023-02-23T04:25:32Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: attention-mainline
+  priority: P0
+  merged_at: '2023-02-23T04:25:31Z'
+  head_sha: 8b0bb170c1c4c8e7d97d73871399d43de32be938
+  artifact_dir: artifacts/github/NVIDIA--cutlass/pr-828/20260917T165023228733Z
+  local_validation: not-run
+- kind: pr
+  number: 844
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/844
+  title: 'fMHA: Add backward pass'
+  state: closed
+  updated_at: '2023-04-07T00:44:59Z'
+- kind: pr
+  number: 849
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/849
+  title: added support of b2b bmm
+  state: closed
+  updated_at: '2023-04-15T03:20:03Z'
+- kind: pr
+  number: 892
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/892
+  title: Stream-K with broadcast
+  state: closed
+  updated_at: '2023-05-22T23:05:07Z'
+- kind: pr
+  number: 903
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-underscore-pr
+  url: https://github.com/NVIDIA/cutlass/pull/903
+  title: Set larger dynamic shared memory size in GemmSoftmax
+  state: closed
+  updated_at: '2023-04-03T14:01:12Z'
+- kind: pr
+  number: 942
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  url: https://github.com/NVIDIA/cutlass/pull/942
+  title: replace division with multiplication in GELU
+  state: closed
+  updated_at: '2023-05-12T14:57:19Z'
+- kind: pr
+  number: 951
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/951
+  title: Add support for sparse GEMM with row broadcasted bias vector
+  state: closed
+  updated_at: '2023-05-24T14:25:06Z'
+- kind: pr
+  number: 992
+  decision: include
+  reason: example 41 更新：迭代 softmax、同步、寄存器使用和从 shared memory 执行第二次 MMA。
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/992
+  title: Update fMHA kernels
+  state: closed
+  updated_at: '2023-07-13T02:30:47Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: attention-mainline
+  priority: P1
+  merged_at: '2023-07-13T02:30:47Z'
+  head_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  artifact_dir: artifacts/github/NVIDIA--cutlass/pr-992/20260917T165045842476Z
+  local_validation: not-run
+- kind: pr
+  number: 1012
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1012
+  title: set kIsHeavy member variables
+  state: closed
+  updated_at: '2023-10-04T16:38:37Z'
+- kind: pr
+  number: 1084
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  - sm89
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  - cutlass-sm80-pr
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/1084
+  title: 'Support for Mixed Input TensorOp '
+  state: closed
+  updated_at: '2023-09-29T09:59:16Z'
+- kind: pr
+  number: 1153
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1153
+  title: Support ElementD to be void for tma
+  state: closed
+  updated_at: '2024-01-16T23:15:43Z'
+- kind: pr
+  number: 1187
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1187
+  title: fix cp.async L2 prefetch typo
+  state: closed
+  updated_at: '2023-11-28T21:58:04Z'
+- kind: pr
+  number: 1328
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/1328
+  title: Add a missing platform include
+  state: closed
+  updated_at: '2024-02-03T06:30:33Z'
+- kind: pr
+  number: 1350
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1350
+  title: Add couple configs into generator.py for mixed input MM
+  state: closed
+  updated_at: '2024-08-30T12:05:39Z'
+- kind: pr
+  number: 1413
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1413
+  title: Add support for mixed 4-bit/8-bit data types GEMM
+  state: closed
+  updated_at: '2024-08-30T16:52:31Z'
+- kind: pr
+  number: 1471
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/1471
+  title: Add Faster Neighborhood Attention to PUBLICATIONS
+  state: closed
+  updated_at: '2024-07-10T15:09:14Z'
+- kind: pr
+  number: 1553
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1553
+  title: Extend profiler search space for SM89 GEMM
+  state: closed
+  updated_at: '2024-09-19T15:40:30Z'
+- kind: pr
+  number: 1569
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1569
+  title: Update gemm_f16n_f16t_f32t_tensor_op_f32_sm80.cu with include "cutlas…
+  state: closed
+  updated_at: '2024-10-23T16:56:37Z'
+- kind: pr
+  number: 1753
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1753
+  title: Fix EVT for cutlass::gemm::kernel::DefaultGemmWithVisitor's behavior when
+    constructing GemmUniversalAdapter
+  state: closed
+  updated_at: '2024-10-23T16:45:59Z'
+- kind: pr
+  number: 1856
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/1856
+  title: 'fix wrong A/BLayout in MMA_Traits for binary mma and append other MMA_Traits
+    support '
+  state: closed
+  updated_at: '2024-10-24T18:38:36Z'
+- kind: pr
+  number: 2130
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/2130
+  title: Flash MLA support
+  state: closed
+  updated_at: '2025-02-26T03:43:34Z'
+- kind: pr
+  number: 2177
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-pr
+  url: https://github.com/NVIDIA/cutlass/pull/2177
+  title: add support for sm89 in cute and the unit tests
+  state: closed
+  updated_at: '2025-05-04T06:01:17Z'
+- kind: pr
+  number: 2199
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/2199
+  title: fix_missing_stdint
+  state: closed
+  updated_at: '2025-05-02T09:41:11Z'
+- kind: pr
+  number: 2276
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/2276
+  title: '[CUTLASS] Add GNA to PUBLICATIONS.md'
+  state: closed
+  updated_at: '2025-05-02T20:57:20Z'
+- kind: pr
+  number: 2324
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/2324
+  title: Ensure compatibility with "-Wimplicit-fallthrough" when compiling with Clang
+  state: closed
+  updated_at: '2025-09-22T17:52:53Z'
+- kind: pr
+  number: 2351
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/2351
+  title: Fix sgemm_sm80 example bug
+  state: closed
+  updated_at: '2025-07-31T02:12:33Z'
+- kind: pr
+  number: 2378
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-pr
+  - sm89-local-attention-cutlass-ada-fp8
+  url: https://github.com/NVIDIA/cutlass/pull/2378
+  title: support fp16 accmulator for sm89 fp8 mma
+  state: closed
+  updated_at: '2025-07-31T02:12:09Z'
+- kind: pr
+  number: 2466
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/2466
+  title: Example 77 add blackwell fmha bwd for MLA shape
+  state: closed
+  updated_at: '2025-07-24T22:41:12Z'
+- kind: pr
+  number: 2582
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/2582
+  title: Fix Copy_Atom type mismatch in sgemm_sm80.cu
+  state: closed
+  updated_at: '2025-09-04T23:56:18Z'
+- kind: pr
+  number: 2875
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/2875
+  title: '[cute] Add constexpr specifier to make_tiled_copy'
+  state: closed
+  updated_at: '2026-01-03T20:39:43Z'
+- kind: pr
+  number: 2928
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/2928
+  title: Replace CUDA driver API with runtime API
+  state: closed
+  updated_at: '2026-01-11T18:37:04Z'
+- kind: pr
+  number: 3009
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-a100-pr
+  url: https://github.com/NVIDIA/cutlass/pull/3009
+  title: '[CuTeDSL] implment a cta-level norm example (both layernorm and rmsnorm)'
+  state: closed
+  updated_at: '2026-02-14T09:54:03Z'
+- kind: pr
+  number: 3103
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/3103
+  title: Add CuTe DSL JAX demo
+  state: closed
+  updated_at: '2026-04-02T10:00:42Z'
+- kind: pr
+  number: 3140
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm80
+  discovery_recipes:
+  - cutlass-sm80-pr
+  url: https://github.com/NVIDIA/cutlass/pull/3140
+  title: correct BLayout stride in SM80 m16n8k32 int4 MMA traits
+  state: closed
+  updated_at: '2026-04-21T09:17:04Z'
+- kind: pr
+  number: 3251
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/3251
+  title: '[CLI] Update FMHA & improve perf'
+  state: closed
+  updated_at: '2026-05-25T07:56:09Z'
+- kind: pr
+  number: 3278
+  decision: include
+  reason: 修正 2.x PredicatedTileIterator 的 ScatterD 指针推进，供 partition/reverse 组件审查。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/3278
+  title: Fix the ScatterD issue in predicated_tile_iterator
+  state: closed
+  updated_at: '2026-08-18T01:20:28Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: indexing-component
+  priority: P1
+  merged_at: '2026-08-18T01:20:28Z'
+  head_sha: dbea1dcc4979c88353d661f898a6e2f0b047ba4e
+  artifact_dir: artifacts/github/NVIDIA--cutlass/pr-3278/20260917T165052550363Z
+  local_validation: not-run
+- kind: pr
+  number: 3394
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-pr
+  - sm89-local-attention-cutlass-ada-fp8
+  url: https://github.com/NVIDIA/cutlass/pull/3394
+  title: Fix SM89 FP8 blockwise scale indexing under threadblock swizzling
+  state: closed
+  updated_at: '2026-08-06T02:01:32Z'
+- kind: pr
+  number: 3410
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-pr
+  url: https://github.com/NVIDIA/cutlass/pull/3410
+  title: Require CUDA 12.9 for SM121 default architectures
+  state: closed
+  updated_at: '2026-09-03T01:26:23Z'
+- kind: pr
+  number: 3436
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-cutlass-attention
+  url: https://github.com/NVIDIA/cutlass/pull/3436
+  title: Fix sixteen broken relative links in the docs
+  state: closed
+  updated_at: '2026-09-03T01:15:25Z'
+- kind: pr
+  number: 3464
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - cutlass-sm89-pr
+  url: https://github.com/NVIDIA/cutlass/pull/3464
+  title: 'fix(tvm-ffi): env stream detection for tuple parameters'
+  state: closed
+  updated_at: '2026-08-20T01:21:40Z'
+last_attempt_at: '2026-09-17T16:46:43.297402+00:00'
+last_search_partial: false
+last_queries:
+- id: sm89-local-attention-cutlass-attention
+  architecture: sm89
+  kind: pr
+  query: repo:NVIDIA/cutlass is:pr attention is:merged
+  repo: NVIDIA/cutlass
+- id: sm89-local-attention-cutlass-ada-fp8
+  architecture: sm89
+  kind: pr
+  query: repo:NVIDIA/cutlass is:pr fp8 sm89 is:merged
+  repo: NVIDIA/cutlass

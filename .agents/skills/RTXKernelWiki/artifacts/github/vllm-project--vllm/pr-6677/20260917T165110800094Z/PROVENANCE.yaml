@@ -1,0 +1,78 @@
+schema_version: 1
+origin_url: https://github.com/vllm-project/vllm/pull/6677
+repo: vllm-project/vllm
+number: 6677
+type: pr
+retrieved_at: 20260917T165110800094Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 18985
+  sha256: 3ae3f49c82a0fbd9966b3fd9a05fd25a5143a25caa6505bb9c4d6a20fd1d1b64
+- path: comments.json
+  bytes: 13781
+  sha256: 2a9aec8cdf758d492f091ec0d8bb12dad2355b9c5bfde3eaf8a1e252e42b482e
+- path: pull.json
+  bytes: 35145
+  sha256: 7adfa6be7072a38dc7d8150bdc0caaa33c9147f11c5e73011ae2db4887522f16
+- path: changed-files.json
+  bytes: 67027
+  sha256: e75ab8eff3a8cd8ecfc1f89dbf786452a6377171046cc433b859746f8c1c3798
+- path: reviews.json
+  bytes: 5650
+  sha256: 0f1860f1ec0d05d140397b3762120ccd1d36f27a337d03c1b743c46e20bd80d0
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 62664
+  sha256: f14a01397120b16b1d16d360d631d644096d6b54ea647e58833b484accfe3e60
+- path: key-files/head/csrc/quantization/cutlass_w8a8/scaled_mm_c2x.cu
+  bytes: 6911
+  sha256: 8b5aa36665dc17296a16ffca2b64dac6ca5de64fc8f7edfa11991d20d3b1b4a0
+  upstream_path: csrc/quantization/cutlass_w8a8/scaled_mm_c2x.cu
+  source_sha: 163e091b3015471cf438345e430790af638588de
+  change_status: modified
+  source_url: https://github.com/vllm-project/vllm/blob/163e091b3015471cf438345e430790af638588de/csrc/quantization/cutlass_w8a8/scaled_mm_c2x.cu
+- path: key-files/head/csrc/quantization/cutlass_w8a8/scaled_mm_c2x.cuh
+  bytes: 12274
+  sha256: 0f920dd165447274db2817c4f42b1f5a7eb02f19a1f3c1e154cb53582c4410df
+  upstream_path: csrc/quantization/cutlass_w8a8/scaled_mm_c2x.cuh
+  source_sha: 163e091b3015471cf438345e430790af638588de
+  change_status: added
+  source_url: https://github.com/vllm-project/vllm/blob/163e091b3015471cf438345e430790af638588de/csrc/quantization/cutlass_w8a8/scaled_mm_c2x.cuh
+- path: key-files/head/csrc/quantization/cutlass_w8a8/scaled_mm_c2x_sm80_dispatch.cuh
+  bytes: 5827
+  sha256: 9cde6fda28687ead7dd850ebd9cfceec64ba442b3895c500114df6b4f1d72c0a
+  upstream_path: csrc/quantization/cutlass_w8a8/scaled_mm_c2x_sm80_dispatch.cuh
+  source_sha: 163e091b3015471cf438345e430790af638588de
+  change_status: added
+  source_url: https://github.com/vllm-project/vllm/blob/163e091b3015471cf438345e430790af638588de/csrc/quantization/cutlass_w8a8/scaled_mm_c2x_sm80_dispatch.cuh
+- path: key-files/head/csrc/quantization/cutlass_w8a8/scaled_mm_c2x_sm89_dispatch.cuh
+  bytes: 16084
+  sha256: 17bc65f2c1e723cc4f4c7b3e6e150523cde006354e7d84160882d090139d9798
+  upstream_path: csrc/quantization/cutlass_w8a8/scaled_mm_c2x_sm89_dispatch.cuh
+  source_sha: 163e091b3015471cf438345e430790af638588de
+  change_status: added
+  source_url: https://github.com/vllm-project/vllm/blob/163e091b3015471cf438345e430790af638588de/csrc/quantization/cutlass_w8a8/scaled_mm_c2x_sm89_dispatch.cuh
+- path: page.md
+  bytes: 17593
+  sha256: 5f13dbf80b006add40fbbb3c6b13ff5eb94a1f6f6e95560b1907e4c50e37d947
+skipped: []
+errors: []
+truncations: []
+title: '[Kernel] Tuned FP8 Kernels for Ada Lovelace'
+updated_at: '2024-07-29T15:42:38Z'
+status: merged
+head_sha: 163e091b3015471cf438345e430790af638588de
+base_sha: 3bbb4936dc5aa7737750410ab4b4647817dcf9a3
+merged_at: '2024-07-29T15:42:36Z'
+merge_commit_sha: 766435e660a786933392eb8ef0a873bc38cf0c8b
+changed_files: 6
+kernel_files_selected: 4
+key_file_policy: CUDA/C++/PTX/MLIR and kernel-related Python; exclude docs, CI, tests
+  and benchmarks
+kernel_files_captured: 4

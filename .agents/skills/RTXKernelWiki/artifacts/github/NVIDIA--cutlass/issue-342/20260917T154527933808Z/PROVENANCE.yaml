@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/342
+repo: NVIDIA/cutlass
+number: 342
+type: issue
+retrieved_at: 20260917T154527933808Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 9953
+  sha256: 4d19c3f6b8a572b63d8abc1c091062483097525a7ee1b2de7205eb861b8162fe
+- path: comments.json
+  bytes: 17097
+  sha256: 9c7ca62c48413fdfbe2d44e041e7242a6dcf58bab36a29fdfa491b3dbeee98c7
+- path: page.md
+  bytes: 11656
+  sha256: 883fec86c5ba7aed7e4d1bb735d28def92e928bd3b55a1377a35cc07a72f447f
+skipped: []
+errors: []
+truncations: []
+title: Use cutlass in MAGMA
+updated_at: '2024-01-03T05:43:52Z'
+status: closed
+kernel_files_captured: 0

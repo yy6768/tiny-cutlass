@@ -1,0 +1,35 @@
+[
+  {
+    "original": "artifacts/github/SHI-Labs--NATTEN/pr-111/20260917T164959672620Z",
+    "archive": "candidates/github/capture-failures/SHI-Labs--NATTEN-pr-111-20260917T164959672620Z",
+    "errors": [
+      "gh: Sorry, the diff exceeded the maximum number of lines (20000) (HTTP 406)"
+    ],
+    "skipped": [],
+    "truncations": [],
+    "superseded_by": "artifacts/github/SHI-Labs--NATTEN/pr-111/20260917T171022986630Z"
+  },
+  {
+    "original": "artifacts/github/SHI-Labs--NATTEN/pr-111/20260917T165233719645Z",
+    "archive": "candidates/github/capture-failures/SHI-Labs--NATTEN-pr-111-20260917T165233719645Z",
+    "errors": [
+      "Command '['git', '-C', 'C:\\\\Users\\\\12587\\\\AppData\\\\Local\\\\Temp\\\\rtx-wiki-diff-yw_s99gt', 'diff', '--no-ext-diff', '--no-textconv', '--binary', '--full-index', 'bdee155f61f6cc5105b24280482a1745731d480e', 'ed95abfec5f1698f709d099c97baf113fbd6b2da', '--']' timed out after 120 seconds"
+    ],
+    "skipped": [],
+    "truncations": [],
+    "superseded_by": "artifacts/github/SHI-Labs--NATTEN/pr-111/20260917T171022986630Z"
+  },
+  {
+    "original": "artifacts/github/SHI-Labs--NATTEN/pr-111/20260917T170009912875Z",
+    "archive": "candidates/github/capture-failures/SHI-Labs--NATTEN-pr-111-20260917T170009912875Z",
+    "errors": [],
+    "skipped": [
+      {
+        "upstream_path": "csrc/autogen/include/natten_autogen/cuda/fna/kernels.h",
+        "reason": "file exceeds 1048576 byte limit"
+      }
+    ],
+    "truncations": [],
+    "superseded_by": "artifacts/github/SHI-Labs--NATTEN/pr-111/20260917T171022986630Z"
+  }
+]

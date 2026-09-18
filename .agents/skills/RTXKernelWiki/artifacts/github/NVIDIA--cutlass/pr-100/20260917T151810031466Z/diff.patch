@@ -1,0 +1,436 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index b92893e85d..138161065b 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -9,6 +9,7 @@
+     * Tensor Float 32, BFloat16, and double-precision data types
+     * Mixed integer data types (int8, int4, bin1)
+    * Asynchronous copy for deep software pipelines via [`cp.async`](https://docs.nvidia.com/cuda/parallel-thread-execution)   
++   * Described in [GTC 2020 Webinar (SR 21745)](https://developer.nvidia.com/gtc/2020/video/s21745) (free registration required)
+  * Features:
+    * SDK examples showing GEMM fused with bias+relu and fused GEMM+GEMM
+    * Complex-valued GEMMs targeting NVIDIA Ampere Tensor Cores in double-precision and Tensor Float 32
+diff --git a/README.md b/README.md
+index c1507c0366..b0a91e77c6 100644
+--- a/README.md
++++ b/README.md
+@@ -37,6 +37,7 @@ CUTLASS 2.2 is a significant update to CUTLASS adding:
+ - Coverage of [NVIDIA Ampere Architecture features](https://devblogs.nvidia.com/nvidia-ampere-architecture-in-depth/)
+ - Tensor Core-accelerated GEMMs targeting Tensor Float 32, BFloat16, and double-precision data types
+ - Deep software pipelines using asynchronous copy
++- Described in [GTC 2020 Webinar (SR 21745)](https://developer.nvidia.com/gtc/2020/video/s21745)
+ - Intended to be compiled with [CUDA 11 Toolkit](https://developer.nvidia.com/cuda-toolkit)
+ 
+ # What's New in CUTLASS 2.1
+diff --git a/examples/03_visualize_layout/CMakeLists.txt b/examples/03_visualize_layout/CMakeLists.txt
+index 5a08c0f8d0..e2bb283489 100644
+--- a/examples/03_visualize_layout/CMakeLists.txt
++++ b/examples/03_visualize_layout/CMakeLists.txt
+@@ -20,15 +20,9 @@
+ # STRICT LIABILITY, OR TOR (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+-cutlass_add_executable(
++cutlass_example_add_executable(
+   03_visualize_layout
+   visualize_layout.cpp
+   register_layout.cu
+   )
+ 
+-target_link_libraries(
+-  03_visualize_layout
+-  PRIVATE
+-  CUTLASS
+-  cutlass_tools_util_includes
+-  )
+diff --git a/examples/06_splitK_gemm/splitk_gemm.cu b/examples/06_splitK_gemm/splitk_gemm.cu
+index f0e1d5783d..6e01a10162 100644
+--- a/examples/06_splitK_gemm/splitk_gemm.cu
++++ b/examples/06_splitK_gemm/splitk_gemm.cu
+@@ -182,10 +182,12 @@ int run() {
+     return -1;
+   }
+ 
+-  if (!(props.major >= 7)) {
+-    std::cerr << "Volta Tensor Ops must be run on a machine with compute capability at least 70."
++  if (props.major != 7) {
++    std::cerr << "Volta Tensor Ops must be run on a machine with compute capability of 70, 72, or 75."
+               << std::endl;
+-    return -1;
++
++    // Return 0 so tests pass if run on unsupported architectures or CUDA Toolkits.
++    return 0;
+   }
+ 
+   //
+diff --git a/examples/07_volta_tensorop_gemm/volta_tensorop_gemm.cu b/examples/07_volta_tensorop_gemm/volta_tensorop_gemm.cu
+index 208c4f645e..ac27fa177d 100644
+--- a/examples/07_volta_tensorop_gemm/volta_tensorop_gemm.cu
++++ b/examples/07_volta_tensorop_gemm/volta_tensorop_gemm.cu
+@@ -198,10 +198,12 @@ int run() {
+     return -1;
+   }
+ 
+-  if (!(props.major >= 7)) {
+-    std::cerr << "Volta Tensor Ops must be run on a machine with compute capability at least 70."
++  if (props.major != 7) {
++    std::cerr << "Volta Tensor Ops must be run on a machine with compute capability of 70, 72, or 75."
+               << std::endl;
+-    return -1;
++
++    // Return 0 so tests are considered passing if run on unsupported architectures or CUDA Toolkits.
++    return 0;
+   }
+ 
+   const int length_m = 5120;
+diff --git a/examples/08_turing_tensorop_gemm/turing_tensorop_gemm.cu b/examples/08_turing_tensorop_gemm/turing_tensorop_gemm.cu
+index d7ba833193..d18a4e6ab7 100644
+--- a/examples/08_turing_tensorop_gemm/turing_tensorop_gemm.cu
++++ b/examples/08_turing_tensorop_gemm/turing_tensorop_gemm.cu
+@@ -208,7 +208,9 @@ int run() {
+   if (!((props.major * 10 + props.minor) >= 75)) {
+     std::cerr << "Turing Tensor Core operations must be run on a machine with compute capability at least 75."
+               << std::endl;
+-    return -1;
++
++    // Return 0 so tests are considered passing if run on unsupported platforms.
++    return 0;
+   }
+ 
+   const int length_m = 5120;
+diff --git a/examples/CMakeLists.txt b/examples/CMakeLists.txt
+index 3da7ae4521..99379fe45a 100644
+--- a/examples/CMakeLists.txt
++++ b/examples/CMakeLists.txt
+@@ -44,9 +44,18 @@ function(cutlass_example_add_executable NAME)
+     ${CUTLASS_EXAMPLES_COMMON_SOURCE_DIR}
+     )
+ 
++  add_custom_target(
++    test_${NAME}
++    COMMAND
++    ${CUTLASS_TEST_EXECUTION_ENVIRONMENT} $<TARGET_FILE:${NAME}>
++  DEPENDS
++    ${NAME}
++    )
++
+ endfunction()
+ 
+ add_custom_target(cutlass_examples)
++add_custom_target(test_examples)
+ 
+ foreach(EXAMPLE
+   00_basic_gemm
+@@ -66,5 +75,6 @@ foreach(EXAMPLE
+ 
+   add_subdirectory(${EXAMPLE})
+   add_dependencies(cutlass_examples ${EXAMPLE})
++  add_dependencies(test_examples test_${EXAMPLE})
+ 
+ endforeach()
+diff --git a/include/cutlass/arch/mma.h b/include/cutlass/arch/mma.h
+index 74c2469543..d6ea99886e 100644
+--- a/include/cutlass/arch/mma.h
++++ b/include/cutlass/arch/mma.h
+@@ -164,4 +164,5 @@ struct Mma<gemm::GemmShape<1, 1, 1>, 1, ElementA, LayoutA, ElementB, LayoutB, El
+ #include "cutlass/arch/mma_sm61.h"
+ #include "cutlass/arch/mma_sm70.h" 
+ #include "cutlass/arch/mma_sm75.h" 
++#include "cutlass/arch/mma_sm80.h"
+ /////////////////////////////////////////////////////////////////////////////////////////////////
+diff --git a/include/cutlass/arch/mma_sm80.h b/include/cutlass/arch/mma_sm80.h
+index 445ec388dc..d75aa1336c 100644
+--- a/include/cutlass/arch/mma_sm80.h
++++ b/include/cutlass/arch/mma_sm80.h
+@@ -98,17 +98,17 @@ struct Mma<
+ 
+   uint32_t const *A = reinterpret_cast<uint32_t const *>(&a);
+   uint32_t const *B = reinterpret_cast<uint32_t const *>(&b);
+-  uint32_t const *C = reinterpret_cast<uint32_t const *>(&c);
+-  uint32_t *D = reinterpret_cast<uint32_t *>(&d);
++  float const *C = reinterpret_cast<float const *>(&c);
++  float *D = reinterpret_cast<float *>(&d);
+ 
+   asm(
+       "mma.sync.aligned.m16n8k8.row.col.f32.bf16.bf16.f32 "
+       "{%0,%1,%2,%3}, {%4,%5}, {%6}, {%7,%8,%9,%10};\n"
+-      : "=r"(D[0]), "=r"(D[1]), "=r"(D[2]), "=r"(D[3])
++      : "=f"(D[0]), "=f"(D[1]), "=f"(D[2]), "=f"(D[3])
+       : 
+         "r"(A[0]), "r"(A[1]), 
+         "r"(B[0]), 
+-        "r"(C[0]), "r"(C[1]), "r"(C[2]), "r"(C[3])
++        "f"(C[0]), "f"(C[1]), "f"(C[2]), "f"(C[3])
+   );
+ 
+ #else
+@@ -341,15 +341,15 @@ struct Mma<
+ 
+     uint32_t const *A = reinterpret_cast<uint32_t const *>(&a);
+     uint32_t const *B = reinterpret_cast<uint32_t const *>(&b);
+-    uint32_t const *C = reinterpret_cast<uint32_t const *>(&c);
+-    uint32_t *D = reinterpret_cast<uint32_t *>(&d);
++    float const *C = reinterpret_cast<float const *>(&c);
++    float *D = reinterpret_cast<float *>(&d);
+ 
+     asm volatile(
+         "mma.sync.aligned.m16n8k16.row.col.f32.bf16.bf16.f32 "
+         "{%0,%1,%2,%3}, {%4,%5,%6,%7}, {%8,%9}, {%10,%11,%12,%13};\n"
+-        : "=r"(D[0]), "=r"(D[1]), "=r"(D[2]), "=r"(D[3])
++        : "=f"(D[0]), "=f"(D[1]), "=f"(D[2]), "=f"(D[3])
+         : "r"(A[0]), "r"(A[1]), "r"(A[2]), "r"(A[3]), "r"(B[0]), "r"(B[1]),
+-          "r"(C[0]), "r"(C[1]), "r"(C[2]), "r"(C[3]));
++          "f"(C[0]), "f"(C[1]), "f"(C[2]), "f"(C[3]));
+ 
+ #else
+     assert(0);
+@@ -402,15 +402,15 @@ struct Mma<
+ 
+     uint32_t const *A = reinterpret_cast<uint32_t const *>(&a);
+     uint32_t const *B = reinterpret_cast<uint32_t const *>(&b);
+-    uint32_t const *C = reinterpret_cast<uint32_t const *>(&c);
+-    uint32_t *D = reinterpret_cast<uint32_t *>(&d);
++    float const *C = reinterpret_cast<float const *>(&c);
++    float *D = reinterpret_cast<float *>(&d);
+ 
+     asm volatile(
+         "mma.sync.aligned.m16n8k16.row.col.f32.f16.f16.f32  {%0,%1,%2,%3}, {%4,%5,%6,%7}, {%8,%9}, "
+         "{%10,%11,%12,%13};\n"
+-        : "=r"(D[0]), "=r"(D[1]), "=r"(D[2]), "=r"(D[3])
++        : "=f"(D[0]), "=f"(D[1]), "=f"(D[2]), "=f"(D[3])
+         : "r"(A[0]), "r"(A[1]), "r"(A[2]), "r"(A[3]), "r"(B[0]), "r"(B[1]),
+-          "r"(C[0]), "r"(C[1]), "r"(C[2]), "r"(C[3]));
++          "f"(C[0]), "f"(C[1]), "f"(C[2]), "f"(C[3]));
+ 
+ #else
+     assert(0);
+@@ -461,15 +461,15 @@ struct Mma<
+ 
+ #if defined(CUTLASS_ARCH_MMA_SM80_ENABLED)
+ 
+-  uint64_t const & A = reinterpret_cast<uint64_t const &>(a);
+-  uint64_t const & B = reinterpret_cast<uint64_t const &>(b);
++  double const & A = reinterpret_cast<double const &>(a);
++  double const & B = reinterpret_cast<double const &>(b);
+ 
+-  uint64_t const *C = reinterpret_cast<uint64_t const *>(&c);
+-  uint64_t *D = reinterpret_cast<uint64_t *>(&d);
++  double const *C = reinterpret_cast<double const *>(&c);
++  double *D = reinterpret_cast<double *>(&d);
+ 
+   asm volatile("mma.sync.aligned.m8n8k4.row.col.f64.f64.f64.f64 {%0,%1}, {%2}, {%3}, {%4,%5};\n"
+-      : "=l"(D[0]), "=l"(D[1])
+-      : "l"(A), "l"(B), "l"(C[0]), "l"(C[1]));
++      : "=d"(D[0]), "=d"(D[1])
++      : "d"(A), "d"(B), "d"(C[0]), "d"(C[1]));
+ 
+ #else
+     assert(0);
+diff --git a/media/docs/quickstart.md b/media/docs/quickstart.md
+index 4587b7d212..f40c41ec4a 100644
+--- a/media/docs/quickstart.md
++++ b/media/docs/quickstart.md
+@@ -161,6 +161,7 @@ compiled as C++11 or greater.
+ #include <iostream>
+ #include <cutlass/cutlass.h>
+ #include <cutlass/numeric_types.h>
++#include <cutlass/core_io.h>
+ 
+ int main() {
+ 
+@@ -174,10 +175,13 @@ int main() {
+ 
+ ## Launching a GEMM kernel in CUDA
+ 
+-**Example:** launch a mixed-precision GEMM targeting Turing Tensor Cores.
++**Example:** launch a mixed-precision GEMM targeting Turing Tensor Cores. 
++
++_Note, this example uses CUTLASS Utilities. Be sure `tools/util/include` is listed as an include path._
+ ```c++
+ #include <cutlass/numeric_types.h>
+ #include <cutlass/gemm/device/gemm.h>
++
+ #include <cutlass/util/host_tensor.h>
+ 
+ int main() {
+diff --git a/tools/util/include/cutlass/util/host_tensor_planar_complex.h b/tools/util/include/cutlass/util/host_tensor_planar_complex.h
+index ed85cf2237..3a31e29a43 100644
+--- a/tools/util/include/cutlass/util/host_tensor_planar_complex.h
++++ b/tools/util/include/cutlass/util/host_tensor_planar_complex.h
+@@ -276,6 +276,9 @@ class HostTensorPlanarComplex {
+   /// Gets pointer to device data with a pointer offset
+   Element const * device_data_ptr_offset(LongIndex ptr_element_offset) const { return device_.get() + ptr_element_offset; }
+ 
++  /// Gets a pointer to the device data imaginary part
++  Element * device_data_imag() { return device_.get() + imaginary_stride(); }
++
+   /// Accesses the tensor reference pointing to data
+   TensorRef host_ref(LongIndex ptr_element_offset=0) { 
+     return TensorRef(host_data_ptr_offset(ptr_element_offset), layout_, imaginary_stride()); 
+@@ -416,6 +419,166 @@ class HostTensorPlanarComplex {
+           device_data(), host_data(), imaginary_stride() * 2);
+     }
+   }
++
++  /// Copy data from a caller-supplied device pointer into host memory.
++  void copy_in_device_to_host(
++    Element const* ptr_device_real,   ///< source device memory
++    Element const* ptr_device_imag,   ///< source device memory
++    LongIndex count = -1) {           ///< number of elements to transfer; if negative, entire tensor is overwritten.
++
++    if (count < 0) {
++      count = capacity();
++    }
++    else {
++      count = __NV_STD_MIN(capacity(), count);
++    }
++
++    device_memory::copy_to_host(
++      host_data(), ptr_device_real, count);
++
++    device_memory::copy_to_host(
++      host_data_imag(), ptr_device_imag, count);
++  }
++
++  /// Copy data from a caller-supplied device pointer into host memory.
++  void copy_in_device_to_device(
++    Element const* ptr_device_real,   ///< source device memory
++    Element const* ptr_device_imag,   ///< source device memory
++    LongIndex count = -1) {           ///< number of elements to transfer; if negative, entire tensor is overwritten.
++
++    if (count < 0) {
++      count = capacity();
++    }
++    else {
++      count = __NV_STD_MIN(capacity(), count);
++    }
++
++    device_memory::copy_device_to_device(
++      device_data(), ptr_device_real, count);
++
++    device_memory::copy_device_to_device(
++      device_data_imag(), ptr_device_imag, count);
++  }
++
++  /// Copy data from a caller-supplied device pointer into host memory.
++  void copy_in_host_to_device(
++    Element const* ptr_host_real,      ///< source host memory
++    Element const* ptr_host_imag,      ///< source host memory
++    LongIndex count = -1) {            ///< number of elements to transfer; if negative, entire tensor is overwritten.
++
++    if (count < 0) {
++      count = capacity();
++    }
++    else {
++      count = __NV_STD_MIN(capacity(), count);
++    }
++    
++    device_memory::copy_to_device(
++      device_data(), ptr_host_real, count);
++    
++    device_memory::copy_to_device(
++      device_data_imag(), ptr_host_imag, count);
++  }
++
++  /// Copy data from a caller-supplied device pointer into host memory.
++  void copy_in_host_to_host(
++    Element const* ptr_host_real,     ///< source host memory
++    Element const* ptr_host_imag,     ///< source host memory
++    LongIndex count = -1) {           ///< number of elements to transfer; if negative, entire tensor is overwritten.
++
++    if (count < 0) {
++      count = capacity();
++    }
++    else {
++      count = __NV_STD_MIN(capacity(), count);
++    }
++
++    device_memory::copy_host_to_host(
++      host_data(), ptr_host_real, count);
++
++    device_memory::copy_host_to_host(
++      host_data_imag(), ptr_host_imag, count);
++  }
++
++  /// Copy data from a caller-supplied device pointer into host memory.
++  void copy_out_device_to_host(
++    Element * ptr_host_real,           ///< source device memory
++    Element * ptr_host_imag,           ///< source device memory
++    LongIndex count = -1) const {      ///< number of elements to transfer; if negative, entire tensor is overwritten.
++
++    if (count < 0) {
++      count = capacity();
++    }
++    else {
++      count = __NV_STD_MIN(capacity(), count);
++    }
++
++    device_memory::copy_to_host(
++      ptr_host_real, device_data(), count);
++
++    device_memory::copy_to_host(
++      ptr_host_imag, device_data_imag(), count);
++  }
++
++  /// Copy data from a caller-supplied device pointer into host memory.
++  void copy_out_device_to_device(
++    Element * ptr_device_real,        ///< source device memory
++    Element * ptr_device_imag,        ///< source device memory
++    LongIndex count = -1) const {     ///< number of elements to transfer; if negative, entire tensor is overwritten.
++
++    if (count < 0) {
++      count = capacity();
++    }
++    else {
++      count = __NV_STD_MIN(capacity(), count);
++    }
++
++    device_memory::copy_device_to_device(
++      ptr_device_real, device_data(), count);
++
++    device_memory::copy_device_to_device(
++      ptr_device_imag, device_data_imag(), count);
++  }
++
++  /// Copy data from a caller-supplied device pointer into host memory.
++  void copy_out_host_to_device(
++    Element * ptr_device_real,        ///< source device memory
++    Element * ptr_device_imag,        ///< source device memory
++    LongIndex count = -1) const {     ///< number of elements to transfer; if negative, entire tensor is overwritten.
++
++    if (count < 0) {
++      count = capacity();
++    }
++    else {
++      count = __NV_STD_MIN(capacity(), count);
++    }
++    
++    device_memory::copy_to_device(
++      ptr_device_real, host_data(), count);
++    
++    device_memory::copy_to_device(
++      ptr_device_imag, host_data_imag(), count);
++  }
++
++  /// Copy data from a caller-supplied device pointer into host memory.
++  void copy_out_host_to_host(
++    Element * ptr_host_real,          ///< source host memory
++    Element * ptr_host_imag,          ///< source host memory
++    LongIndex count = -1) const {     ///< number of elements to transfer; if negative, entire tensor is overwritten.
++
++    if (count < 0) {
++      count = capacity();
++    }
++    else {
++      count = __NV_STD_MIN(capacity(), count);
++    }
++
++    device_memory::copy_host_to_host(
++      ptr_host_real, host_data(), count);
++
++    device_memory::copy_host_to_host(
++      ptr_host_imag, host_data_imag(), count);
++  }
+ };
+ 
+ ///////////////////////////////////////////////////////////////////////////////////////////////////

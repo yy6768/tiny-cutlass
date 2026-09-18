@@ -1,0 +1,625 @@
+repo: SHI-Labs/NATTEN
+candidates:
+- kind: pr
+  number: 36
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-window
+  url: https://github.com/SHI-Labs/NATTEN/pull/36
+  title: Windows support
+  state: closed
+  updated_at: '2025-07-13T17:30:48Z'
+- kind: pr
+  number: 38
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/38
+  title: Implicit GEMM NA and more
+  state: closed
+  updated_at: '2025-07-13T17:30:55Z'
+- kind: pr
+  number: 47
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/47
+  title: Implicit GEMM NA for SM70 and SM75
+  state: closed
+  updated_at: '2023-09-21T05:47:42Z'
+- kind: pr
+  number: 76
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-mask
+  url: https://github.com/SHI-Labs/NATTEN/pull/76
+  title: Nested Tensor Support
+  state: closed
+  updated_at: '2025-07-13T17:33:07Z'
+- kind: pr
+  number: 81
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/81
+  title: Fix building fat binaries
+  state: closed
+  updated_at: '2024-01-09T21:56:08Z'
+- kind: pr
+  number: 87
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/87
+  title: Allow broadcasting cross attention tokens across batch
+  state: closed
+  updated_at: '2024-01-12T23:43:49Z'
+- kind: pr
+  number: 109
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/109
+  title: Fix NGC builds
+  state: closed
+  updated_at: '2024-03-06T18:32:36Z'
+- kind: pr
+  number: 111
+  decision: include
+  reason: FNA forward：1D/2D/3D 邻域 mask、dilation、相对位置偏置与 QK→softmax→PV 融合。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  - sm89-local-attention-natten-mask
+  - sm89-local-attention-natten-window
+  url: https://github.com/SHI-Labs/NATTEN/pull/111
+  title: Fused neighborhood attention
+  state: closed
+  updated_at: '2024-03-10T18:57:14Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: attention-mainline
+  priority: P0
+  merged_at: '2024-03-08T05:35:03Z'
+  head_sha: ed95abfec5f1698f709d099c97baf113fbd6b2da
+  artifact_dir: artifacts/github/SHI-Labs--NATTEN/pr-111/20260917T171022986630Z
+  local_validation: not-run
+- kind: pr
+  number: 114
+  decision: include
+  reason: 为 SM86/SM89 排除 64×128×128 GEMM 配置，避免照搬 A100 的 shared-memory 用量。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/114
+  title: Disable 64x128x128 GEMM config for SM86 and 89
+  state: closed
+  updated_at: '2024-03-16T02:50:58Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: resource-constraint
+  priority: P0
+  merged_at: '2024-03-16T02:50:54Z'
+  head_sha: 12ed5ea7ed92c64ef1327a439382525f4e35b034
+  artifact_dir: artifacts/github/SHI-Labs--NATTEN/pr-114/20260917T164959670620Z
+  local_validation: not-run
+- kind: pr
+  number: 118
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-window
+  url: https://github.com/SHI-Labs/NATTEN/pull/118
+  title: 'feat: add msvc build support'
+  state: closed
+  updated_at: '2024-03-26T22:36:18Z'
+- kind: pr
+  number: 123
+  decision: defer
+  reason: '以 backward 为主；本轮 forward 先读 #111/#337，#341 记录后续 backward 边界修正。'
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/123
+  title: FNA backward
+  state: closed
+  updated_at: '2025-07-13T17:31:44Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 138
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/138
+  title: Fix autotuner warnings
+  state: closed
+  updated_at: '2024-06-04T12:57:07Z'
+- kind: pr
+  number: 145
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/145
+  title: Fix unfused permute in docs/fna/fused-vs-unfused.md
+  state: closed
+  updated_at: '2024-06-25T23:55:39Z'
+- kind: pr
+  number: 185
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/185
+  title: Fix shape checks and flop counter
+  state: closed
+  updated_at: '2024-12-02T15:33:24Z'
+- kind: pr
+  number: 189
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/189
+  title: Experimental interface for torch ops
+  state: closed
+  updated_at: '2025-01-03T14:26:35Z'
+- kind: pr
+  number: 203
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-mask
+  url: https://github.com/SHI-Labs/NATTEN/pull/203
+  title: Add flex attention backend
+  state: closed
+  updated_at: '2025-03-04T23:29:02Z'
+- kind: pr
+  number: 204
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/204
+  title: Add checks for Flex attention implementation, disable one test for SM89 BF16
+  state: closed
+  updated_at: '2025-03-06T21:36:36Z'
+- kind: pr
+  number: 215
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/215
+  title: v0.17.5 release
+  state: closed
+  updated_at: '2025-03-17T22:42:21Z'
+- kind: pr
+  number: 226
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  - sm89-local-attention-natten-window
+  url: https://github.com/SHI-Labs/NATTEN/pull/226
+  title: Release/v0.20.0
+  state: closed
+  updated_at: '2025-06-07T23:21:46Z'
+- kind: pr
+  number: 231
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/231
+  title: Allow different head dim for value
+  state: closed
+  updated_at: '2025-06-11T23:49:59Z'
+- kind: pr
+  number: 234
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/234
+  title: Build fix for Blackwell GPUs (Sm100 and Sm120)
+  state: closed
+  updated_at: '2025-06-16T14:44:22Z'
+- kind: pr
+  number: 245
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/245
+  title: Release v0.21.0
+  state: closed
+  updated_at: '2025-07-14T22:18:11Z'
+- kind: pr
+  number: 261
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/261
+  title: Support Blackwell Ultra (SM103)
+  state: closed
+  updated_at: '2025-10-09T00:46:43Z'
+- kind: pr
+  number: 266
+  decision: exclude
+  reason: FP8 仅进入 Blackwell FMHA/FNA；固定 head 的 checks.py 要求 compute capability 100/103，排除
+    SM89。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/266
+  title: Enable FP8 for Blackwell FMHA/FNA forward
+  state: closed
+  updated_at: '2025-10-10T20:30:26Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 269
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/269
+  title: Build system and bug fixes
+  state: closed
+  updated_at: '2025-10-24T18:52:37Z'
+- kind: pr
+  number: 281
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-mask
+  url: https://github.com/SHI-Labs/NATTEN/pull/281
+  title: Extend FMHA ops
+  state: closed
+  updated_at: '2025-11-18T21:00:59Z'
+- kind: pr
+  number: 282
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/282
+  title: Add GQA/MQA support to Blackwell FMHA
+  state: closed
+  updated_at: '2025-11-19T20:13:28Z'
+- kind: pr
+  number: 283
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/283
+  title: Varlen bug fixes
+  state: closed
+  updated_at: '2025-12-01T14:56:00Z'
+- kind: pr
+  number: 284
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/284
+  title: Torch compile support
+  state: closed
+  updated_at: '2025-12-04T18:16:26Z'
+- kind: pr
+  number: 294
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/294
+  title: Blackwell FMHA bwd bugfix
+  state: closed
+  updated_at: '2025-12-10T15:50:31Z'
+- kind: pr
+  number: 296
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/296
+  title: GQA/MQA support for NA operations
+  state: closed
+  updated_at: '2025-12-13T02:09:19Z'
+- kind: pr
+  number: 297
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/297
+  title: Token Permute Kernels
+  state: closed
+  updated_at: '2025-12-16T01:31:42Z'
+- kind: pr
+  number: 303
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/303
+  title: Fix cutlass fmha varlen bugs
+  state: closed
+  updated_at: '2026-01-30T18:09:01Z'
+- kind: pr
+  number: 309
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/309
+  title: Bump cutlass to 4.4
+  state: closed
+  updated_at: '2026-02-05T19:39:27Z'
+- kind: pr
+  number: 310
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  - sm89-local-attention-natten-mask
+  url: https://github.com/SHI-Labs/NATTEN/pull/310
+  title: Release/v0.21.5
+  state: closed
+  updated_at: '2026-02-08T17:05:22Z'
+- kind: pr
+  number: 317
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/317
+  title: Fix overflowing strides
+  state: closed
+  updated_at: '2026-02-26T01:02:37Z'
+- kind: pr
+  number: 320
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  - sm89-local-attention-natten-mask
+  url: https://github.com/SHI-Labs/NATTEN/pull/320
+  title: Extend Hopper FMHA
+  state: closed
+  updated_at: '2026-03-17T19:47:02Z'
+- kind: pr
+  number: 328
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/328
+  title: Fix ref kernel bug
+  state: closed
+  updated_at: '2026-04-07T16:19:16Z'
+- kind: pr
+  number: 329
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  url: https://github.com/SHI-Labs/NATTEN/pull/329
+  title: Improve testing and error reporting
+  state: closed
+  updated_at: '2026-04-10T14:28:24Z'
+- kind: pr
+  number: 330
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/330
+  title: Allow partial head dims in Blackwell FNA/FMHA
+  state: closed
+  updated_at: '2026-04-10T21:54:51Z'
+- kind: pr
+  number: 332
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/332
+  title: Faster testing, more fixes
+  state: closed
+  updated_at: '2026-04-11T05:51:59Z'
+- kind: pr
+  number: 333
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  - sm89-local-attention-natten-mask
+  url: https://github.com/SHI-Labs/NATTEN/pull/333
+  title: 0.21.6 Release
+  state: closed
+  updated_at: '2026-04-14T18:16:00Z'
+- kind: pr
+  number: 337
+  decision: include
+  reason: FNA token strides 改为 64 位；固定 head 保存较新的 forward kernel 和邻域索引实现。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  url: https://github.com/SHI-Labs/NATTEN/pull/337
+  title: 'cutlass-fna: 64b strides'
+  state: closed
+  updated_at: '2026-05-10T02:33:42Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: correctness-reference
+  priority: P1
+  merged_at: '2026-05-10T02:33:38Z'
+  head_sha: 6fd34669017a39cd37b10d9edd3c65c88c18dfb6
+  artifact_dir: artifacts/github/SHI-Labs--NATTEN/pr-337/20260917T164959673620Z
+  local_validation: not-run
+- kind: pr
+  number: 341
+  decision: include
+  reason: 修复 FNA backward 在 SM80+ partial tile 上遗漏 mask 边界检查而出现 dV NaN。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  - sm89-local-attention-natten-mask
+  url: https://github.com/SHI-Labs/NATTEN/pull/341
+  title: Fix/cutlass fna dv nan issue
+  state: closed
+  updated_at: '2026-06-24T14:37:20Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: backward-reference
+  priority: P2
+  merged_at: '2026-06-24T14:36:58Z'
+  head_sha: e1ed3b64087d2f230f692bc48249ef804c46bfa9
+  artifact_dir: artifacts/github/SHI-Labs--NATTEN/pr-341/20260917T165018000073Z
+  local_validation: not-run
+- kind: pr
+  number: 344
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-natten-cutlass
+  - sm89-local-attention-natten-fna
+  - sm89-local-attention-natten-mask
+  url: https://github.com/SHI-Labs/NATTEN/pull/344
+  title: 0.21.7 release
+  state: closed
+  updated_at: '2026-07-26T18:22:57Z'
+last_attempt_at: '2026-09-17T16:46:43.297402+00:00'
+last_search_partial: false
+last_queries:
+- id: sm89-local-attention-natten-cutlass
+  architecture: sm89
+  kind: pr
+  query: repo:SHI-Labs/NATTEN is:pr cutlass is:merged
+  repo: SHI-Labs/NATTEN
+- id: sm89-local-attention-natten-fna
+  architecture: sm89
+  kind: pr
+  query: repo:SHI-Labs/NATTEN is:pr FNA is:merged
+  repo: SHI-Labs/NATTEN
+- id: sm89-local-attention-natten-window
+  architecture: sm89
+  kind: pr
+  query: repo:SHI-Labs/NATTEN is:pr window is:merged
+  repo: SHI-Labs/NATTEN
+- id: sm89-local-attention-natten-mask
+  architecture: sm89
+  kind: pr
+  query: repo:SHI-Labs/NATTEN is:pr mask is:merged
+  repo: SHI-Labs/NATTEN

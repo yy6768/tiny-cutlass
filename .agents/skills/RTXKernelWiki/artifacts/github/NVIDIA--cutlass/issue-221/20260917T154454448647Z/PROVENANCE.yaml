@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/221
+repo: NVIDIA/cutlass
+number: 221
+type: issue
+retrieved_at: 20260917T154454448647Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4951
+  sha256: 60d4753b62a3733a3a514d58d8f8e1b26b077c46749ed694282c8153fcf9e12e
+- path: comments.json
+  bytes: 101250
+  sha256: f265d37c1a19cc906f7cd1681d7b2eb816efb86e600ea2dc229395d910cf7ed0
+- path: page.md
+  bytes: 59446
+  sha256: 514d062ff6cf64345cabb21d5970187a085cb8f539dfb8295c90026570298287
+skipped: []
+errors: []
+truncations: []
+title: Fail on Fused back-to-back INT8 NT interleaved GEMMs
+updated_at: '2021-11-27T13:36:23Z'
+status: closed
+kernel_files_captured: 0

@@ -1,0 +1,372 @@
+repo: thu-ml/SageAttention
+candidates:
+- kind: pr
+  number: 33
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/33
+  title: '[update] support non-contiguous input, different qo_len and kv_len, HND
+    and NHD layout, group query attention'
+  state: closed
+  updated_at: '2024-11-11T02:36:10Z'
+- kind: pr
+  number: 35
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/35
+  title: better support for hd96
+  state: closed
+  updated_at: '2024-11-11T03:45:17Z'
+- kind: pr
+  number: 36
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/36
+  title: add sageattn_varlen support
+  state: closed
+  updated_at: '2024-11-11T15:04:08Z'
+- kind: pr
+  number: 38
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/38
+  title: v1.0.4
+  state: closed
+  updated_at: '2024-11-11T16:33:21Z'
+- kind: pr
+  number: 39
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/39
+  title: update license
+  state: closed
+  updated_at: '2024-11-12T03:56:52Z'
+- kind: pr
+  number: 50
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/50
+  title: Parallel SageAttention Inference
+  state: closed
+  updated_at: '2024-12-14T10:59:58Z'
+- kind: pr
+  number: 76
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/76
+  title: 2.0.1 release
+  state: closed
+  updated_at: '2024-12-21T07:07:19Z'
+- kind: pr
+  number: 91
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/91
+  title: '(windows): Add ushort type definition for CUDA compilation for Sageattention
+    2.x'
+  state: closed
+  updated_at: '2025-01-28T03:49:14Z'
+- kind: pr
+  number: 95
+  decision: defer
+  reason: '2.1.0 主要新增 Hopper；本轮抓 2.2.0 #196 的 SM89 混合累加路径。'
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/95
+  title: SageAttention 2.1.0 Release
+  state: closed
+  updated_at: '2025-01-29T16:43:05Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 109
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/109
+  title: Sm120 compilation
+  state: closed
+  updated_at: '2025-02-15T07:57:40Z'
+- kind: pr
+  number: 193
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/193
+  title: Update README.md
+  state: closed
+  updated_at: '2025-07-05T11:03:18Z'
+- kind: pr
+  number: 196
+  decision: include
+  reason: SM89 的 INT8 QK + FP8 PV，以及 FP16 局部累加/FP32 缓冲的混合精度参考。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/196
+  title: Update to SageAttention v2.2.0 (sage2++)
+  state: closed
+  updated_at: '2025-07-08T12:01:10Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+  candidate_role: mixed-precision-reference
+  priority: P1
+  merged_at: '2025-07-01T06:09:30Z'
+  head_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  artifact_dir: artifacts/github/thu-ml--SageAttention/pr-196/20260917T165114654675Z
+  local_validation: not-run
+- kind: pr
+  number: 207
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/207
+  title: Build extensions in parallel (NVIDIA/apex#1882)
+  state: closed
+  updated_at: '2025-07-18T10:39:56Z'
+- kind: pr
+  number: 218
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/218
+  title: Add `torch.compile` support to SageAttention
+  state: closed
+  updated_at: '2025-10-14T05:15:14Z'
+- kind: pr
+  number: 224
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/224
+  title: Fix mask computation for better precision
+  state: closed
+  updated_at: '2025-08-04T11:51:19Z'
+- kind: pr
+  number: 225
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/225
+  title: Fix mask computation for better precision
+  state: closed
+  updated_at: '2025-08-04T11:59:15Z'
+- kind: pr
+  number: 226
+  decision: exclude
+  reason: attn_mask 修改的是 Triton INT8-QK/FP16-PV 路径；不能作为 SM89 CUDA FP8-PV mask 已支持的证据。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/226
+  title: Add attn_mask to sageattn
+  state: closed
+  updated_at: '2025-08-05T07:18:41Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 227
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/227
+  title: Add attn_mask to sageattn_qk_int8_pv_fp16_triton
+  state: closed
+  updated_at: '2025-08-05T07:18:25Z'
+- kind: pr
+  number: 230
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/230
+  title: 'fix bug for pull request #226: no skip when mask_dtype is float'
+  state: closed
+  updated_at: '2025-08-05T08:45:51Z'
+- kind: pr
+  number: 231
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/231
+  title: 'fix bug for pull request #227: no skip when mask_dtype is float'
+  state: closed
+  updated_at: '2025-08-05T08:45:43Z'
+- kind: pr
+  number: 252
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/252
+  title: Fix gqa case for smooth_k
+  state: closed
+  updated_at: '2025-09-27T17:31:44Z'
+- kind: pr
+  number: 266
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/266
+  title: update for sageattention3
+  state: closed
+  updated_at: '2025-09-27T17:33:23Z'
+- kind: pr
+  number: 275
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/275
+  title: Update setup.py for sm100
+  state: closed
+  updated_at: '2025-10-13T08:22:37Z'
+- kind: pr
+  number: 279
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/279
+  title: Set device to `query.device` to be consistent with C code
+  state: closed
+  updated_at: '2025-10-27T18:16:07Z'
+- kind: pr
+  number: 295
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/295
+  title: add compile support for B200
+  state: closed
+  updated_at: '2025-11-06T07:10:25Z'
+- kind: pr
+  number: 297
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/297
+  title: Add support for DGX Spark (Cuda Capability 12.1)
+  state: closed
+  updated_at: '2025-11-29T00:10:21Z'
+- kind: pr
+  number: 306
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/306
+  title: 'sageattention: calculate Q/K head numbers as per tensor layouts'
+  state: closed
+  updated_at: '2025-11-28T04:40:42Z'
+- kind: pr
+  number: 307
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/307
+  title: fix same name issue in sm09_compile.py
+  state: closed
+  updated_at: '2025-12-22T06:25:16Z'
+- kind: pr
+  number: 315
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-sageattention
+  url: https://github.com/thu-ml/SageAttention/pull/315
+  title: fix bug when use 12.0
+  state: closed
+  updated_at: '2025-11-28T03:50:23Z'
+last_attempt_at: '2026-09-17T16:46:43.297402+00:00'
+last_search_partial: false
+last_queries:
+- id: sm89-local-attention-sageattention
+  architecture: sm89
+  kind: pr
+  query: repo:thu-ml/SageAttention is:pr is:merged
+  repo: thu-ml/SageAttention

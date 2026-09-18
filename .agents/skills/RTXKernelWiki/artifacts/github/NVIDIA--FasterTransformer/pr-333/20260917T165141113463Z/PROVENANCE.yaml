@@ -1,0 +1,92 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/FasterTransformer/pull/333
+repo: NVIDIA/FasterTransformer
+number: 333
+type: pr
+retrieved_at: 20260917T165141113463Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 3905
+  sha256: 9dba32d2a5c0892865765eb4cb6626437d1fdb520f73bfd55fcd785069d9dca4
+- path: comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: pull.json
+  bytes: 20151
+  sha256: ba3b97e5da9b0ef773d9253b6519b8ae1771f9b59e254f99b76e15e5ec1aa12c
+- path: changed-files.json
+  bytes: 8287
+  sha256: d1dc5d6c4c487bfdc747629142f8a976fa1c950148ea045724316d4f7edab54c
+- path: reviews.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 5272
+  sha256: 9d951dca9a463a52b278992044ba3da00111cb74b8cc8a1da77d959ad207b476
+- path: key-files/head/src/fastertransformer/layers/attention_layers/WindowAttention.cc
+  bytes: 16650
+  sha256: 97585ccc21c384d7d90c2f5429dc0f8f08964549177a28fb201cf0ae2f1bdfd8
+  upstream_path: src/fastertransformer/layers/attention_layers/WindowAttention.cc
+  source_sha: 8fc725235bf3c707945e0ccd326783a1aafdff4b
+  change_status: modified
+  source_url: https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src/fastertransformer/layers/attention_layers/WindowAttention.cc
+- path: key-files/head/src/fastertransformer/models/swin/Swin.h
+  bytes: 4260
+  sha256: 153ddebfba1fcc81a634d43448633ea86354353931f55cbbdb881fb27eb94917
+  upstream_path: src/fastertransformer/models/swin/Swin.h
+  source_sha: 8fc725235bf3c707945e0ccd326783a1aafdff4b
+  change_status: modified
+  source_url: https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src/fastertransformer/models/swin/Swin.h
+- path: key-files/head/src/fastertransformer/models/swin_int8/SwinINT8.h
+  bytes: 4894
+  sha256: 2b34c0acad837b7e906e85ef91ad4e09cdeb248c24a6bfc97f335e8d1ab3e4a2
+  upstream_path: src/fastertransformer/models/swin_int8/SwinINT8.h
+  source_sha: 8fc725235bf3c707945e0ccd326783a1aafdff4b
+  change_status: modified
+  source_url: https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src/fastertransformer/models/swin_int8/SwinINT8.h
+- path: key-files/head/src/fastertransformer/utils/gemm_test/decoding_gemm_func.cc
+  bytes: 15854
+  sha256: a8270ef5ad1f7d7bd9d57646f10b03caf6de2e54ea3fd459d9f6b7dd32bca793
+  upstream_path: src/fastertransformer/utils/gemm_test/decoding_gemm_func.cc
+  source_sha: 8fc725235bf3c707945e0ccd326783a1aafdff4b
+  change_status: modified
+  source_url: https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src/fastertransformer/utils/gemm_test/decoding_gemm_func.cc
+- path: key-files/head/src/fastertransformer/utils/gemm_test/gpt_gemm_func.cc
+  bytes: 30007
+  sha256: 7b6d91fda435dcc77647d66104e82c234b1706b164fcb42d56da235eae138463
+  upstream_path: src/fastertransformer/utils/gemm_test/gpt_gemm_func.cc
+  source_sha: 8fc725235bf3c707945e0ccd326783a1aafdff4b
+  change_status: modified
+  source_url: https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src/fastertransformer/utils/gemm_test/gpt_gemm_func.cc
+- path: key-files/head/src/fastertransformer/utils/gemm_test/t5_gemm_func.cc
+  bytes: 38451
+  sha256: c72f736d3a4eac694fa4627d2d44e1c28e06ce55807d3bb6615fd43f18fe01f7
+  upstream_path: src/fastertransformer/utils/gemm_test/t5_gemm_func.cc
+  source_sha: 8fc725235bf3c707945e0ccd326783a1aafdff4b
+  change_status: modified
+  source_url: https://github.com/NVIDIA/FasterTransformer/blob/8fc725235bf3c707945e0ccd326783a1aafdff4b/src/fastertransformer/utils/gemm_test/t5_gemm_func.cc
+- path: page.md
+  bytes: 184
+  sha256: 0c213be42ec38159d2f2b36f377945621fdb6e4ef06e466f8b0e7f8020ca6872
+skipped: []
+errors: []
+truncations: []
+title: Fix/swin qk scale
+updated_at: '2022-09-29T05:16:14Z'
+status: merged
+head_sha: 8fc725235bf3c707945e0ccd326783a1aafdff4b
+base_sha: 9e26bcd948e5fd59246e84e84225cef0c399c7d4
+merged_at: '2022-09-29T05:16:02Z'
+merge_commit_sha: 7118182f19681d04ac26aa92250dedc8877ea456
+changed_files: 6
+kernel_files_selected: 6
+key_file_policy: CUDA/C++/PTX/MLIR and kernel-related Python; exclude docs, CI, tests
+  and benchmarks
+kernel_files_captured: 6

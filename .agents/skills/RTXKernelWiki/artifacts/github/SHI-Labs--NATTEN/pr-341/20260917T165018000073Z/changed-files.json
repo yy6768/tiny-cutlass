@@ -1,0 +1,38 @@
+[
+  {
+    "sha": "95540d24abe52e6c710f455bc36153952c8252f5",
+    "filename": "CHANGELOG.md",
+    "status": "modified",
+    "additions": 3,
+    "deletions": 0,
+    "changes": 3,
+    "blob_url": "https://github.com/SHI-Labs/NATTEN/blob/e1ed3b64087d2f230f692bc48249ef804c46bfa9/CHANGELOG.md",
+    "raw_url": "https://github.com/SHI-Labs/NATTEN/raw/e1ed3b64087d2f230f692bc48249ef804c46bfa9/CHANGELOG.md",
+    "contents_url": "https://api.github.com/repos/SHI-Labs/NATTEN/contents/CHANGELOG.md?ref=e1ed3b64087d2f230f692bc48249ef804c46bfa9",
+    "patch": "@@ -2,6 +2,9 @@\n \n ## [Main branch]\n * Switched to int64 strides in cutlass-fna to avoid overflows in larger use cases.\n+* Fixed longstanding issue in CUTLASS FNA backward's mask that evaded nearly all unit tests, and\n+  only broke one application (that we know of), resulting in NaNs in dV. We were avoiding a boundary\n+  check that seems to be required when we have partial tiles, but only on SM80 and later.\n \n ## [0.21.6] - 2026-04-14\n * Fixed syntax error in natten.profiler (only affects `python < 3.12`)"
+  },
+  {
+    "sha": "15dd8b5e24853977397b4eb1f2c2ac75864d621b",
+    "filename": "csrc/include/natten/cuda/fna/kernel_backward.h",
+    "status": "modified",
+    "additions": 0,
+    "deletions": 11,
+    "changes": 11,
+    "blob_url": "https://github.com/SHI-Labs/NATTEN/blob/e1ed3b64087d2f230f692bc48249ef804c46bfa9/csrc%2Finclude%2Fnatten%2Fcuda%2Ffna%2Fkernel_backward.h",
+    "raw_url": "https://github.com/SHI-Labs/NATTEN/raw/e1ed3b64087d2f230f692bc48249ef804c46bfa9/csrc%2Finclude%2Fnatten%2Fcuda%2Ffna%2Fkernel_backward.h",
+    "contents_url": "https://api.github.com/repos/SHI-Labs/NATTEN/contents/csrc%2Finclude%2Fnatten%2Fcuda%2Ffna%2Fkernel_backward.h?ref=e1ed3b64087d2f230f692bc48249ef804c46bfa9",
+    "patch": "@@ -1659,9 +1659,7 @@ struct FusedNeighborhoodAttentionBackwardKernel {\n               // kernels, I don't know how safe that is, so I'll just keep it\n               // for all of them.\n               if (accum_m >= num_keys_in_block_int ||\n-#if __CUDA_ARCH__ < 800\n                   accum_n >= num_queries_in_block_int ||\n-#endif\n                   !is_coord_within_bounds_nn(col - first_col, query_bound)) {\n                 accum[idx] =\n                     -cutlass::platform::numeric_limits<accum_t>::infinity();\n@@ -1682,15 +1680,10 @@ struct FusedNeighborhoodAttentionBackwardKernel {\n                   map_index_to_coord((int32_t)accum_n, num_queries_in_block) +\n                   query_start;\n \n-#if __CUDA_ARCH__ < 800\n               if (accum_m >= num_keys_in_block_int ||\n                   accum_n >= num_queries_in_block_int ||\n                   !is_coord_less_than_or_equal_to(\n                       query_coord, p.num_queries_post_partitioning)) {\n-#else\n-              if (!is_coord_less_than_or_equal_to(\n-                      query_coord, p.num_queries_post_partitioning)) {\n-#endif\n                 accum[idx] =\n                     -cutlass::platform::numeric_limits<accum_t>::infinity();\n               } else {\n@@ -1705,17 +1698,13 @@ struct FusedNeighborhoodAttentionBackwardKernel {\n             lane_offset,\n             [&](int accum_m) {},\n             [&](int accum_m, int accum_n, int idx) {\n-#if __CUDA_ARCH__ < 800\n               if (accum_m >= num_keys_in_block_int ||\n                   accum_n >= num_queries_in_block_int) {\n                 accum[idx] =\n                     -cutlass::platform::numeric_limits<accum_t>::infinity();\n               } else {\n-#endif\n                 accum[idx] -= shared_storage.lse_i()[accum_n];\n-#if __CUDA_ARCH__ < 800\n               }\n-#endif\n             },\n             [&](int accum_m) {});\n       }"
+  },
+  {
+    "sha": "1c1a07cb4ffd5bca2f68402df6578522b091bd1b",
+    "filename": "src/natten/version.py",
+    "status": "modified",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2,
+    "blob_url": "https://github.com/SHI-Labs/NATTEN/blob/e1ed3b64087d2f230f692bc48249ef804c46bfa9/src%2Fnatten%2Fversion.py",
+    "raw_url": "https://github.com/SHI-Labs/NATTEN/raw/e1ed3b64087d2f230f692bc48249ef804c46bfa9/src%2Fnatten%2Fversion.py",
+    "contents_url": "https://api.github.com/repos/SHI-Labs/NATTEN/contents/src%2Fnatten%2Fversion.py?ref=e1ed3b64087d2f230f692bc48249ef804c46bfa9",
+    "patch": "@@ -21,4 +21,4 @@\n #\n #################################################################################################\n \n-__version__ = \"0.21.6\"\n+__version__ = \"0.21.7.dev0\""
+  }
+]

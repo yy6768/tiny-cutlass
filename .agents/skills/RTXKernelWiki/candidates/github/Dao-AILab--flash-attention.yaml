@@ -1,0 +1,999 @@
+repo: Dao-AILab/flash-attention
+candidates:
+- kind: pr
+  number: 75
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/75
+  title: allow for uploading to pypi
+  state: closed
+  updated_at: '2022-11-18T03:07:21Z'
+- kind: pr
+  number: 229
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/229
+  title: Allow adding an optional local version to the package version
+  state: closed
+  updated_at: '2023-05-19T15:43:24Z'
+- kind: pr
+  number: 266
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/266
+  title: Add initial support for prebuilt wheels
+  state: closed
+  updated_at: '2023-08-14T00:01:06Z'
+- kind: pr
+  number: 299
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/299
+  title: 'rotary: update cos/sin cache when switching from inference mode'
+  state: closed
+  updated_at: '2023-07-08T16:16:51Z'
+- kind: pr
+  number: 461
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/461
+  title: 'support when num_heads is not divisible by world_size; resolves #459'
+  state: closed
+  updated_at: '2023-08-18T21:10:35Z'
+- kind: pr
+  number: 488
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/488
+  title: '[ft_attention] Fix for seqlen=8136'
+  state: closed
+  updated_at: '2023-08-28T17:00:23Z'
+- kind: pr
+  number: 540
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/540
+  title: support alibi
+  state: closed
+  updated_at: '2023-12-20T06:56:07Z'
+- kind: pr
+  number: 788
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/788
+  title: Preprocessor switches to control functionality
+  state: closed
+  updated_at: '2024-01-30T11:12:14Z'
+- kind: pr
+  number: 1025
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1025
+  title: '[WIP] First draft for softcapping.'
+  state: closed
+  updated_at: '2024-07-15T01:34:22Z'
+- kind: pr
+  number: 1033
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1033
+  title: backwards for softcapping
+  state: closed
+  updated_at: '2024-07-22T18:06:14Z'
+- kind: pr
+  number: 1203
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/1203
+  title: '[AMD] Triton Backend for ROCm'
+  state: closed
+  updated_at: '2025-04-22T23:58:32Z'
+- kind: pr
+  number: 1206
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1206
+  title: 'feat: change minimal supported CUDA version to 11.7'
+  state: closed
+  updated_at: '2024-09-05T17:34:35Z'
+- kind: pr
+  number: 1233
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1233
+  title: Add local attention in Hopper FAv3
+  state: closed
+  updated_at: '2024-09-20T06:14:46Z'
+- kind: pr
+  number: 1610
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/1610
+  title: '[AMD] Triton Backend for ROCm #2'
+  state: closed
+  updated_at: '2025-07-21T16:03:55Z'
+- kind: pr
+  number: 1769
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1769
+  title: Add torch.compile support to flash attention 3
+  state: closed
+  updated_at: '2026-01-16T17:56:28Z'
+- kind: pr
+  number: 1823
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1823
+  title: Add sorting and head swizzle to varlen scheduler
+  state: closed
+  updated_at: '2025-08-22T02:44:03Z'
+- kind: pr
+  number: 1835
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1835
+  title: 'ci: Move build job to workflow template'
+  state: closed
+  updated_at: '2025-08-27T09:36:00Z'
+- kind: pr
+  number: 1856
+  decision: exclude
+  reason: CuTe DSL Sm80 的 softcap 修正；不符合本地当前 2.x 主线。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1856
+  title: '[BugFix] fix flash_fwd.FlashAttentionForwardSm80  bugs'
+  state: closed
+  updated_at: '2025-09-02T13:21:10Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 1883
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1883
+  title: Fix typo in flops calculation for local attention
+  state: closed
+  updated_at: '2025-09-13T02:38:04Z'
+- kind: pr
+  number: 1891
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1891
+  title: '[Cute] Bump pin for CuTeDSL'
+  state: closed
+  updated_at: '2025-09-24T05:19:34Z'
+- kind: pr
+  number: 1893
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1893
+  title: Improve causal backward determinism perf with SPT schedule
+  state: closed
+  updated_at: '2025-12-06T00:12:28Z'
+- kind: pr
+  number: 1940
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/1940
+  title: '[Cute,Fwd,Sm100] Implement SplitKV'
+  state: closed
+  updated_at: '2026-01-16T17:10:14Z'
+- kind: pr
+  number: 1942
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/1942
+  title: Block Sparsity and Flex Attention mask mod support
+  state: closed
+  updated_at: '2025-10-21T22:40:19Z'
+- kind: pr
+  number: 1983
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/1983
+  title: '[CuTe DSL] Block sparsity computation kernel'
+  state: closed
+  updated_at: '2025-11-12T23:07:30Z'
+- kind: pr
+  number: 1993
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1993
+  title: '[Cute,Fwd,Sm100] Support `q_stage=1` for inference'
+  state: closed
+  updated_at: '2026-02-06T19:13:56Z'
+- kind: pr
+  number: 1999
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/1999
+  title: '[Cute,Fwd,Sm100] Support paged attention'
+  state: closed
+  updated_at: '2026-01-16T17:10:16Z'
+- kind: pr
+  number: 2042
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2042
+  title: '[CUTE] Enabling TVM-FFI to reduce cpu overhead'
+  state: closed
+  updated_at: '2025-12-15T23:40:43Z'
+- kind: pr
+  number: 2046
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2046
+  title: '[Cute,Bwd,Sm100] Add local for sm100 bwd'
+  state: closed
+  updated_at: '2025-12-06T00:11:27Z'
+- kind: pr
+  number: 2085
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2085
+  title: Add blocksparse support for bwd on blackwell
+  state: closed
+  updated_at: '2025-12-18T22:45:35Z'
+- kind: pr
+  number: 2104
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2104
+  title: '[Cute,Fwd,Sm100] distributed offset calculation for paged KV'
+  state: closed
+  updated_at: '2026-01-15T20:11:03Z'
+- kind: pr
+  number: 2178
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2178
+  title: ' [AMD] Triton Backend for ROCm #3'
+  state: closed
+  updated_at: '2026-05-01T17:38:12Z'
+- kind: pr
+  number: 2185
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2185
+  title: '[Cute,Fwd,Sm100] Add r2p for local mask'
+  state: closed
+  updated_at: '2026-01-17T00:06:04Z'
+- kind: pr
+  number: 2186
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2186
+  title: '[Cute,Fwd,Sm100] support irregular qhead / kvhead ratios'
+  state: closed
+  updated_at: '2026-03-20T10:40:29Z'
+- kind: pr
+  number: 2202
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2202
+  title: BWD sm100 2cta
+  state: closed
+  updated_at: '2026-02-20T04:31:08Z'
+- kind: pr
+  number: 2218
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2218
+  title: '[Ai-assisted] CLC work stealing'
+  state: closed
+  updated_at: '2026-03-31T02:30:13Z'
+- kind: pr
+  number: 2251
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2251
+  title: '[Cute] Handle window_size=(-1, -1) for non-local attention'
+  state: closed
+  updated_at: '2026-02-23T21:27:05Z'
+- kind: pr
+  number: 2253
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2253
+  title: Deterministic backward for blocksparse impl
+  state: closed
+  updated_at: '2026-05-04T22:31:04Z'
+- kind: pr
+  number: 2261
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2261
+  title: '[Cute,Flex,Sm100] vectorized mask_mod'
+  state: closed
+  updated_at: '2026-05-24T01:26:36Z'
+- kind: pr
+  number: 2270
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2270
+  title: '[Cute,Sm100,Bwd] Add hdim 192 hdimv 128 backward for sm100'
+  state: closed
+  updated_at: '2026-02-25T08:21:10Z'
+- kind: pr
+  number: 2297
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2297
+  title: '[CuTeDSL][Sm80] basic fix for new api'
+  state: closed
+  updated_at: '2026-03-11T07:37:53Z'
+- kind: pr
+  number: 2301
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2301
+  title: 'Fix GQA crash in cute FLASH backend: init load_Q before conditional'
+  state: closed
+  updated_at: '2026-03-03T17:11:27Z'
+- kind: pr
+  number: 2313
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2313
+  title: '[Cute,Sm100] Introduce a flexible lambda-based R2P masking'
+  state: closed
+  updated_at: '2026-03-12T04:09:40Z'
+- kind: pr
+  number: 2335
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2335
+  title: '[Cute] fix: rename logging module to avoid circular import at building'
+  state: closed
+  updated_at: '2026-03-12T14:52:50Z'
+- kind: pr
+  number: 2347
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2347
+  title: Support 2CTA for sliding window hdim 192
+  state: closed
+  updated_at: '2026-03-19T19:55:10Z'
+- kind: pr
+  number: 2368
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2368
+  title: '[Cute] fix: FA4 paged attention kv load for DeepSeek (192,128) on SM100'
+  state: closed
+  updated_at: '2026-03-18T09:02:19Z'
+- kind: pr
+  number: 2379
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2379
+  title: '[Sm75] Add README link for initial Turing support'
+  state: closed
+  updated_at: '2026-03-25T10:44:52Z'
+- kind: pr
+  number: 2385
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2385
+  title: '[ROCM] Fix windows issues'
+  state: closed
+  updated_at: '2026-04-02T21:11:39Z'
+- kind: pr
+  number: 2393
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2393
+  title: 'Add FA4 CI: GitHub Actions workflow with Apptainer on B200 runner'
+  state: closed
+  updated_at: '2026-04-02T01:41:39Z'
+- kind: pr
+  number: 2402
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2402
+  title: 'feat(cute): implement softcap backward pass, correct math formula, and resolve
+    JIT cache bug'
+  state: closed
+  updated_at: '2026-04-11T13:14:52Z'
+- kind: pr
+  number: 2412
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2412
+  title: Feat([FA4][CUTE DSL]) Add head_dim=256 support (forward + backward)
+  state: closed
+  updated_at: '2026-04-27T03:02:21Z'
+- kind: pr
+  number: 2428
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2428
+  title: 'CI: extend FA4 test matrix with causal/non-causal correctness and fwd+bwd
+    benchmark seqlen 1K-32K'
+  state: closed
+  updated_at: '2026-04-04T06:15:35Z'
+- kind: pr
+  number: 2441
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2441
+  title: '[Cute,Sm100,Fwd] add MLA 64/512 with topk sparsity for MQA 128 heads'
+  state: closed
+  updated_at: '2026-04-15T03:42:40Z'
+- kind: pr
+  number: 2455
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2455
+  title: Add CLC scheduler heuristic
+  state: closed
+  updated_at: '2026-04-16T02:35:35Z'
+- kind: pr
+  number: 2483
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2483
+  title: '[Tests,MLA] Close coverage gaps in test_flash_attn_mla_absorbed'
+  state: closed
+  updated_at: '2026-04-28T02:12:11Z'
+- kind: pr
+  number: 2487
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2487
+  title: '[Cute,hd256] Post-merge cleanup: dead code, duplicate imports'
+  state: closed
+  updated_at: '2026-04-23T22:00:19Z'
+- kind: pr
+  number: 2490
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2490
+  title: 'cute: don''t widen intentionally-empty offset windows to full attention'
+  state: closed
+  updated_at: '2026-09-09T00:35:27Z'
+- kind: pr
+  number: 2497
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2497
+  title: '[FA4][hd256] Backward TMA bulk-store epilogue + LSE/dpsum coalesce'
+  state: closed
+  updated_at: '2026-05-01T17:25:40Z'
+- kind: pr
+  number: 2507
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2507
+  title: '[CuTe, Bwd] Fix backward compile key churn due to pickling, max_seqlen is
+    a tensor'
+  state: closed
+  updated_at: '2026-07-11T22:48:55Z'
+- kind: pr
+  number: 2511
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2511
+  title: 'ci: use /tmp for apptainer tmpdir to fix xattrerror on VAST'
+  state: closed
+  updated_at: '2026-04-28T16:50:54Z'
+- kind: pr
+  number: 2590
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2590
+  title: 'Include sm_110 in Blackwell-family arch gating (follow-up to #2572)'
+  state: closed
+  updated_at: '2026-05-30T06:14:16Z'
+- kind: pr
+  number: 2595
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2595
+  title: '[CuTe,Sm100] fix: decode/prefill exp2 emulation consistency'
+  state: closed
+  updated_at: '2026-05-28T23:50:09Z'
+- kind: pr
+  number: 2624
+  decision: exclude
+  reason: 修改 flash_attn/cute/interface.py 的 scheduler 估算；不是 CUTLASS 2.x 实现。窗口 0/None
+    的语义可参考，但不进入本轮下载主线。
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2624
+  title: Fix `seqlen_k_loaded` treating a window bound of 0 as unbounded (sliding
+    window)
+  state: closed
+  updated_at: '2026-09-09T01:33:40Z'
+  reviewed_at: '2026-09-18'
+  review_scope: sm89-local-attention
+- kind: pr
+  number: 2636
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2636
+  title: 'ci(fa4): enforce cutlass-dsl/quack dep floors and rebake cu130 image'
+  state: closed
+  updated_at: '2026-06-10T02:09:19Z'
+- kind: pr
+  number: 2656
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2656
+  title: '[NVIDIA][CuTe,Fwd,sm120] Implement Pack-GQA on SM120 (+ graceful SplitKV
+    fallback)'
+  state: closed
+  updated_at: '2026-07-07T03:29:04Z'
+- kind: pr
+  number: 2661
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2661
+  title: Enable 2CTA for SM100 block-sparse backward
+  state: closed
+  updated_at: '2026-07-14T02:37:31Z'
+- kind: pr
+  number: 2662
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2662
+  title: '[cute] Fix int32 overflow in SM100 LPT tile scheduler for long context'
+  state: closed
+  updated_at: '2026-06-16T22:32:29Z'
+- kind: pr
+  number: 2669
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2669
+  title: Expand FLASHATTENTION_DISABLE_DROPOUT to not bring in unneeded headers
+  state: closed
+  updated_at: '2026-07-24T17:58:34Z'
+- kind: pr
+  number: 2670
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2670
+  title: 'fix(hd256/sm100): forward reads actual input strides, drop .contiguous()
+    patch'
+  state: closed
+  updated_at: '2026-06-29T16:41:19Z'
+- kind: pr
+  number: 2675
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2675
+  title: '[AMD ROCm] Enable RDNA backward and adopt CK unified workspace'
+  state: closed
+  updated_at: '2026-07-06T16:40:02Z'
+- kind: pr
+  number: 2676
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2676
+  title: Update FA4 cute quack compatibility
+  state: closed
+  updated_at: '2026-06-27T19:45:45Z'
+- kind: pr
+  number: 2686
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2686
+  title: '[Cute] Assume 16B stride divisibility for SM100 backward LSE/dPsum bulk-copy
+    inputs'
+  state: closed
+  updated_at: '2026-06-29T00:37:02Z'
+- kind: pr
+  number: 2696
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2696
+  title: add tcgen.ld.red support to sm103a arch
+  state: closed
+  updated_at: '2026-07-11T22:03:48Z'
+- kind: pr
+  number: 2745
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2745
+  title: '[CuTe] Fix forward dynamic-shape correctness'
+  state: closed
+  updated_at: '2026-08-07T05:26:49Z'
+- kind: pr
+  number: 2756
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2756
+  title: '[CuTe,Bwd,Sm90] Fix: wait for bwd_preprocess on the block-sparse path, matching
+    the dense path'
+  state: closed
+  updated_at: '2026-08-05T16:58:13Z'
+- kind: pr
+  number: 2804
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2804
+  title: '[CuTe] Speed up SM100 hdim-64 bwd: dedicated P/dS TMEM slots + per-warp
+    signaling'
+  state: closed
+  updated_at: '2026-09-09T00:17:31Z'
+- kind: pr
+  number: 2810
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  - sm89-local-attention-flash-attention-window
+  url: https://github.com/Dao-AILab/flash-attention/pull/2810
+  title: '[CuTe, SM100] hd256 2-CTA: support seqused_q/seqused_k and the decoder paged-KV
+    shape'
+  state: closed
+  updated_at: '2026-09-11T00:20:20Z'
+- kind: pr
+  number: 2819
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2819
+  title: '[CuTe] Speed up scalar SM100 mask compilation'
+  state: closed
+  updated_at: '2026-08-28T00:43:23Z'
+- kind: pr
+  number: 2888
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2888
+  title: '[CuTe, SM90] Fix swapped backward MMA layout and use 2-stage hdim256 config'
+  state: closed
+  updated_at: '2026-09-14T22:26:51Z'
+- kind: pr
+  number: 2892
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2892
+  title: 'ci: add PyTorch 2.14 to the wheel build matrix'
+  state: closed
+  updated_at: '2026-09-16T17:30:06Z'
+- kind: pr
+  number: 2894
+  decision: defer
+  reason: Architecture search hit; inspect implementation before inclusion.
+  architectures:
+  - sm89
+  discovery_recipes:
+  - sm89-local-attention-flash-attention-local
+  url: https://github.com/Dao-AILab/flash-attention/pull/2894
+  title: 'ci: registry-free GPU job (runner-local SIF) + verify the provisioned overlay
+    from a fresh session'
+  state: closed
+  updated_at: '2026-09-17T03:07:59Z'
+last_attempt_at: '2026-09-17T16:46:43.297402+00:00'
+last_search_partial: false
+last_queries:
+- id: sm89-local-attention-flash-attention-local
+  architecture: sm89
+  kind: pr
+  query: repo:Dao-AILab/flash-attention is:pr local is:merged
+  repo: Dao-AILab/flash-attention
+- id: sm89-local-attention-flash-attention-window
+  architecture: sm89
+  kind: pr
+  query: repo:Dao-AILab/flash-attention is:pr "sliding window" is:merged
+  repo: Dao-AILab/flash-attention

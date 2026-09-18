@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/339
+repo: NVIDIA/cutlass
+number: 339
+type: issue
+retrieved_at: 20260917T154521602928Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 6409
+  sha256: 39c8271b85a89185a8c6326ab6fd2d35e56af4b106eb3ff6e5a0b945f82f3ae4
+- path: comments.json
+  bytes: 17978
+  sha256: 65abbe9fd0aff5f40e88c27d816f3fb2c1cb4bc880317cc54c85557b699b5ee3
+- path: page.md
+  bytes: 11766
+  sha256: fcc0095dc8b934188f52ca3f14d80927b40802c50f95a166fe1e4db414a0541b
+skipped: []
+errors: []
+truncations: []
+title: Error in Build of CUTLASS Unit Tests
+updated_at: '2022-04-20T01:29:44Z'
+status: closed
+kernel_files_captured: 0

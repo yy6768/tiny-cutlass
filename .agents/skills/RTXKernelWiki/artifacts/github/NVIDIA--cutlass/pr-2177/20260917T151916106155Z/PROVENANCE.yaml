@@ -1,0 +1,67 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/pull/2177
+repo: NVIDIA/cutlass
+number: 2177
+type: pr
+retrieved_at: 20260917T151916106155Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4105
+  sha256: 11fd7d43329a399621ab5b21c0a8e904aec5ca3186db8bf2182b2e78adfb591e
+- path: comments.json
+  bytes: 12461
+  sha256: 286417e16e2a75b597c96a88b8ad09bbf68c58b4088caaf43600e5ce7f19f038
+- path: pull.json
+  bytes: 19375
+  sha256: 7df9a1e857e5af41398c56ce84e9506f5f95381f085a398cc7b7622ce88d94a7
+- path: changed-files.json
+  bytes: 16803
+  sha256: 12bcb52975c33ae74db3820e98a27a5422924cb6164d73204e28314d17b010e9
+- path: reviews.json
+  bytes: 30897
+  sha256: be9366332c9f63f7bb0bc8278e6b3429dffe7e8ba0a6067e26aa14591b9d1355
+- path: review-comments.json
+  bytes: 59607
+  sha256: ff019e50c653350bc73e488df6dbd24b81335c164800066c637459f71347e955
+- path: diff.patch
+  bytes: 14431
+  sha256: 3ba772c54e302931a2ab58d46229b163f1803bb016669938e6bb03f78a964a86
+- path: key-files/head/include/cute/arch/mma_sm89.hpp
+  bytes: 6612
+  sha256: d32ca9bf45e776617e2bc0c25619b56109b952c38ac2ea4f357787e82ad6caf0
+  upstream_path: include/cute/arch/mma_sm89.hpp
+  source_sha: 152947dbbd75921e0914dcd851319546b84b3d12
+  change_status: added
+  source_url: https://github.com/NVIDIA/cutlass/blob/152947dbbd75921e0914dcd851319546b84b3d12/include/cute/arch/mma_sm89.hpp
+- path: key-files/head/include/cute/atom/mma_atom.hpp
+  bytes: 39656
+  sha256: 68c4f5ef714b4b914591ac7a30eb1a453ce01ad6afb62654d67f52ed0b3bfb44
+  upstream_path: include/cute/atom/mma_atom.hpp
+  source_sha: 152947dbbd75921e0914dcd851319546b84b3d12
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/152947dbbd75921e0914dcd851319546b84b3d12/include/cute/atom/mma_atom.hpp
+- path: key-files/head/include/cute/atom/mma_traits_sm89.hpp
+  bytes: 3467
+  sha256: f8e2e4f27ad0ab93f505fd2c61331eda4a19ffa8e6c289e20fcdfa57be7041e8
+  upstream_path: include/cute/atom/mma_traits_sm89.hpp
+  source_sha: 152947dbbd75921e0914dcd851319546b84b3d12
+  change_status: added
+  source_url: https://github.com/NVIDIA/cutlass/blob/152947dbbd75921e0914dcd851319546b84b3d12/include/cute/atom/mma_traits_sm89.hpp
+- path: page.md
+  bytes: 6663
+  sha256: 2f920a89652436804154629384e1d2875c023b681bb05c0da3aafc2c6b226d5b
+skipped: []
+errors: []
+truncations: []
+title: add support for sm89 in cute and the unit tests
+updated_at: '2025-05-04T06:01:17Z'
+status: merged
+head_sha: 152947dbbd75921e0914dcd851319546b84b3d12
+base_sha: 79fc51f4b853d031babb0c7229b4efa99190f14f
+merged_at: '2025-04-10T18:16:36Z'
+merge_commit_sha: 19cc2a5febed01ae76667ffcd3c073c38c47065b
+changed_files: 4

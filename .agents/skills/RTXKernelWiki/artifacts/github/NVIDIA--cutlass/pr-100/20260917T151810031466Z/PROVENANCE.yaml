@@ -1,0 +1,88 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/pull/100
+repo: NVIDIA/cutlass
+number: 100
+type: pr
+retrieved_at: 20260917T151810031466Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4176
+  sha256: c0daae34eff43d0c8730d2f571d855f9a7fa410a19660b02276c598999ea2d34
+- path: comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: pull.json
+  bytes: 19625
+  sha256: 629c9865c91d5a488b22aa7a84aa12b7be3a381e87f85960a990ba5e5aeea484
+- path: changed-files.json
+  bytes: 21781
+  sha256: b18b381823795cdc36380c7309eae5f30d0a40ea23e910e1aef8ca3801ca0c6d
+- path: reviews.json
+  bytes: 1802
+  sha256: 5d515be7c223c71549d3ae4162577239f63a96c9705b60d15fc9e38c45b2c8da
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 16274
+  sha256: 7afac8edac0bebf5a164103ab636f639b34d056fb879190670f867a2554288d6
+- path: key-files/head/examples/06_splitK_gemm/splitk_gemm.cu
+  bytes: 17693
+  sha256: e36d4e53fbc250f59c3dcaf354b98e3591a0d6718dd0c577deb4b1587802e803
+  upstream_path: examples/06_splitK_gemm/splitk_gemm.cu
+  source_sha: 51aed0a5a475fc8513b41271c58c7e71ed96b108
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/51aed0a5a475fc8513b41271c58c7e71ed96b108/examples/06_splitK_gemm/splitk_gemm.cu
+- path: key-files/head/examples/07_volta_tensorop_gemm/volta_tensorop_gemm.cu
+  bytes: 18112
+  sha256: 87d1a28594ebbc4f73f5eb432215ad11980fd18ca9ca8a6f2363cd439a93eb4b
+  upstream_path: examples/07_volta_tensorop_gemm/volta_tensorop_gemm.cu
+  source_sha: 51aed0a5a475fc8513b41271c58c7e71ed96b108
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/51aed0a5a475fc8513b41271c58c7e71ed96b108/examples/07_volta_tensorop_gemm/volta_tensorop_gemm.cu
+- path: key-files/head/examples/08_turing_tensorop_gemm/turing_tensorop_gemm.cu
+  bytes: 18474
+  sha256: b0c0d08e0e04075429d8a6dc771be877b8eaec642846258fb83610fd6c2bb8e2
+  upstream_path: examples/08_turing_tensorop_gemm/turing_tensorop_gemm.cu
+  source_sha: 51aed0a5a475fc8513b41271c58c7e71ed96b108
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/51aed0a5a475fc8513b41271c58c7e71ed96b108/examples/08_turing_tensorop_gemm/turing_tensorop_gemm.cu
+- path: key-files/head/include/cutlass/arch/mma.h
+  bytes: 6321
+  sha256: b59ac81f00963ef6c5b944808c4d7e5910b72e14ee5b480b39d1317bc23aa222
+  upstream_path: include/cutlass/arch/mma.h
+  source_sha: 51aed0a5a475fc8513b41271c58c7e71ed96b108
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/51aed0a5a475fc8513b41271c58c7e71ed96b108/include/cutlass/arch/mma.h
+- path: key-files/head/include/cutlass/arch/mma_sm80.h
+  bytes: 53668
+  sha256: f6d7b220a98c869d2afdbb4fa940bc4761e645f8bf5476a507bfd69b4888b199
+  upstream_path: include/cutlass/arch/mma_sm80.h
+  source_sha: 51aed0a5a475fc8513b41271c58c7e71ed96b108
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/51aed0a5a475fc8513b41271c58c7e71ed96b108/include/cutlass/arch/mma_sm80.h
+- path: key-files/head/tools/util/include/cutlass/util/host_tensor_planar_complex.h
+  bytes: 20342
+  sha256: e9b40b88835cf25016196d538c85ac9aeefe45f5b9b327ead99f16ceacfebed6
+  upstream_path: tools/util/include/cutlass/util/host_tensor_planar_complex.h
+  source_sha: 51aed0a5a475fc8513b41271c58c7e71ed96b108
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/51aed0a5a475fc8513b41271c58c7e71ed96b108/tools/util/include/cutlass/util/host_tensor_planar_complex.h
+- path: page.md
+  bytes: 596
+  sha256: be5d815dab7489a0a6c4396b9743d33c6761739d27de4e49f53ce63d4b37cfe2
+skipped: []
+errors: []
+truncations: []
+title: Updated mma_sm80.h to avoid perf penalty due to reinterpret_cast<>.
+updated_at: '2020-06-15T17:47:13Z'
+status: merged
+head_sha: 51aed0a5a475fc8513b41271c58c7e71ed96b108
+base_sha: 86931fef8538008a1a92036732b3eb7fe47b25d0
+merged_at: '2020-06-15T17:47:02Z'
+merge_commit_sha: 1ab1027954bafc513cef2d3ca673d0e2c1eebb24
+changed_files: 11

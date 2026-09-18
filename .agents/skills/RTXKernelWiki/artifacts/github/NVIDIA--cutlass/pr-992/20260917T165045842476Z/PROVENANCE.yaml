@@ -1,0 +1,155 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/pull/992
+repo: NVIDIA/cutlass
+number: 992
+type: pr
+retrieved_at: 20260917T165045842476Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 49667
+  sha256: c7af94a812a8b25fcded8b2768cd20f25824bc9eb9cff5f8662df486407853d0
+- path: comments.json
+  bytes: 3809
+  sha256: 7bba81c3a32ea994ee18175f0a75b307751500d5d3779b2dc457b47f24704838
+- path: pull.json
+  bytes: 65022
+  sha256: bcedd20573abdd01434b8ed96a55d8cd79683a1fc51593def326a2d9578efb56
+- path: changed-files.json
+  bytes: 174431
+  sha256: 40485339b73aae40b67d4f52e60370277074feec620e64c69f8333724dbbeb94
+- path: reviews.json
+  bytes: 1741
+  sha256: 5b4c526ed15348906f05848488467b24905a8afeaac6e1c4cce2a86ea2c96290
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 163077
+  sha256: ff7f52634f4c310fcc086805f7bd814b52cea5ad386ec4649e00f9be50615fce
+- path: key-files/head/examples/41_fused_multi_head_attention/default_fmha_grouped.h
+  bytes: 10832
+  sha256: 5be489d1eb5557865f09370de6abefb9dbeef5f225a488d8d257535248093016
+  upstream_path: examples/41_fused_multi_head_attention/default_fmha_grouped.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/default_fmha_grouped.h
+- path: key-files/head/examples/41_fused_multi_head_attention/fmha_grouped.h
+  bytes: 37522
+  sha256: 1dcf068acc5a44efce3edac2c34bb39551420dc01a34981510a9fe8b4e6dd3d2
+  upstream_path: examples/41_fused_multi_head_attention/fmha_grouped.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/fmha_grouped.h
+- path: key-files/head/examples/41_fused_multi_head_attention/fused_multi_head_attention_backward.cu
+  bytes: 11208
+  sha256: 9d3a804c126c51862d3af0cee6d6dfe5d96413e9550e645f02d471269a3b475d
+  upstream_path: examples/41_fused_multi_head_attention/fused_multi_head_attention_backward.cu
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/fused_multi_head_attention_backward.cu
+- path: key-files/head/examples/41_fused_multi_head_attention/fused_multihead_attention_fixed_seqlen.cu
+  bytes: 38218
+  sha256: 3ee7179b15329bdef05ffa51a518d4eb81ecea6c551f26708a374800326a38f7
+  upstream_path: examples/41_fused_multi_head_attention/fused_multihead_attention_fixed_seqlen.cu
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/fused_multihead_attention_fixed_seqlen.cu
+- path: key-files/head/examples/41_fused_multi_head_attention/fused_multihead_attention_variable_seqlen.cu
+  bytes: 40003
+  sha256: eb65a5882d11502aeb528431d984cdd02b5dfc6afeef8341e539f3526448fe30
+  upstream_path: examples/41_fused_multi_head_attention/fused_multihead_attention_variable_seqlen.cu
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/fused_multihead_attention_variable_seqlen.cu
+- path: key-files/head/examples/41_fused_multi_head_attention/gemm/custom_mma_multistage.h
+  bytes: 26926
+  sha256: 79b6ab2e213bb2c98c8b1ca59c12aa0f063113a3774e2489a4deef69a387d2cb
+  upstream_path: examples/41_fused_multi_head_attention/gemm/custom_mma_multistage.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/gemm/custom_mma_multistage.h
+- path: key-files/head/examples/41_fused_multi_head_attention/gemm/custom_mma_pipelined.h
+  bytes: 14098
+  sha256: 3ba95407a8f7a2a4a0bbb05629363f619ab88c4285c5b25b6880a170c18a0bd8
+  upstream_path: examples/41_fused_multi_head_attention/gemm/custom_mma_pipelined.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/gemm/custom_mma_pipelined.h
+- path: key-files/head/examples/41_fused_multi_head_attention/gemm/mma_from_smem.h
+  bytes: 68646
+  sha256: d37b639a3e0d788149c88094c7c41ef595a4c228c5171b0a263fb4ae159806f6
+  upstream_path: examples/41_fused_multi_head_attention/gemm/mma_from_smem.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/gemm/mma_from_smem.h
+- path: key-files/head/examples/41_fused_multi_head_attention/gemm_kernel_utils.h
+  bytes: 11075
+  sha256: ae8bd88f4a850dda5412cfcfa7a8caea6192578d1f7505f3504eae76ebead6f7
+  upstream_path: examples/41_fused_multi_head_attention/gemm_kernel_utils.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/gemm_kernel_utils.h
+- path: key-files/head/examples/41_fused_multi_head_attention/iterators/default_warp_iterator_from_smem.h
+  bytes: 5769
+  sha256: 115225386a63bd528c61b45009a2302f6d16d6b08d0d4923194c58e7d4e3c2ce
+  upstream_path: examples/41_fused_multi_head_attention/iterators/default_warp_iterator_from_smem.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: added
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/iterators/default_warp_iterator_from_smem.h
+- path: key-files/head/examples/41_fused_multi_head_attention/iterators/transpose_warp_iterator.h
+  bytes: 2512
+  sha256: 6f7c004f1dc01f77bb2c849afe41063b79f078465f2736e86ce5e9d1676c538e
+  upstream_path: examples/41_fused_multi_head_attention/iterators/transpose_warp_iterator.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/iterators/transpose_warp_iterator.h
+- path: key-files/head/examples/41_fused_multi_head_attention/iterators/warp_iterator_from_smem.h
+  bytes: 10056
+  sha256: 3d1b52167204e726265b87568d52b9a57fc91bda27d538d8332780f3fe186ee2
+  upstream_path: examples/41_fused_multi_head_attention/iterators/warp_iterator_from_smem.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/iterators/warp_iterator_from_smem.h
+- path: key-files/head/examples/41_fused_multi_head_attention/kernel_backward.h
+  bytes: 97621
+  sha256: 8902cdf71d0238bb1b06928909d76831b2feae689f72df733f72c808fe21961a
+  upstream_path: examples/41_fused_multi_head_attention/kernel_backward.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/kernel_backward.h
+- path: key-files/head/examples/41_fused_multi_head_attention/kernel_forward.h
+  bytes: 52597
+  sha256: 453912d7f9e83143bdf719a505b48e86f9db76674abb6298fc875dc9e451036b
+  upstream_path: examples/41_fused_multi_head_attention/kernel_forward.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/kernel_forward.h
+- path: key-files/head/examples/41_fused_multi_head_attention/transform/tile_smem_loader.h
+  bytes: 3761
+  sha256: d17f73b08273d67ef2dbf839c1b84586e7be2baf3ce9935a2cc6324039d24806
+  upstream_path: examples/41_fused_multi_head_attention/transform/tile_smem_loader.h
+  source_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+  change_status: modified
+  source_url: https://github.com/NVIDIA/cutlass/blob/3e535f4065bd5b8f6a464096087312760d26c567/examples/41_fused_multi_head_attention/transform/tile_smem_loader.h
+- path: page.md
+  bytes: 45438
+  sha256: 4344b9073682bbf7a45f2af85ea4e180fb0badde098278da6209a80b8ef5403e
+skipped: []
+errors: []
+truncations: []
+title: Update fMHA kernels
+updated_at: '2023-07-13T02:30:47Z'
+status: merged
+head_sha: 3e535f4065bd5b8f6a464096087312760d26c567
+base_sha: 9b923dd4c47d25c85401dafccb195e544008bad4
+merged_at: '2023-07-13T02:30:47Z'
+merge_commit_sha: 146d314057c5f193a70c2b36896e739c8c60aef4
+changed_files: 16
+kernel_files_selected: 15
+key_file_policy: CUDA/C++/PTX/MLIR and kernel-related Python; exclude docs, CI, tests
+  and benchmarks
+kernel_files_captured: 15

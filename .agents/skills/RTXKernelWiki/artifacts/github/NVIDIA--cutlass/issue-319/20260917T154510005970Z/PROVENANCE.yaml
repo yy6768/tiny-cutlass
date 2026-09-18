@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/319
+repo: NVIDIA/cutlass
+number: 319
+type: issue
+retrieved_at: 20260917T154510005970Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 7900
+  sha256: 494919b585de1f3b9c8ed40f7a4e301546316947c125cab2fe4055a15f075bc1
+- path: comments.json
+  bytes: 12448
+  sha256: 4eb2b6245ddbd90aa88b982270ea116cd19a280d2ea088942e33b75ea4d21f1a
+- path: page.md
+  bytes: 5926
+  sha256: a0e022edd7cecdb59d513682da358afb2eed3180084c13e0ddc2d51e456eb2be
+skipped: []
+errors: []
+truncations: []
+title: Cutlass compile fail with message "relocation truncated to fit..."
+updated_at: '2023-03-28T15:35:01Z'
+status: closed
+kernel_files_captured: 0

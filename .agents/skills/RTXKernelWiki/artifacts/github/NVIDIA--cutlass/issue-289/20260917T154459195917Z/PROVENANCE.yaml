@@ -1,0 +1,27 @@
+schema_version: 1
+origin_url: https://github.com/NVIDIA/cutlass/issues/289
+repo: NVIDIA/cutlass
+number: 289
+type: issue
+retrieved_at: 20260917T154459195917Z
+architectures:
+- sm80
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4320
+  sha256: d4995379108ae14a296326d89b66aaa0992dfa11fe1d0e2ff22540ef15bca230
+- path: comments.json
+  bytes: 4588
+  sha256: c7b79caf51953e1d7cd79ac48cbf3dc128d1a7821d66a590ad3db871ccb4af97
+- path: page.md
+  bytes: 1791
+  sha256: 2ca48399fd9021e0d3ba331d883dce620ac31b64c19e6a8e5e1887fb462046e6
+skipped: []
+errors: []
+truncations: []
+title: Disabling Tensor Core for Specific CUDA Stream
+updated_at: '2021-11-27T13:35:51Z'
+status: closed
+kernel_files_captured: 0

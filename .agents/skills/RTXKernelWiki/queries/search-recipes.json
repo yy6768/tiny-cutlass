@@ -1,0 +1,284 @@
+[
+  {
+    "id": "cutlass-sm80-pr",
+    "architecture": "sm80",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr sm80"
+  },
+  {
+    "id": "cutlass-sm80-issue",
+    "architecture": "sm80",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue sm80"
+  },
+  {
+    "id": "cutlass-sm86-pr",
+    "architecture": "sm86",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr sm86"
+  },
+  {
+    "id": "cutlass-sm86-issue",
+    "architecture": "sm86",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue sm86"
+  },
+  {
+    "id": "cutlass-sm89-pr",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr sm89"
+  },
+  {
+    "id": "cutlass-sm89-issue",
+    "architecture": "sm89",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue sm89"
+  },
+  {
+    "id": "cutlass-sm120-pr",
+    "architecture": "sm120",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr sm120"
+  },
+  {
+    "id": "cutlass-sm120-issue",
+    "architecture": "sm120",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue sm120"
+  },
+  {
+    "id": "vllm-sm80-pr",
+    "architecture": "sm80",
+    "kind": "pr",
+    "query": "repo:vllm-project/vllm is:pr sm80 cutlass"
+  },
+  {
+    "id": "vllm-sm80-issue",
+    "architecture": "sm80",
+    "kind": "issue",
+    "query": "repo:vllm-project/vllm is:issue sm80 cutlass"
+  },
+  {
+    "id": "vllm-sm89-pr",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:vllm-project/vllm is:pr sm89 cutlass"
+  },
+  {
+    "id": "vllm-sm89-issue",
+    "architecture": "sm89",
+    "kind": "issue",
+    "query": "repo:vllm-project/vllm is:issue sm89 cutlass"
+  },
+  {
+    "id": "vllm-sm120-pr",
+    "architecture": "sm120",
+    "kind": "pr",
+    "query": "repo:vllm-project/vllm is:pr sm120 cutlass"
+  },
+  {
+    "id": "vllm-sm120-issue",
+    "architecture": "sm120",
+    "kind": "issue",
+    "query": "repo:vllm-project/vllm is:issue sm120 cutlass"
+  },
+  {
+    "id": "flashinfer-sm120-pr",
+    "architecture": "sm120",
+    "kind": "pr",
+    "query": "repo:flashinfer-ai/flashinfer is:pr sm120"
+  },
+  {
+    "id": "flashinfer-sm120-issue",
+    "architecture": "sm120",
+    "kind": "issue",
+    "query": "repo:flashinfer-ai/flashinfer is:issue sm120"
+  },
+  {
+    "id": "triton-sm120-pr",
+    "architecture": "sm120",
+    "kind": "pr",
+    "query": "repo:triton-lang/triton is:pr sm120"
+  },
+  {
+    "id": "triton-sm120-issue",
+    "architecture": "sm120",
+    "kind": "issue",
+    "query": "repo:triton-lang/triton is:issue sm120"
+  },
+  {
+    "id": "flash-attention-sm86-pr",
+    "architecture": "sm86",
+    "kind": "pr",
+    "query": "repo:Dao-AILab/flash-attention is:pr \"RTX 3090\""
+  },
+  {
+    "id": "flash-attention-sm86-issue",
+    "architecture": "sm86",
+    "kind": "issue",
+    "query": "repo:Dao-AILab/flash-attention is:issue \"RTX 3090\""
+  },
+  {
+    "id": "flash-attention-sm89-pr",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:Dao-AILab/flash-attention is:pr \"RTX 4090\""
+  },
+  {
+    "id": "flash-attention-sm89-issue",
+    "architecture": "sm89",
+    "kind": "issue",
+    "query": "repo:Dao-AILab/flash-attention is:issue \"RTX 4090\""
+  },
+  {
+    "id": "cutlass-sm80-a100-pr",
+    "architecture": "sm80",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr A100"
+  },
+  {
+    "id": "cutlass-sm80-a100-issue",
+    "architecture": "sm80",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue A100"
+  },
+  {
+    "id": "cutlass-sm86-rtx3090-pr",
+    "architecture": "sm86",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr \"RTX 3090\""
+  },
+  {
+    "id": "cutlass-sm86-rtx3090-issue",
+    "architecture": "sm86",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue \"RTX 3090\""
+  },
+  {
+    "id": "cutlass-sm89-rtx4090-pr",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr \"RTX 4090\""
+  },
+  {
+    "id": "cutlass-sm89-rtx4090-issue",
+    "architecture": "sm89",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue \"RTX 4090\""
+  },
+  {
+    "id": "cutlass-sm120-rtx5090-pr",
+    "architecture": "sm120",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr \"RTX 5090\""
+  },
+  {
+    "id": "cutlass-sm120-rtx5090-issue",
+    "architecture": "sm120",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue \"RTX 5090\""
+  },
+  {
+    "id": "cutlass-sm120-underscore-pr",
+    "architecture": "sm120",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr sm_120"
+  },
+  {
+    "id": "cutlass-sm120-underscore-issue",
+    "architecture": "sm120",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue sm_120"
+  },
+  {
+    "id": "cutlass-sm80-underscore-pr",
+    "architecture": "sm80",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr sm_80"
+  },
+  {
+    "id": "cutlass-sm80-underscore-issue",
+    "architecture": "sm80",
+    "kind": "issue",
+    "query": "repo:NVIDIA/cutlass is:issue sm_80"
+  },
+  {
+    "id": "sm89-local-attention-natten-cutlass",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:SHI-Labs/NATTEN is:pr cutlass"
+  },
+  {
+    "id": "sm89-local-attention-natten-fna",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:SHI-Labs/NATTEN is:pr FNA"
+  },
+  {
+    "id": "sm89-local-attention-natten-window",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:SHI-Labs/NATTEN is:pr window"
+  },
+  {
+    "id": "sm89-local-attention-natten-mask",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:SHI-Labs/NATTEN is:pr mask"
+  },
+  {
+    "id": "sm89-local-attention-flash-attention-local",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:Dao-AILab/flash-attention is:pr local"
+  },
+  {
+    "id": "sm89-local-attention-flash-attention-window",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:Dao-AILab/flash-attention is:pr \"sliding window\""
+  },
+  {
+    "id": "sm89-local-attention-xformers-window",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:facebookresearch/xformers is:pr window"
+  },
+  {
+    "id": "sm89-local-attention-xformers-cutlass",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:facebookresearch/xformers is:pr cutlass attention"
+  },
+  {
+    "id": "sm89-local-attention-cutlass-attention",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr attention"
+  },
+  {
+    "id": "sm89-local-attention-cutlass-ada-fp8",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:NVIDIA/cutlass is:pr fp8 sm89"
+  },
+  {
+    "id": "sm89-local-attention-vllm-ada-fp8",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:vllm-project/vllm is:pr fp8 sm89 cutlass"
+  },
+  {
+    "id": "sm89-local-attention-sageattention",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:thu-ml/SageAttention is:pr"
+  },
+  {
+    "id": "sm89-local-attention-fastertransformer-swin",
+    "architecture": "sm89",
+    "kind": "pr",
+    "query": "repo:NVIDIA/FasterTransformer is:pr swin"
+  }
+]

@@ -1,0 +1,155 @@
+schema_version: 1
+origin_url: https://github.com/thu-ml/SageAttention/pull/196
+repo: thu-ml/SageAttention
+number: 196
+type: pr
+retrieved_at: 20260917T165114654675Z
+architectures:
+- sm89
+review: defer
+complete: true
+files:
+- path: issue.json
+  bytes: 4070
+  sha256: f26cc2434263ec61ec5dab2c74181173586cab232882be4471986a60b5caa336
+- path: comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: pull.json
+  bytes: 20662
+  sha256: dd8d24b05a17fe28596eb3eb649b30ce57a1cedc18930a0d0d73f4c02c7271b9
+- path: changed-files.json
+  bytes: 189057
+  sha256: 1c9e0fbeb36b3b04b13372cca1b626e0e1cbb46878efb193142ec65fb1b11c06
+- path: reviews.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: review-comments.json
+  bytes: 3
+  sha256: 37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570
+- path: diff.patch
+  bytes: 175791
+  sha256: 9427f381ac2d598115356608dd7593de2f9a35ac03eaa7350983371e866563e4
+- path: key-files/head/csrc/mma.cuh
+  bytes: 26952
+  sha256: 841a0b028e25b48fd83ad042d7bf817f84bfd5e5630d19d08510b0b797914231
+  upstream_path: csrc/mma.cuh
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: modified
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/mma.cuh
+- path: key-files/head/csrc/numeric_conversion.cuh
+  bytes: 4685
+  sha256: bb7edb348764a13827bb025c326784a609a416ba7758a5f69d9ac2460a26aa3d
+  upstream_path: csrc/numeric_conversion.cuh
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: modified
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/numeric_conversion.cuh
+- path: key-files/head/csrc/qattn/attn_cuda_sm89.h
+  bytes: 4225
+  sha256: 7372fbf05d5a25fc8fd4403ed187ec857fdf2e8d662e295181e48c9dc6ed3f7d
+  upstream_path: csrc/qattn/attn_cuda_sm89.h
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: modified
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/attn_cuda_sm89.h
+- path: key-files/head/csrc/qattn/attn_utils.cuh
+  bytes: 36500
+  sha256: 9317f7e56cfab0d293eebc9b5253b2d3897ed0478df7f40c90182c830362e4d8
+  upstream_path: csrc/qattn/attn_utils.cuh
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: modified
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/attn_utils.cuh
+- path: key-files/head/csrc/qattn/pybind_sm89.cpp
+  bytes: 1771
+  sha256: 6de181e603e5bd6ae3a5bc4e818ac527d898926a7f6cceb06b2b198ea6a62198
+  upstream_path: csrc/qattn/pybind_sm89.cpp
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: modified
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/pybind_sm89.cpp
+- path: key-files/base/csrc/qattn/qk_int_sv_f8_cuda_sm89.cu
+  bytes: 65125
+  sha256: 318efedb5aedc821277acd24e7c25a1d4a69bf70e730b58e97934ac76835fe88
+  upstream_path: csrc/qattn/qk_int_sv_f8_cuda_sm89.cu
+  source_sha: e9b072f0fc2682f104abbda306af3d42fc33b969
+  change_status: removed
+  source_url: https://github.com/thu-ml/SageAttention/blob/e9b072f0fc2682f104abbda306af3d42fc33b969/csrc/qattn/qk_int_sv_f8_cuda_sm89.cu
+- path: key-files/head/csrc/qattn/qk_int_sv_f8_cuda_sm89.cuh
+  bytes: 30457
+  sha256: 9dfe17b60fb02047ed6ac03ca9af24565d7b6e773fd62526c6a89bf539e180f0
+  upstream_path: csrc/qattn/qk_int_sv_f8_cuda_sm89.cuh
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: added
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/qk_int_sv_f8_cuda_sm89.cuh
+- path: key-files/head/csrc/qattn/sm89_qk_int8_sv_f8_accum_f16_attn_inst_buf.cu
+  bytes: 6918
+  sha256: 08e3931844ae4a20311d2eb387845214ee694461ecfbcc5721b74b58feae718f
+  upstream_path: csrc/qattn/sm89_qk_int8_sv_f8_accum_f16_attn_inst_buf.cu
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: added
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/sm89_qk_int8_sv_f8_accum_f16_attn_inst_buf.cu
+- path: key-files/head/csrc/qattn/sm89_qk_int8_sv_f8_accum_f16_fuse_v_scale_attn_inst_buf.cu
+  bytes: 7242
+  sha256: 2d9651036aa0ce2769985055024ba944f197186ebf1db9b102af2f3560027260
+  upstream_path: csrc/qattn/sm89_qk_int8_sv_f8_accum_f16_fuse_v_scale_attn_inst_buf.cu
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: added
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/sm89_qk_int8_sv_f8_accum_f16_fuse_v_scale_attn_inst_buf.cu
+- path: key-files/head/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_attn.cu
+  bytes: 6911
+  sha256: b2e42ada0001c22e9699ac9beebdf771b8d40e8df2106aaba8b352bea32148d2
+  upstream_path: csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_attn.cu
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: added
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_attn.cu
+- path: key-files/head/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_attn_inst_buf.cu
+  bytes: 6918
+  sha256: 78442fb3dc94b0976569adb87a1316b30e1e7324531a46c2748e17d1d4f33050
+  upstream_path: csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_attn_inst_buf.cu
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: added
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_attn_inst_buf.cu
+- path: key-files/head/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_attn.cu
+  bytes: 7235
+  sha256: 0a6a0592543953be55e759364e85d4c1e9f538cd2b8da597f3d20603b5ba9ee9
+  upstream_path: csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_attn.cu
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: added
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_attn.cu
+- path: key-files/head/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_attn_inst_buf.cu
+  bytes: 7243
+  sha256: cbb3d4a8e84b0ac3d6814f227130088c35ad4b0919dca7118cc6b57b2ab04858
+  upstream_path: csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_attn_inst_buf.cu
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: added
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_attn_inst_buf.cu
+- path: key-files/head/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_fuse_v_mean_attn.cu
+  bytes: 7536
+  sha256: 4aea1e82208df256babdde7ab2cb750cc2ab3c2be8c6ac440cb585f57cc25e00
+  upstream_path: csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_fuse_v_mean_attn.cu
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: added
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/csrc/qattn/sm89_qk_int8_sv_f8_accum_f32_fuse_v_scale_fuse_v_mean_attn.cu
+- path: key-files/head/sageattention/core.py
+  bytes: 41059
+  sha256: 638958182f531540ce56d0d71e01426bea7378c79b2632c2e70b76d89383d854
+  upstream_path: sageattention/core.py
+  source_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+  change_status: modified
+  source_url: https://github.com/thu-ml/SageAttention/blob/a6b3b19e13388a629e7b0c0f6647265a864cd6cf/sageattention/core.py
+- path: page.md
+  bytes: 301
+  sha256: 93510deab6a0d2bce6f3f70112ea2eec8c8110f2cd49de81c73d9b2eb3b7a6a7
+skipped: []
+errors: []
+truncations: []
+title: Update to SageAttention v2.2.0 (sage2++)
+updated_at: '2025-07-08T12:01:10Z'
+status: merged
+head_sha: a6b3b19e13388a629e7b0c0f6647265a864cd6cf
+base_sha: e9b072f0fc2682f104abbda306af3d42fc33b969
+merged_at: '2025-07-01T06:09:30Z'
+merge_commit_sha: 912f05da07731a93fdc0f7c2298005f7dcb42c0d
+changed_files: 18
+kernel_files_selected: 15
+key_file_policy: CUDA/C++/PTX/MLIR and kernel-related Python; exclude docs, CI, tests
+  and benchmarks
+kernel_files_captured: 15

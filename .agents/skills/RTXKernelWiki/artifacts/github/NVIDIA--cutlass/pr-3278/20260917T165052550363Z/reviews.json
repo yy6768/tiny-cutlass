@@ -1,0 +1,42 @@
+[
+  {
+    "id": 4936383430,
+    "node_id": "PRR_kwDOBrVDM88AAAABJjs7xg",
+    "user": {
+      "login": "jackkosaian",
+      "id": 5831848,
+      "node_id": "MDQ6VXNlcjU4MzE4NDg=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5831848?u=b7ce794722052796cffd5906cf5ab7c5590b3ea9&v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/jackkosaian",
+      "html_url": "https://github.com/jackkosaian",
+      "followers_url": "https://api.github.com/users/jackkosaian/followers",
+      "following_url": "https://api.github.com/users/jackkosaian/following{/other_user}",
+      "gists_url": "https://api.github.com/users/jackkosaian/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/jackkosaian/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/jackkosaian/subscriptions",
+      "organizations_url": "https://api.github.com/users/jackkosaian/orgs",
+      "repos_url": "https://api.github.com/users/jackkosaian/repos",
+      "events_url": "https://api.github.com/users/jackkosaian/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/jackkosaian/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "body": "",
+    "state": "APPROVED",
+    "html_url": "https://github.com/NVIDIA/cutlass/pull/3278#pullrequestreview-4936383430",
+    "pull_request_url": "https://api.github.com/repos/NVIDIA/cutlass/pulls/3278",
+    "author_association": "COLLABORATOR",
+    "_links": {
+      "html": {
+        "href": "https://github.com/NVIDIA/cutlass/pull/3278#pullrequestreview-4936383430"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/NVIDIA/cutlass/pulls/3278"
+      }
+    },
+    "submitted_at": "2026-08-14T10:40:08Z",
+    "commit_id": "dbea1dcc4979c88353d661f898a6e2f0b047ba4e"
+  }
+]
