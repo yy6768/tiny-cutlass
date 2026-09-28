@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "profile": "swin-sm89-cutlass2",
+  "source_roots": ["csrc/swin/window_attention"],
+  "rules": ["inline-ptx", "cute", "cutlass3", "torch-core", "simt-mma"],
+  "exceptions": []
+}

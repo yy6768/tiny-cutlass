@@ -7,10 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-import numpy as np
-import torch
-
-from window_attention_reference import artifact_root, configure_reference, executable, verification_cases, write_fixture
+from source_policy import check_sources
 
 
 def main() -> int:
@@ -21,7 +18,16 @@ def main() -> int:
     parser.add_argument('--case', action='append', default=[])
     parser.add_argument('--all-families', action='store_true')
     parser.add_argument('--block', action='store_true', help='full C32/ratio4 block including 720p cases')
+    parser.add_argument('--source-only', action='store_true', help='check local source policy without CUDA or Torch')
     args = parser.parse_args()
+    if not check_sources():
+        return 1
+    if args.source_only:
+        return 0
+    import numpy as np
+    import torch
+    from window_attention_reference import artifact_root, configure_reference, executable, verification_cases, write_fixture
+
     configure_reference()
     families = ('swin_window_index', 'swin_window_gather_scatter', 'swin_patch_embed', 'swin_mlp', 'swin_patch_merging')
     try:

@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 580" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arO" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <text x="440" y="30" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">FlashAttention Tiling：一个 CTA 处理一行 Q tile</text>
+
+  <!-- ===================== TOP: S = Q · K^T ===================== -->
+  <text x="440" y="62" text-anchor="middle" font-size="13" fill="#64748b">① 内层循环：固定 Q tile，扫过所有 K tile，逐块算 S = Q·Kᵀ</text>
+
+  <!-- Q matrix [N x d], row-tiled -->
+  <g>
+    <rect x="40" y="120" width="80" height="180" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <!-- row tile lines -->
+    <line x1="40" y1="150" x2="120" y2="150" stroke="#93c5fd" stroke-width="1"/>
+    <line x1="40" y1="180" x2="120" y2="180" stroke="#93c5fd" stroke-width="1"/>
+    <line x1="40" y1="240" x2="120" y2="240" stroke="#93c5fd" stroke-width="1"/>
+    <line x1="40" y1="270" x2="120" y2="270" stroke="#93c5fd" stroke-width="1"/>
+    <!-- highlighted Q tile -->
+    <rect x="40" y="180" width="80" height="30" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/>
+    <text x="80" y="200" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Qᵢ</text>
+    <text x="80" y="112" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af">Q</text>
+    <text x="80" y="316" text-anchor="middle" font-size="10" fill="#64748b">[N, d]</text>
+    <text x="32" y="210" text-anchor="end" font-size="9" fill="#1e40af" transform="rotate(-90 32 210)">Bᵣ</text>
+  </g>
+
+  <text x="150" y="215" text-anchor="middle" font-size="20" fill="#334155">×</text>
+
+  <!-- K^T matrix [d x N], col-tiled -->
+  <g>
+    <rect x="180" y="155" width="240" height="80" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <line x1="220" y1="155" x2="220" y2="235" stroke="#86efac" stroke-width="1"/>
+    <line x1="260" y1="155" x2="260" y2="235" stroke="#86efac" stroke-width="1"/>
+    <line x1="340" y1="155" x2="340" y2="235" stroke="#86efac" stroke-width="1"/>
+    <line x1="380" y1="155" x2="380" y2="235" stroke="#86efac" stroke-width="1"/>
+    <!-- highlighted K tile (current j) -->
+    <rect x="260" y="155" width="40" height="80" fill="#16a34a" stroke="#14532d" stroke-width="2"/>
+    <text x="280" y="200" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Kⱼᵀ</text>
+    <text x="300" y="147" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d">Kᵀ</text>
+    <text x="400" y="251" text-anchor="middle" font-size="10" fill="#64748b">[d, N]</text>
+    <text x="280" y="252" text-anchor="middle" font-size="9" fill="#15803d">Bᵪ</text>
+  </g>
+
+  <text x="445" y="215" text-anchor="middle" font-size="20" fill="#334155">=</text>
+
+  <!-- S matrix [N x N] -->
+  <g>
+    <rect x="475" y="120" width="180" height="180" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+    <!-- grid -->
+    <line x1="515" y1="120" x2="515" y2="300" stroke="#fecaca" stroke-width="1"/>
+    <line x1="555" y1="120" x2="555" y2="300" stroke="#fecaca" stroke-width="1"/>
+    <line x1="615" y1="120" x2="615" y2="300" stroke="#fecaca" stroke-width="1"/>
+    <line x1="475" y1="150" x2="655" y2="150" stroke="#fecaca" stroke-width="1"/>
+    <line x1="475" y1="180" x2="655" y2="180" stroke="#fecaca" stroke-width="1"/>
+    <line x1="475" y1="240" x2="655" y2="240" stroke="#fecaca" stroke-width="1"/>
+    <line x1="475" y1="270" x2="655" y2="270" stroke="#fecaca" stroke-width="1"/>
+    <!-- highlighted S tile -->
+    <rect x="515" y="180" width="40" height="30" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/>
+    <text x="535" y="200" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Sᵢⱼ</text>
+    <text x="565" y="112" text-anchor="middle" font-size="13" font-weight="700" fill="#b91c1c">S = P (未落 HBM)</text>
+    <text x="565" y="316" text-anchor="middle" font-size="10" fill="#64748b">[N, N] 只在片上按 tile 存在</text>
+  </g>
+
+  <!-- inner-loop sweep arrow over K tiles -->
+  <path d="M200,300 L400,300" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arO)"/>
+  <text x="300" y="322" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">j = 1 → Tᵪ 逐块扫过</text>
+
+  <!-- divider -->
+  <line x1="40" y1="350" x2="840" y2="350" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ===================== BOTTOM: O = P · V ===================== -->
+  <text x="440" y="372" text-anchor="middle" font-size="13" fill="#64748b">② 同一轮内：P tile 立即和 V tile 相乘，online 累加到 O（带 rescale）</text>
+
+  <!-- P row [Br x N] -->
+  <g>
+    <rect x="120" y="425" width="180" height="36" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <line x1="160" y1="425" x2="160" y2="461" stroke="#fecaca" stroke-width="1"/>
+    <line x1="200" y1="425" x2="200" y2="461" stroke="#fecaca" stroke-width="1"/>
+    <line x1="260" y1="425" x2="260" y2="461" stroke="#fecaca" stroke-width="1"/>
+    <rect x="160" y="425" width="40" height="36" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/>
+    <text x="180" y="448" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Pᵢⱼ</text>
+    <text x="210" y="416" text-anchor="middle" font-size="12" font-weight="700" fill="#b91c1c">Pᵢ (一行)</text>
+  </g>
+
+  <text x="318" y="447" text-anchor="middle" font-size="18" fill="#334155">×</text>
+
+  <!-- V [N x d] row-tiled -->
+  <g>
+    <rect x="340" y="400" width="70" height="120" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/>
+    <line x1="340" y1="430" x2="410" y2="430" stroke="#fde68a" stroke-width="1"/>
+    <line x1="340" y1="490" x2="410" y2="490" stroke="#fde68a" stroke-width="1"/>
+    <rect x="340" y="430" width="70" height="60" fill="#eab308" stroke="#854d0e" stroke-width="2"/>
+    <text x="375" y="464" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Vⱼ</text>
+    <text x="375" y="392" text-anchor="middle" font-size="12" font-weight="700" fill="#a16207">V</text>
+    <text x="375" y="535" text-anchor="middle" font-size="10" fill="#64748b">[N, d]</text>
+  </g>
+
+  <text x="435" y="447" text-anchor="middle" font-size="18" fill="#334155">→</text>
+
+  <!-- O [N x d] row-tiled -->
+  <g>
+    <rect x="465" y="400" width="70" height="120" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.5"/>
+    <line x1="465" y1="430" x2="535" y2="430" stroke="#ddd6fe" stroke-width="1"/>
+    <line x1="465" y1="490" x2="535" y2="490" stroke="#ddd6fe" stroke-width="1"/>
+    <rect x="465" y="430" width="70" height="30" fill="#8b5cf6" stroke="#5b21b6" stroke-width="2"/>
+    <text x="500" y="450" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Oᵢ</text>
+    <text x="500" y="392" text-anchor="middle" font-size="12" font-weight="700" fill="#6d28d9">O</text>
+    <text x="500" y="535" text-anchor="middle" font-size="10" fill="#64748b">[N, d]</text>
+  </g>
+
+  <!-- accumulate annotation -->
+  <rect x="575" y="408" width="255" height="92" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="588" y="428" font-size="11" font-weight="700" fill="#334155">每个 K/V tile 累加一次：</text>
+  <text x="588" y="449" font-size="11" fill="#475569">Oᵢ ← Oᵢ · e^(mᵒˡᵈ−mⁿᵉʷ) + Pᵢⱼ·Vⱼ</text>
+  <text x="588" y="470" font-size="11" fill="#475569">dᵢ ← dᵢ · e^(mᵒˡᵈ−mⁿᵉʷ) + rowsum(Pᵢⱼ)</text>
+  <text x="588" y="491" font-size="11" fill="#6d28d9" font-weight="700">最后：Oᵢ = Oᵢ / dᵢ → 写回 HBM</text>
+
+  <!-- footer -->
+  <text x="40" y="568" font-size="11" fill="#dc2626" font-weight="700">深色块 = 当前 tile　·　红色 S/P 矩阵整体从不落 HBM，只按 tile 在 register/smem 中短暂存在</text>
+</svg>

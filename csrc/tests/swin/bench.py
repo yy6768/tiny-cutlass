@@ -12,10 +12,7 @@ import sys
 import statistics
 import hashlib
 
-import torch
-
-from window_attention_reference import (artifact_root, benchmark_cases, configure_reference,
-                                        executable, expand_position_bias, reference, write_fixture)
+from source_policy import check_sources
 
 
 def run(command: list[str], log: Path | None = None) -> str:
@@ -30,6 +27,9 @@ def run(command: list[str], log: Path | None = None) -> str:
 
 
 def pytorch_time(case, tensors, iterations: int) -> float:
+    import torch
+    from window_attention_reference import expand_position_bias, reference
+
     # Eager CUDA-event latency for both paths includes gaps caused by host
     # dispatch. NCU provides the separate, isolated fused kernel duration.
     bias = expand_position_bias(case, tensors['position_bias'])
@@ -45,6 +45,8 @@ def pytorch_time(case, tensors, iterations: int) -> float:
 
 
 def benchmark_block(args):
+    import torch
+    from window_attention_reference import artifact_root, configure_reference, executable
     from block_reference import benchmark_cases as block_cases, write_fixture as block_fixture, prepare, reference as block_reference
     configure_reference()
     exe = executable(args.build_dir, args.config, 'swin_block')
@@ -153,6 +155,11 @@ def main() -> int:
     parser.add_argument('--baseline-executable', type=Path)
     parser.add_argument('--repeats', type=int, default=5)
     args = parser.parse_args()
+    if not check_sources():
+        return 1
+    import torch
+    from window_attention_reference import artifact_root, benchmark_cases, configure_reference, executable, write_fixture
+
     if args.repeats <= 0: raise ValueError('positive repeats required')
     if args.iterations <= 0 or args.batch_size <= 0: raise ValueError('positive iterations and batch required')
     if args.block: return benchmark_block(args)

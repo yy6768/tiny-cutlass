@@ -1,30 +1,43 @@
 #pragma once
 
+#include "cutlass/epilogue/warp/fragment_iterator_tensor_op.h"
+#include "cutlass/epilogue/warp/tile_iterator_tensor_op.h"
 #include "cutlass/numeric_conversion.h"
-#include "cutlass/tensor_ref.h"
 
+// Every (KV,Q) iteration normalizes O in Mma. Intermediate rounds store FP32
+// through the stock MMA accumulator iterator; the final round converts to FP16.
 template <class Policy>
 struct FlashAttnEpilogue {
   using Element = typename Policy::Element;
   using Warp = typename Policy::WarpPV;
+  using Mma = typename Warp::Mma;
   using FragmentO = typename Warp::Fragment;
-  using FragmentL = typename Warp::FragmentRow;
-  using TensorRefO = cutlass::TensorRef<Element, cutlass::layout::RowMajor>;
+  using StateTileIterator = typename Warp::IteratorC;
+  using FragmentIterator = cutlass::epilogue::warp::FragmentIteratorTensorOp<
+      typename Mma::Shape, typename Mma::InstructionShape, float,
+      typename Mma::Policy::Operator::FragmentC, cutlass::layout::RowMajor>;
+  using Fragment = typename FragmentIterator::Fragment;
+  using OutputTileIterator = cutlass::epilogue::warp::TileIteratorTensorOpCanonical<
+      typename Mma::Shape, typename Mma::InstructionShape, Element, cutlass::layout::RowMajor>;
+  using OutputConverter = cutlass::NumericArrayConverter<Element, float, Fragment::kElements>;
+  static constexpr int kWarpColumns = Policy::WarpShapePV::kN;
 
-  // No shared-memory scratch: this is not an artificial union with mainloop storage.
   CUTLASS_DEVICE
-  void operator()(FragmentO const& accum, FragmentL const& denominator,
-                  TensorRefO output, int valid_rows, int warp, int lane) const {
-    int warp_m = warp % Policy::kWarpsM;
-    int warp_n = warp / Policy::kWarpsM;
-    cutlass::NumericConverter<Element, float> convert;
+  void store_intermediate(FragmentO const& accum, StateTileIterator state) const {
+    state.store(accum);
+  }
+
+  CUTLASS_DEVICE
+  void operator()(FragmentO const& accum, OutputTileIterator output) const {
+    FragmentIterator fragments(accum);
+    OutputConverter convert;
     CUTLASS_PRAGMA_UNROLL
-    for (int i = 0; i < FragmentO::kElements; ++i) {
-      int r = Warp::row_slot(i);
-      int row = warp_m * Policy::WarpShapePV::kM + Warp::row(r, lane);
-      int col = warp_n * Policy::WarpShapePV::kN + Warp::column(i, lane);
-      if (row < valid_rows && col < Policy::kHeadDimV)
-        output.at({row, col}) = convert(accum[i] / denominator[r]);
+    for (int r = 0; r < FragmentIterator::kIterations; ++r) {
+      Fragment result;
+      fragments.load(result);
+      output.store(convert(result));
+      ++fragments;
+      ++output;
     }
   }
 };

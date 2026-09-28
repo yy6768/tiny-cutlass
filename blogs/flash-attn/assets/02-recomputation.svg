@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="rc-ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Online rescale：m 增大时，用 α 修正已累加的 O 和 l</text>
+  <text x="450" y="54" text-anchor="middle" font-size="12" fill="#64748b">同一行 score 被切成 3 个 tile 依次到达。α = exp(m_old − m_new) 把旧累加器换到新基准上。</text>
+
+  <!-- column headers -->
+  <text x="66"  y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">K/V tile</text>
+  <text x="215" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">本 tile 的 score 行</text>
+  <text x="365" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">行最大值 m</text>
+  <text x="500" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">修正因子 α</text>
+  <text x="730" y="84" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">累加器 O 的更新</text>
+
+  <!-- ============ row j = 0 ============ -->
+  <rect x="25" y="94" width="850" height="104" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <text x="66" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">j = 0</text>
+  <text x="66" y="160" text-anchor="middle" font-size="10" fill="#94a3b8">首个 tile</text>
+
+  <rect x="140" y="128" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="157" y="150" text-anchor="middle" font-size="12" fill="#7f1d1d">1.0</text>
+  <rect x="176" y="128" width="34" height="34" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/>
+  <text x="193" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">2.0</text>
+  <rect x="212" y="128" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="229" y="150" text-anchor="middle" font-size="12" fill="#7f1d1d">0.5</text>
+  <rect x="248" y="128" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="265" y="150" text-anchor="middle" font-size="11" fill="#7f1d1d">−1.0</text>
+
+  <rect x="310" y="128" width="110" height="34" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="365" y="150" text-anchor="middle" font-size="13" fill="#1e3a8a">−∞ → 2.0</text>
+
+  <rect x="445" y="128" width="110" height="34" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+  <text x="500" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">α = 0</text>
+
+  <rect x="590" y="132" width="70" height="24" fill="#8b5cf6" stroke="#5b21b6" stroke-width="1.5"/>
+  <text x="625" y="148" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">P₀V₀</text>
+  <text x="672" y="149" font-size="12" fill="#475569">O 初始为 0，本轮 α = 0</text>
+
+  <!-- ============ row j = 1 ============ -->
+  <rect x="25" y="206" width="850" height="104" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+  <text x="66" y="252" text-anchor="middle" font-size="15" font-weight="700" fill="#92400e">j = 1</text>
+  <text x="66" y="272" text-anchor="middle" font-size="10" font-weight="700" fill="#b45309">m 被刷新</text>
+
+  <rect x="140" y="240" width="34" height="34" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/>
+  <text x="157" y="262" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">5.0</text>
+  <rect x="176" y="240" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="193" y="262" text-anchor="middle" font-size="12" fill="#7f1d1d">3.0</text>
+  <rect x="212" y="240" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="229" y="262" text-anchor="middle" font-size="12" fill="#7f1d1d">0.0</text>
+  <rect x="248" y="240" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="265" y="262" text-anchor="middle" font-size="12" fill="#7f1d1d">1.0</text>
+
+  <rect x="310" y="240" width="110" height="34" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="365" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">2.0 → 5.0</text>
+
+  <rect x="445" y="240" width="110" height="34" rx="4" fill="#d97706" stroke="#92400e" stroke-width="2"/>
+  <text x="500" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">α = 0.050</text>
+
+  <!-- old accumulator shrinking -->
+  <rect x="590" y="244" width="60" height="24" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="620" y="260" text-anchor="middle" font-size="10" fill="#64748b">旧 O</text>
+  <path d="M654,256 L692,256" fill="none" stroke="#d97706" stroke-width="2" marker-end="url(#rc-ar)"/>
+  <text x="673" y="243" text-anchor="middle" font-size="10" font-weight="700" fill="#b45309">×α</text>
+  <rect x="700" y="244" width="6" height="24" fill="#64748b" stroke="#334155" stroke-width="1"/>
+  <text x="716" y="261" font-size="14" fill="#475569">+</text>
+  <rect x="728" y="244" width="70" height="24" fill="#8b5cf6" stroke="#5b21b6" stroke-width="1.5"/>
+  <text x="763" y="260" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">P₁V₁</text>
+  <text x="590" y="292" font-size="11" font-weight="700" fill="#b45309">旧 O 乘约 0.05，保留前一轮贡献，无需重算 QK</text>
+
+  <!-- ============ row j = 2 ============ -->
+  <rect x="25" y="318" width="850" height="104" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <text x="66" y="364" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">j = 2</text>
+  <text x="66" y="384" text-anchor="middle" font-size="10" fill="#94a3b8">m 不变</text>
+
+  <rect x="140" y="352" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="157" y="374" text-anchor="middle" font-size="12" fill="#7f1d1d">3.0</text>
+  <rect x="176" y="352" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="193" y="374" text-anchor="middle" font-size="11" fill="#7f1d1d">−2.0</text>
+  <rect x="212" y="352" width="34" height="34" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/>
+  <text x="229" y="374" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">4.0</text>
+  <rect x="248" y="352" width="34" height="34" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="265" y="374" text-anchor="middle" font-size="12" fill="#7f1d1d">0.5</text>
+
+  <rect x="310" y="352" width="110" height="34" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="365" y="374" text-anchor="middle" font-size="13" fill="#1e3a8a">5.0 → 5.0</text>
+
+  <rect x="445" y="352" width="110" height="34" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="500" y="374" text-anchor="middle" font-size="13" fill="#475569">α = 1</text>
+
+  <rect x="590" y="356" width="66" height="24" fill="#64748b" stroke="#334155" stroke-width="1.2"/>
+  <text x="623" y="372" text-anchor="middle" font-size="10" font-weight="700" fill="#ffffff">旧 O</text>
+  <text x="666" y="373" font-size="14" fill="#475569">+</text>
+  <rect x="682" y="356" width="70" height="24" fill="#8b5cf6" stroke="#5b21b6" stroke-width="1.5"/>
+  <text x="717" y="372" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">P₂V₂</text>
+  <text x="590" y="404" font-size="11" fill="#475569">本 tile 的最大值 4.0 ≤ 5.0，α = 1，退化成普通累加</text>
+
+  <!-- ============ epilogue ============ -->
+  <rect x="25" y="436" width="850" height="58" rx="6" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.6"/>
+  <text x="46" y="460" font-size="12" font-weight="700" fill="#5b21b6">扫完全部 tile 后（epilogue）</text>
+  <text x="46" y="481" font-size="12" fill="#4c1d95">Oᵢ ← Oᵢ / lᵢ，写回 HBM。全程只有 [Bᵣ, B_c] 的 tile 在片上，整行 score 从未同时存在过。</text>
+
+  <text x="25" y="524" font-size="11" fill="#64748b">每轮的完整更新：<tspan font-weight="700" fill="#0f172a">m ← max(m, rowmax(Sⱼ))　α = exp(m_old − m)　O ← α·O + PⱼVⱼ　l ← α·l + rowsum(Pⱼ)</tspan></text>
+  <text x="25" y="546" font-size="11" fill="#b45309" font-weight="700">α ≠ 1 恰好发生在 m 被刷新的那一轮 —— 代价是一次额外的乘法，换掉的是整行 score 的 materialize。</text>
+</svg>

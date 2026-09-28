@@ -10,10 +10,21 @@
 - `csrc/conv-fused/fp8/conv1x1_relu_conv1x1_relu_fp8/AGENTS.md`
 - `csrc/natten/AGENTS.md`
 - `csrc/swin/AGENTS.md`
+- `csrc/evt/AGENTS.md`（纯学习/设计工作区，不进构建）
+
+## 仓库级技能
+
+- [kernel-design-agents](.agents/skills/kernel-design-agents/SKILL.md)：本仓库自行维护的 KDA，
+  用于用户实际算子的任务契约、实现主线、结构审查、源码门禁和性能候选。
+  维护范围为 SM80/SM89，当前 Swin 主线是 SM89 CUTLASS 2.x。
+  实际支持以具体 family 的构建和 reference parity 为准；CUDA/CUTLASS kernel 开发仍先使用 `cutlass-kernel`。
 
 ## 全局规则
 
 - 做 CUDA/CUTLASS kernel 编程时，必须先使用 `cutlass-kernel` skill。
+- 新建或续写 CUDA/CUTLASS 学习博客时，必须使用 `cutlass-blog-workflow` skill；
+  前言第一版只根据用户 prompt，Overview 由 agents 初始化，正文按已确认 Overview
+  逐节补充，Profile 只写通过 reference parity 后的 NCU 实测结果，后记由用户本人写。
 - 每个 kernel family 优先提供一个脚本入口：
   `scripts/kernels/<family>/<family>.bat`。
 - `.bat` 工作流顺序必须是 build -> verify -> bench；verify 失败时不要 benchmark。

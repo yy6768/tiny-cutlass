@@ -2,13 +2,14 @@ set(NATTEN_TEST_DIR "${PROJECT_SOURCE_DIR}/csrc/tests/natten")
 
 cutlass_example_add_executable(
   natten_fna
-  "${NATTEN_TEST_DIR}/natten_fna_test.cu"
+  "${NATTEN_TEST_DIR}/fna.cu"
 )
 
 target_include_directories(
   natten_fna
   PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/include"
+  "${CMAKE_CURRENT_LIST_DIR}"
 )
 
 target_compile_options(

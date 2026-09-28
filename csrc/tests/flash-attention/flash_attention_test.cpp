@@ -25,6 +25,7 @@ struct Options {
   bool error = false;
   bool reference_check = true;
   bool verify_only = false;
+  bool verify_reuse = false;
 
   std::string kernel = FLASH_ATTENTION_DEFAULT_KERNEL;
   std::string reference = "cudnn";
@@ -54,6 +55,7 @@ struct Options {
     cmd.get_cmd_line_argument("reference", reference, reference);
     cmd.get_cmd_line_argument("reference-check", reference_check, true);
     cmd.get_cmd_line_argument("verify-only", verify_only, false);
+    cmd.get_cmd_line_argument("verify-reuse", verify_reuse, false);
     cmd.get_cmd_line_argument("head_number", head_number, 12);
     cmd.get_cmd_line_argument("batch_size", batch_size, 16);
     cmd.get_cmd_line_argument("head_size", head_size, 64);
@@ -71,7 +73,8 @@ struct Options {
         iterations <= 0 || !std::isfinite(mae_tolerance) || mae_tolerance <= 0.0f ||
         !std::isfinite(max_abs_tolerance) || max_abs_tolerance <= 0.0f ||
         !std::isfinite(input_scale) || input_scale < 0.0f ||
-        (verify_only && !reference_check)) {
+        (verify_only && !reference_check) ||
+        (verify_reuse && (!verify_only || (kernel != "02-split-kv" && kernel != "03-split-q")))) {
       error = true;
     }
   }
@@ -99,11 +102,12 @@ struct Options {
     out << "flash_attention_test\n\n"
         << "Options:\n\n"
         << "  --help                         Display this usage statement.\n"
-        << "  --kernel=<id|all|list>         Kernel to run. Available: 00-naive, 01-online-softmax, 02-split-kv, all.\n"
+        << "  --kernel=<id|all|list>         Kernel to run. Available: 00-naive, 01-online-softmax, 02-split-kv, 03-split-q, all.\n"
         << "  --reference=<cudnn>            Reference backend. CPU reference is intentionally unsupported.\n"
         << "  --reference-check=<bool>       Run reference verification before timing (default: true).\n"
         << "  --verify-only=<bool>           Exit after reference verification; do not benchmark.\n"
-        << "  --mae-tolerance=<float>        Required MAE against reference (default: 1e-3).\n"
+        << "  --verify-reuse=<bool>          Verify repeated split-KV/split-Q calls with changed inputs (requires verify-only).\n"
+        << "  --mae-tolerance=<float>        Required MAE against reference (default: 1e-3; split-Q uses strict <).\n"
         << "  --max-abs-tolerance=<float>    Required maximum absolute error (default: 1e-2).\n"
         << "  --input-scale=<float>          Multiply random Q/K by this value (default: 1).\n"
         << "  --head_number=<int>            Head number (default: 12).\n"
@@ -129,6 +133,7 @@ Kernel const* const kKernels[] = {
     &kernel_00_naive(),
     &kernel_01_online_softmax(),
     &kernel_02_split_kv(),
+    &kernel_03_split_q(),
 };
 
 Kernel const* find_kernel(std::string const& id) {
@@ -151,7 +156,8 @@ CompareResult compare_outputs(
     cutlass::DeviceAllocation<Element> const& reference,
     int64_t elements,
     float mae_tolerance,
-    float max_abs_tolerance) {
+    float max_abs_tolerance,
+    bool strict_mae) {
   std::vector<Element> host_output(elements);
   std::vector<Element> host_reference(elements);
 
@@ -182,7 +188,9 @@ CompareResult compare_outputs(
   }
 
   result.mae = double(abs_sum / long double(elements));
-  result.passed = result.mae <= double(mae_tolerance) && result.max_abs <= max_abs_tolerance;
+  bool mae_passed = strict_mae ? result.mae < double(mae_tolerance)
+                              : result.mae <= double(mae_tolerance);
+  result.passed = mae_passed && result.max_abs <= max_abs_tolerance;
   if (!result.passed) {
     int shown = 0;
     for (int64_t i = 0; i < elements && shown < 16; ++i) {
@@ -283,9 +291,20 @@ int run_one(Kernel const& kernel, Options const& options) {
   err = cudaMemsetAsync(block_o.get(), 0x7f, total_o * sizeof(Element), stream.handle);
   if (err == cudaSuccess)
     err = cudaMemsetAsync(block_reference_o.get(), 0x7f, total_o * sizeof(Element), stream.handle);
+  if (err == cudaSuccess && options.reference_check && workspace.bytes)
+    err = cudaMemsetAsync(workspace.data, 0xff, workspace.bytes, stream.handle);
   if (err != cudaSuccess) {
     std::cerr << "Output initialization failed: " << cudaGetErrorString(err) << "\n";
     return -1;
+  }
+  if (options.verify_reuse && workspace.bytes) {
+    if (kernel.run(problem, tensors, {nullptr, workspace.bytes}, stream.handle) != cudaErrorInvalidValue ||
+        kernel.run(problem, tensors, {workspace.data, workspace.bytes - 1}, stream.handle) != cudaErrorInvalidValue ||
+        kernel.run(problem, tensors, {static_cast<uint8_t*>(workspace.data) + 1, workspace.bytes}, stream.handle) != cudaErrorInvalidValue) {
+      std::cerr << "Expected explicit rejection of missing/undersized/misaligned workspace\n";
+      return -1;
+    }
+    std::cout << "Workspace rejection passed: missing, undersized and misaligned\n";
   }
   err = run_kernel_once(kernel, problem, tensors, workspace, stream.handle);
   if (err != cudaSuccess) {
@@ -310,7 +329,8 @@ int run_one(Kernel const& kernel, Options const& options) {
     }
 
     CompareResult compare = compare_outputs(
-        block_o, block_reference_o, total_o, options.mae_tolerance, options.max_abs_tolerance);
+        block_o, block_reference_o, total_o, options.mae_tolerance, options.max_abs_tolerance,
+        std::string(kernel.id) == "03-split-q");
     std::cout << "    Reference: cuDNN SDPA\n"
               << "    MAE      : " << compare.mae << " (tolerance " << options.mae_tolerance << ")\n"
               << "    Max abs  : " << compare.max_abs << " at index " << compare.max_index
@@ -319,6 +339,36 @@ int run_one(Kernel const& kernel, Options const& options) {
     if (!compare.passed) {
       std::cout << "\nFailed\n";
       return -1;
+    }
+
+    if (options.verify_reuse) {
+      // Reuse the allocations but change Q/K to expose stale state between calls.
+      err = cudaMemsetAsync(block_q.get(), 0, total_q * sizeof(Element), stream.handle);
+      if (err == cudaSuccess)
+        err = cudaMemsetAsync(block_k.get(), 0, total_k * sizeof(Element), stream.handle);
+      if (err == cudaSuccess)
+        err = cudaMemsetAsync(block_o.get(), 0x7f, total_o * sizeof(Element), stream.handle);
+      if (err == cudaSuccess && workspace.bytes)
+        err = cudaMemsetAsync(workspace.data, 0xff, workspace.bytes, stream.handle);
+      if (err == cudaSuccess) err = run_kernel_once(kernel, problem, tensors, workspace, stream.handle);
+      if (err == cudaSuccess)
+        err = run_cudnn_reference(problem, reference_tensors, stream.handle, reference_error);
+      if (err == cudaSuccess) err = cudaStreamSynchronize(stream.handle);
+      if (err != cudaSuccess) {
+        std::cerr << "Repeated invocation failed: " << cudaGetErrorString(err) << "\n";
+        return -1;
+      }
+      CompareResult reused = compare_outputs(
+          block_o, block_reference_o, total_o, options.mae_tolerance, options.max_abs_tolerance,
+          std::string(kernel.id) == "03-split-q");
+      if (!reused.passed) {
+        std::cerr << "Repeated invocation parity failed: MAE=" << reused.mae
+                  << ", max abs=" << reused.max_abs << "\n";
+        return -1;
+      }
+      std::cout << "Repeated invocation passed: workspace_bytes=" << workspace.bytes
+                << ", MAE=" << reused.mae
+                << ", max abs=" << reused.max_abs << "\n";
     }
   }
 

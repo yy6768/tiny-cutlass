@@ -7,12 +7,26 @@
 ## 设计线
 
 - 当前是 **window=4（L=16）简化线**，全 CUTLASS **2.x**。
-- 选 2.x 不是偏好：CUTLASS 4.5.2 的 `collective_builder.hpp` 只特化
-  Sm90/100/103/120，**没有 Sm80/89 特化**。3.x 在本机 SM89 上等于手搓
-  `CollectiveMma<MainloopSm80CpAsync, ...>`（唯一先例 examples/59），且 conv
-  implicit-GEMM、epilogue visitor、from-smem B2B 在 3.x Sm80 上都无现成件。
-  2.x 的 `kernel/threadblock/warp/epilogue` 目录惯例也正是本仓库要求的形态。
+- 当前 SM89 主线明确选 CUTLASS 2.x，复用 warp MMA 和 iterator，并沿用
+  `kernel/threadblock/warp/epilogue` 职责分层。库组件能否支持某条新路线须查固定版本源码；
+  缺少某个 collective builder 不等于硬件不能使用 CuTe。
 - 不新增 3.x/CuTe 变体，除非用户明确要求。
+- 后续维护架构由用户指定，按架构选择实现主线并隔离；本轮不扩展 CMake 支持范围。
+
+## KDA 实现约束
+
+- 新 attention 候选使用 `$kernel-design-agents` 和 `cutlass-kernel`；按
+  [02 任务计划](docs/02-window-attention/plan.md) 建契约，FP8 量化语义未齐时不开始接入。
+- norm、softmax、索引、边界和必要搬运允许 CUDA 胶水；矩阵乘法复用 CUTLASS TensorOp。
+  无手写标量 GEMM fallback，不把独立 grouped GEMM 的 FP8 验证当作完整 attention 支持。
+- 本地 inline PTX 或其他路线的 primitive 必须隔离并登记具体文件、库能力缺口、接口和候选依据；
+  采用前补齐 parity/性能证据。CuTe/3.x 仍需满足上面的用户选择要求，不能靠登记自动改变主线。
+- [kernel-policy.json](kernel-policy.json) 对 `window_attention` 本地源码执行门禁；
+  规则及例外流程见 [KDA 实现规范](../../.agents/skills/kernel-design-agents/references/implementation-policy.md)。
+  `python -B csrc/tests/swin/verify.py --source-only` 可在无 CUDA/Torch 时运行。
+  `.bat` 在构建前预检，直接 verify/bench 也预检；失败返回非零并停止后续阶段。
+- 门禁不代替对命名、层次职责、raw pointer 所有权、手写 GEMM fallback 和例外必要性的审查。
+  第三方内部 PTX/CuTe 与构建导出的 PTX/SASS 不属于本地混用。
 
 ## 四个 family（不是五个）
 
@@ -117,6 +131,11 @@ halo 只读不写（scatter=-1），防止重复输出写入。改动该表须�
 
 ## 验证与文档
 
+- 完整 block 的独立 iterator 实现在 `fused_swin_layer/`，使用 `DefaultMma` 派生的
+  thread map、global/shared iterator、warp MMA 和 CUTLASS epilogue 组装；约束见
+  `fused_swin_layer/AGENTS.md`。入口为 `scripts/kernels/fused_swin_layer/fused_swin_layer.bat`，
+  harness 在 `csrc/tests/fused_swin_layer/`。它是完整 block 的结构基线，是否替代旧实现
+  以各自 parity 和同输入计时为准。
 - 统一入口 `scripts/kernels/swin/swin.bat`（`run.bat` 转发），顺序固定 build → verify → bench；
   verify 失败不得 benchmark/profile。
 - harness 在 `csrc/tests/swin/{verify.py,bench.py,window_attention.cu}`。

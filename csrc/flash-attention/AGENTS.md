@@ -57,17 +57,57 @@
   forward，Q/K/V 全部按 warp 切分（split-KV warp tiling），m16n8k16 MMA 走
   CUTLASS 包装。旧 `02-tiled-online-attention`（example 41 风格 fused kernel）
   已废弃并从构建移除，目录仅作历史保留，不要再接入构建或测试。
-- `02-split-kv` 当前使用 CUTLASS `cp_async` 组件，device policy 选择2-stage K 环形缓冲；
-  Q/V 保持单 buffer，FP16 输入输出与 FP32 累加，显式支持 D=Dv 为32/64/96/128。
-  QK 使用 2×4 warp 切分，PV 每 warp N=32、内部通道补齐到128；
-  不要直接将 congruous B iterator 的 warp N 改成8/16，必须验证其地址置换。
-  完整边界、验证和 NCU 证据见 `blogs/02-split-kv.md`。
+- `02-split-kv` 使用标准 canonical TensorOp iterator，四个 warp 沿 KV/输出通道切分，
+  每个 warp 覆盖全部 Br 行。device 按48KiB容量公式选择 Br/Bc；FP16输入输出、
+  FP32累加，D=Dv 为32/64/96/128，D128 的逻辑 Bc=48、物理 KV 宽度=64。
+  Q/K 使用 `cp_async`，V 使用 global load 和转置 ThreadMap；K/V 单 buffer，Q/P union复用。
+  外层KV、内层Q：一个CTA负责一个batch/head（官方FA1 num_splits=1结构），
+  K/V每个外层迭代只搬一次，供全部Q tiles复用。完整双层循环在threadblock内。
+- `02-split-kv` 的 softmax 和输出更新按 FA1 Algorithm 1 第10～12行：
+  tilde P=exp(S-tilde m)，l_new=alpha*l_old+beta*tilde l，
+  每轮 O_new=(alpha*l_old*O_old+beta*tilde P V)/l_new。
+  不提前归一化 P，也不把输出归一化推迟到最终 epilogue；epilogue 只转换和写回。
+  中间归一化O和显式m/l使用FP32 workspace，首轮直接初始化寄存器，不读旧workspace；
+  后续轮读取上一轮状态，最终轮仅将O转换到FP16输出。Q行padding到Br倍数，
+  workspace大小为B*H*ceil(Sq/Br)*Br*(Dv+2)*sizeof(float)，必须检查容量与16字节对齐。
+  不分配全局S/P，不用跨CTA原子合并；Q/KV按完整tile在前、尾tile在后推进。
+  `MmaTensorOpAccumulatorTileIterator`负责中间O读写；m/l行映射是attention自定义逻辑。
+  官方FA1使用LSE，本实现暂保留论文显式m/l；不声称逐项照搬官方所有优化。
+  博客在仓库根目录 `blogs/flash-attn/02-split-kv.md`；固定Q版本的NCU不能用作新循环证据。
 
-## 当前测试入口
+## 03-split-q
+
+- `03-split-q/device/flash_attn.cu` 注册 forward 到共享 `Kernel` 接口，核心仍为
+  raw pointers + Problem + cudaStream_t。`Tensors::logsumexp` 是可选训练输出。
+- `device/flash_attn_backward.cu` 提供独立 `BackwardKernel` 接口，CTA沿KV分块、
+  扫描Q，用5个CUTLASS TensorOp计算梯度。dK/dV由CTA独占，dQ经FP32 workspace原子累加。
+  当前仍在严格梯度parity候选验证中；不得把历史C03 forward数据称为backward结果。
+- backward的dS shared使用RowMajor congruous写入、ColumnMajor congruous读取转置；
+  dQ warp必须M32、N>=32，按2×2划分输出，不得改回不支持的M16 congruous A偏移。
+  每次run在同一stream清空dQ workspace，device显式检查并申请dynamic shared opt-in。
+- `DefaultFlashAttnSplitQ` 选择 Br=Bc=64，4 个 warp 分别拥有16行 Q 和完整输出通道；
+  m/l/O 保留寄存器，Q 只搬一次，P 通过 example 13 的
+  `MmaTensorOpFragmentIterator` 传给 PV，不写 shared。
+- Q/K 使用标准 canonical TensorOp iterator；V 使用 `DefaultMmaCore` 的
+  `SmemLayoutB`、`IteratorThreadMapB`、`SmemIteratorB` 和128-bit `cp_async`。
+  MmaCore 的 stage=3 仅选择 SM80 access-iterator 类型；实际只有一个 V buffer。
+- D=Dv 为32/64/96/128，D96 的 V 物理通道补齐128；合法输入/输出仍是96。
+  不要去掉 global load 与 epilogue 的通道边界 predication。
+- KV 必须按完整块在前、尾块在后的次序推进。C01 的 residue-first 次序在
+  FP16 P 舍入后不能满足严格 MAE；详见 `docs/03-split-q-results.md`。
+- 入口 `scripts/kernels/attention/attention.bat`，顺序 build→verify→bench；
+  `verify.py --kernel=03-split-q` 强制 MAE<1e-6，`bench.py` 检查同一二进制的
+  parity stamp，再对四个既有 shape 分别检查 t03/t02<0.95。
+- 同一入口在forward verify之后运行 `verify.py --phase=backward`；两个阶段均通过才计时。
+  backward端到端验证使用候选/cuDNN各自的O/LSE，逐个梯度MAE<1e-6；
+  显式diagnostic-state只用于误差归因，不产生验收stamp或计时。
+- 已在 RTX 4070 Laptop SM89 测试；SM80 policy 已实例化，但没有 SM80 硬件实测。
+
+## 共享测试入口
 
 - `flash_attention_test` 是所有已注册 kernel 的共享测试 executable。
 - 可用参数包括 `--kernel=list`、`--kernel=00-naive`、
-  `--kernel=01-online-softmax`、`--kernel=02-split-kv`、`--kernel=all`。
+  `--kernel=01-online-softmax`、`--kernel=02-split-kv`、`--kernel=03-split-q`、`--kernel=all`。
 - 每个 kernel 另有独立 executable（`naive_attention`、`online_softmax_attention`、
-  `split_kv_attention`），指向同一个共享 host C++ test main，只是默认 kernel 不同；
+  `split_kv_attention`、`split_q_attention`），指向同一个共享 host C++ test main，只是默认 kernel 不同；
   脚本入口为 `scripts/kernels/attention/02-split-kv-attention.bat` 等同名 `.bat`。

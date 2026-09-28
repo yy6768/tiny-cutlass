@@ -32,6 +32,7 @@ struct Tensors {
   Element const* key = nullptr;   // [B, Sk, H, d]
   Element const* value = nullptr; // [B, Sk, H, dv]
   Element* output = nullptr;      // [B, Sq, H, dv]
+  float* logsumexp = nullptr;     // optional training state, contiguous [B,H,Sq]
 };
 
 struct Workspace {
@@ -53,6 +54,27 @@ struct Kernel {
   WorkspaceBytesFn workspace_bytes = nullptr;
   CanRunFn can_run = nullptr;
   RunFn run = nullptr;
+};
+
+struct BackwardTensors {
+  Element const* query = nullptr;
+  Element const* key = nullptr;
+  Element const* value = nullptr;
+  Element const* output = nullptr;
+  Element const* grad_output = nullptr;
+  float const* logsumexp = nullptr; // contiguous [B,H,Sq]
+  Element* grad_query = nullptr;
+  Element* grad_key = nullptr;
+  Element* grad_value = nullptr;
+};
+
+using BackwardRunFn = cudaError_t (*)(
+    Problem const&, BackwardTensors const&, Workspace, cudaStream_t);
+struct BackwardKernel {
+  char const* id = nullptr;
+  WorkspaceBytesFn workspace_bytes = nullptr;
+  CanRunFn can_run = nullptr;
+  BackwardRunFn run = nullptr;
 };
 
 inline int64_t total_query_elements(Problem const& p) {
@@ -78,3 +100,5 @@ inline int64_t total_probability_elements(Problem const& p) {
 Kernel const& kernel_00_naive();
 Kernel const& kernel_01_online_softmax();
 Kernel const& kernel_02_split_kv();
+Kernel const& kernel_03_split_q();
+BackwardKernel const& backward_03_split_q();

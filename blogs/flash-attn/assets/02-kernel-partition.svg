@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 790" role="img" aria-labelledby="title desc" font-family="'Microsoft YaHei', 'Segoe UI', Arial, sans-serif">
+  <title id="title">FlashAttention1 CUTLASS2.x 复现：threadblock 内四个 warp 的计算流水线</title>
+  <desc id="desc">D=64、Br=64、Bc=96。所有线程先搬运 K/V 和 Q，并分别等待 cp_async 与 CTA 同步；四个 warp 各处理 16 行 Q，独立完成 MM0、行 softmax、寄存器 P、MM1 和输出更新；最后 CTA 同步，再进入下一个 Q 或 KV tile。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1500" height="790" fill="#f8fafc"/>
+  <text x="750" y="42" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">FlashAttention 1：一个 Q/KV tile 内的 4-warp pipeline</text>
+  <text x="750" y="69" text-anchor="middle" font-size="14" fill="#475569">D=64 · Br=64 · Bc=96 · KV 外层、Q 内层；同一 CTA 内四个 warp 各负责 16 行 Q</text>
+
+  <!-- Shared-memory prologue: the copy ThreadMap uses all CTA threads. -->
+  <text x="50" y="102" font-size="14" font-weight="700" fill="#334155">CTA 搬运与同步</text>
+  <rect x="50" y="117" width="274" height="64" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="187" y="142" text-anchor="middle" font-size="15" font-weight="700" fill="#9a3412">K / V → shared</text>
+  <text x="187" y="165" text-anchor="middle" font-size="12" fill="#7c2d12">外层 j：128 线程按 ThreadMap 分工</text>
+  <rect x="358" y="117" width="166" height="64" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="441" y="142" text-anchor="middle" font-size="12" fill="#334155">cp_async_fence()</text>
+  <text x="441" y="163" text-anchor="middle" font-size="12" fill="#334155">cp_async_wait&lt;0&gt;()</text>
+  <rect x="558" y="117" width="152" height="64" rx="8" fill="#ede9fe" stroke="#c4b5fd"/>
+  <text x="634" y="143" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">CTA barrier ①</text>
+  <text x="634" y="165" text-anchor="middle" font-size="12" fill="#6d28d9">__syncthreads()</text>
+  <rect x="744" y="117" width="274" height="64" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="881" y="142" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">Q → shared</text>
+  <text x="881" y="165" text-anchor="middle" font-size="12" fill="#1e40af">内层 i：每个 Q tile 重新搬运</text>
+  <rect x="1052" y="117" width="166" height="64" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="1135" y="142" text-anchor="middle" font-size="12" fill="#334155">cp_async_fence()</text>
+  <text x="1135" y="163" text-anchor="middle" font-size="12" fill="#334155">cp_async_wait&lt;0&gt;()</text>
+  <rect x="1252" y="117" width="198" height="64" rx="8" fill="#ede9fe" stroke="#c4b5fd"/>
+  <text x="1351" y="143" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">CTA barrier ②</text>
+  <text x="1351" y="165" text-anchor="middle" font-size="12" fill="#6d28d9">__syncthreads()</text>
+  <g fill="none" stroke="#475569" stroke-width="1.7" marker-end="url(#arrow)">
+    <path d="M329 149 H350"/>
+    <path d="M529 149 H550"/>
+    <path d="M715 149 H736"/>
+    <path d="M1023 149 H1044"/>
+    <path d="M1223 149 H1244"/>
+  </g>
+  <text x="750" y="211" text-anchor="middle" font-size="13" fill="#475569">搬运 warp 的 ThreadMap 分工不等于下方的计算行分工；K/V 在整个内层 Q 扫描期间驻留 shared。</text>
+
+  <!-- The four rows are separate compute-warp pipelines, not a cross-warp reduction. -->
+  <text x="131" y="251" text-anchor="middle" font-size="14" font-weight="700" fill="#334155">计算 warp / Q 行</text>
+  <text x="342" y="251" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">MM0：QKᵀ</text>
+  <text x="570" y="251" text-anchor="middle" font-size="15" font-weight="700" fill="#9a3412">行 softmax</text>
+  <text x="780" y="251" text-anchor="middle" font-size="15" font-weight="700" fill="#6d28d9">P fragment</text>
+  <text x="982" y="251" text-anchor="middle" font-size="15" font-weight="700" fill="#166534">MM1：PV</text>
+  <text x="1210" y="251" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">输出更新</text>
+  <text x="1413" y="251" text-anchor="middle" font-size="14" font-weight="700" fill="#5b21b6">CTA barrier ③</text>
+
+  <g font-size="13" text-anchor="middle">
+    <!-- warp 0 -->
+    <rect x="43" y="274" width="174" height="67" rx="7" fill="#e2e8f0"/>
+    <text x="130" y="300" font-weight="700" fill="#0f172a">warp 0</text>
+    <text x="130" y="323" fill="#334155">Q [0, 16)</text>
+    <rect x="239" y="274" width="207" height="67" rx="7" fill="#dbeafe"/>
+    <text x="342" y="300" font-weight="700" fill="#1e3a8a">S [16, 96]</text>
+    <text x="342" y="323" fill="#1e40af">D=64 → 4 组 K16</text>
+    <rect x="468" y="274" width="204" height="67" rx="7" fill="#ffedd5"/>
+    <text x="570" y="300" font-weight="700" fill="#9a3412">max / sum：16 行</text>
+    <text x="570" y="323" fill="#9a3412">warp 内 quad shuffle</text>
+    <rect x="694" y="274" width="172" height="67" rx="7" fill="#ede9fe"/>
+    <text x="780" y="300" font-weight="700" fill="#5b21b6">score：FP32</text>
+    <text x="780" y="323" fill="#6d28d9">逐组转 FP16</text>
+    <rect x="888" y="274" width="188" height="67" rx="7" fill="#dcfce7"/>
+    <text x="982" y="300" font-weight="700" fill="#166534">PV [16, 64]</text>
+    <text x="982" y="323" fill="#166534">Bc=96 → 6 组 K16</text>
+    <rect x="1098" y="274" width="224" height="67" rx="7" fill="#ccfbf1"/>
+    <text x="1210" y="300" font-weight="700" fill="#0f766e">归一化 O [16, 64]</text>
+    <text x="1210" y="323" fill="#0f766e">更新并写回 O、m、ℓ</text>
+
+    <!-- warp 1 -->
+    <rect x="43" y="352" width="174" height="67" rx="7" fill="#e2e8f0"/>
+    <text x="130" y="378" font-weight="700" fill="#0f172a">warp 1</text>
+    <text x="130" y="401" fill="#334155">Q [16, 32)</text>
+    <rect x="239" y="352" width="207" height="67" rx="7" fill="#dbeafe"/>
+    <text x="342" y="378" font-weight="700" fill="#1e3a8a">S [16, 96]</text>
+    <text x="342" y="401" fill="#1e40af">D=64 → 4 组 K16</text>
+    <rect x="468" y="352" width="204" height="67" rx="7" fill="#ffedd5"/>
+    <text x="570" y="378" font-weight="700" fill="#9a3412">max / sum：16 行</text>
+    <text x="570" y="401" fill="#9a3412">warp 内 quad shuffle</text>
+    <rect x="694" y="352" width="172" height="67" rx="7" fill="#ede9fe"/>
+    <text x="780" y="378" font-weight="700" fill="#5b21b6">score：FP32</text>
+    <text x="780" y="401" fill="#6d28d9">逐组转 FP16</text>
+    <rect x="888" y="352" width="188" height="67" rx="7" fill="#dcfce7"/>
+    <text x="982" y="378" font-weight="700" fill="#166534">PV [16, 64]</text>
+    <text x="982" y="401" fill="#166534">Bc=96 → 6 组 K16</text>
+    <rect x="1098" y="352" width="224" height="67" rx="7" fill="#ccfbf1"/>
+    <text x="1210" y="378" font-weight="700" fill="#0f766e">归一化 O [16, 64]</text>
+    <text x="1210" y="401" fill="#0f766e">更新并写回 O、m、ℓ</text>
+
+    <!-- warp 2 -->
+    <rect x="43" y="430" width="174" height="67" rx="7" fill="#e2e8f0"/>
+    <text x="130" y="456" font-weight="700" fill="#0f172a">warp 2</text>
+    <text x="130" y="479" fill="#334155">Q [32, 48)</text>
+    <rect x="239" y="430" width="207" height="67" rx="7" fill="#dbeafe"/>
+    <text x="342" y="456" font-weight="700" fill="#1e3a8a">S [16, 96]</text>
+    <text x="342" y="479" fill="#1e40af">D=64 → 4 组 K16</text>
+    <rect x="468" y="430" width="204" height="67" rx="7" fill="#ffedd5"/>
+    <text x="570" y="456" font-weight="700" fill="#9a3412">max / sum：16 行</text>
+    <text x="570" y="479" fill="#9a3412">warp 内 quad shuffle</text>
+    <rect x="694" y="430" width="172" height="67" rx="7" fill="#ede9fe"/>
+    <text x="780" y="456" font-weight="700" fill="#5b21b6">score：FP32</text>
+    <text x="780" y="479" fill="#6d28d9">逐组转 FP16</text>
+    <rect x="888" y="430" width="188" height="67" rx="7" fill="#dcfce7"/>
+    <text x="982" y="456" font-weight="700" fill="#166534">PV [16, 64]</text>
+    <text x="982" y="479" fill="#166534">Bc=96 → 6 组 K16</text>
+    <rect x="1098" y="430" width="224" height="67" rx="7" fill="#ccfbf1"/>
+    <text x="1210" y="456" font-weight="700" fill="#0f766e">归一化 O [16, 64]</text>
+    <text x="1210" y="479" fill="#0f766e">更新并写回 O、m、ℓ</text>
+
+    <!-- warp 3 -->
+    <rect x="43" y="508" width="174" height="67" rx="7" fill="#e2e8f0"/>
+    <text x="130" y="534" font-weight="700" fill="#0f172a">warp 3</text>
+    <text x="130" y="557" fill="#334155">Q [48, 64)</text>
+    <rect x="239" y="508" width="207" height="67" rx="7" fill="#dbeafe"/>
+    <text x="342" y="534" font-weight="700" fill="#1e3a8a">S [16, 96]</text>
+    <text x="342" y="557" fill="#1e40af">D=64 → 4 组 K16</text>
+    <rect x="468" y="508" width="204" height="67" rx="7" fill="#ffedd5"/>
+    <text x="570" y="534" font-weight="700" fill="#9a3412">max / sum：16 行</text>
+    <text x="570" y="557" fill="#9a3412">warp 内 quad shuffle</text>
+    <rect x="694" y="508" width="172" height="67" rx="7" fill="#ede9fe"/>
+    <text x="780" y="534" font-weight="700" fill="#5b21b6">score：FP32</text>
+    <text x="780" y="557" fill="#6d28d9">逐组转 FP16</text>
+    <rect x="888" y="508" width="188" height="67" rx="7" fill="#dcfce7"/>
+    <text x="982" y="534" font-weight="700" fill="#166534">PV [16, 64]</text>
+    <text x="982" y="557" fill="#166534">Bc=96 → 6 组 K16</text>
+    <rect x="1098" y="508" width="224" height="67" rx="7" fill="#ccfbf1"/>
+    <text x="1210" y="534" font-weight="700" fill="#0f766e">归一化 O [16, 64]</text>
+    <text x="1210" y="557" fill="#0f766e">更新并写回 O、m、ℓ</text>
+  </g>
+
+  <g fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)">
+    <path d="M219 307 H231"/><path d="M448 307 H460"/><path d="M674 307 H686"/><path d="M868 307 H880"/><path d="M1078 307 H1090"/>
+    <path d="M219 385 H231"/><path d="M448 385 H460"/><path d="M674 385 H686"/><path d="M868 385 H880"/><path d="M1078 385 H1090"/>
+    <path d="M219 463 H231"/><path d="M448 463 H460"/><path d="M674 463 H686"/><path d="M868 463 H880"/><path d="M1078 463 H1090"/>
+    <path d="M219 541 H231"/><path d="M448 541 H460"/><path d="M674 541 H686"/><path d="M868 541 H880"/><path d="M1078 541 H1090"/>
+  </g>
+  <line x1="1374" y1="273" x2="1374" y2="580" stroke="#8b5cf6" stroke-width="2.5" stroke-dasharray="7 5"/>
+  <g fill="none" stroke="#8b5cf6" stroke-width="1.5">
+    <path d="M1328 307 H1374 M1328 385 H1374 M1328 463 H1374 M1328 541 H1374"/>
+  </g>
+  <text x="1413" y="606" text-anchor="middle" font-size="12" fill="#6d28d9">__syncthreads()</text>
+
+  <line x1="44" y1="638" x2="1455" y2="638" stroke="#cbd5e1"/>
+  <rect x="55" y="656" width="88" height="27" rx="5" fill="#f1f5f9"/>
+  <text x="99" y="675" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">下一 Q</text>
+  <text x="160" y="675" font-size="13" fill="#334155">K/V 保持 shared；重新搬 Q，再经过 barrier ②。</text>
+  <rect x="55" y="698" width="88" height="27" rx="5" fill="#f1f5f9"/>
+  <text x="99" y="717" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">下一 KV</text>
+  <text x="160" y="717" font-size="13" fill="#334155">扫完所有 Q 后重新搬 K/V，再经过 barrier ①。</text>
+  <text x="750" y="768" text-anchor="middle" font-size="12" fill="#64748b">各 warp 独立归约各自 16 行；MM0 → softmax → P(reg) → MM1 无 CTA barrier。中间 O 写 FP32 workspace，末轮写 FP16 输出。</text>
+</svg>

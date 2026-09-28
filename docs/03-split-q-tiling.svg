@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 930" role="img" aria-labelledby="title desc">
+  <title id="title">FlashAttention-2 与本项目 CUTLASS 2.x split-Q tile 分工</title>
+  <desc id="desc">上半部分画出 forward CTA 沿 Q 序列行块划分并扫描 KV 列块；中间画出 64×64 的 CTA 内四个 warp 各拥有 16 行 Q、S、P 和 O，以及 QK、online softmax、PV；下半部分说明 backward 固定 KV 块并扫描 Q 块。示例为本项目 03-split-q 的 D=64 配置，上游 FlashAttention-2 的 SM80 forward hdim64 无 dropout 选择 128×128、四个 warp。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", "Segoe UI", sans-serif; fill: #17243b; }
+      .title { font-size: 29px; font-weight: 700; }
+      .subtitle { font-size: 16px; fill: #53657d; }
+      .section { font-size: 19px; font-weight: 700; }
+      .label { font-size: 16px; font-weight: 650; }
+      .small { font-size: 14px; fill: #475569; }
+      .tiny { font-size: 12px; fill: #52627a; }
+      .white { fill: white; }
+      .panel { fill: white; stroke: #dae3ef; stroke-width: 1.5; }
+      .line { stroke: #6b7d95; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .gridline { stroke: white; stroke-width: 2; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7d95" />
+    </marker>
+  </defs>
+  <rect width="1440" height="930" fill="#f5f8fc" />
+  <text x="48" y="52" class="title" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="29px" font-weight="700">FlashAttention-2 的 split-Q：从 CTA 到 MMA atom</text>
+  <text x="48" y="80" class="subtitle" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#53657d" font-size="16px">本项目 03-split-q · FP16 · D=64 · Br=Bc=64 的具体 CUTLASS 2.x 配置</text>
+  <rect x="36" y="106" width="1368" height="250" rx="18" class="panel" fill="white" stroke="#dae3ef" stroke-width="1.5" />
+  <text x="60" y="139" class="section" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="19px" font-weight="700">① Grid：把 score 矩阵 S = QKᵀ 沿 Q 行分给不同 CTA</text>
+  <text x="94" y="158" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">K / KV tile →</text>
+  <text x="31" y="252" class="small" transform="rotate(-90 31 252)" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">Q tile →</text>
+  <g transform="translate(95 181)">
+    <rect x="0" y="0" width="416" height="144" rx="7" fill="#e8eff9" />
+    <rect x="0" y="0" width="416" height="36" fill="#dbeafe" />
+    <rect x="0" y="36" width="416" height="36" fill="#c7e7e3" />
+    <rect x="0" y="72" width="416" height="36" fill="#e9e1fa" />
+    <rect x="0" y="108" width="416" height="36" fill="#f8e6d0" />
+    <path d="M104 0V144 M208 0V144 M312 0V144 M0 36H416 M0 72H416 M0 108H416" class="gridline" stroke="white" stroke-width="2" />
+    <rect x="1" y="37" width="414" height="34" rx="3" fill="none" stroke="#128c84" stroke-width="3" />
+    <text x="48" y="-8" class="tiny" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#52627a" font-size="12px">K₀</text>
+    <text x="152" y="-8" class="tiny" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#52627a" font-size="12px">K₁</text>
+    <text x="256" y="-8" class="tiny" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#52627a" font-size="12px">K₂</text>
+    <text x="360" y="-8" class="tiny" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#52627a" font-size="12px">K₃</text>
+    <text x="9" y="24" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">Q₀</text>
+    <text x="9" y="60" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">Q₁</text>
+    <text x="9" y="96" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">Q₂</text>
+    <text x="9" y="132" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">Q₃</text>
+  </g>
+  <path d="M535 234 H596" class="line" stroke="#6b7d95" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <rect x="612" y="168" width="350" height="168" rx="12" fill="#eff8f7" stroke="#b7e2dc" />
+  <text x="634" y="198" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">高亮行：一个 forward CTA</text>
+  <text x="634" y="225" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">固定 Q₁ 的 Br=64 行</text>
+  <text x="634" y="249" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">在 CTA 内遍历全部 Kⱼ / Vⱼ（Bc=64）</text>
+  <text x="634" y="273" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">O₁、m₁、ℓ₁ 只由本 CTA 更新</text>
+  <text x="634" y="309" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">grid = (⌈Sq / 64⌉, batch, heads)</text>
+  <rect x="987" y="168" width="390" height="168" rx="12" fill="#f1f4fa" stroke="#d6deeb" />
+  <text x="1009" y="198" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">官方源码的同一层职责</text>
+  <text x="1009" y="225" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">SM80 hdim64、无 dropout：</text>
+  <text x="1009" y="250" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">BlockM=128, BlockN=128, 4 warps</text>
+  <text x="1009" y="282" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">这是上游 CuTe policy 的选择；</text>
+  <text x="1009" y="306" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">图中的 64×64 是本项目的选择。</text>
+  <rect x="36" y="372" width="1368" height="422" rx="18" class="panel" fill="white" stroke="#dae3ef" stroke-width="1.5" />
+  <text x="60" y="406" class="section" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="19px" font-weight="700">② 一个 forward CTA：四个 warp 沿 Q 行分区，完成两次 Tensor Core GEMM</text>
+  <text x="81" y="442" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">Qᵢ</text>
+  <rect x="72" y="461" width="120" height="160" rx="6" fill="#eef5ff" stroke="#9dbcf0" />
+  <rect x="73" y="462" width="118" height="39" fill="#d7e8ff" />
+  <rect x="73" y="502" width="118" height="39" fill="#c5ddff" />
+  <rect x="73" y="542" width="118" height="39" fill="#b2d2ff" />
+  <rect x="73" y="582" width="118" height="38" fill="#9ec6ff" />
+  <text x="82" y="487" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 0 · 16 行</text>
+  <text x="82" y="527" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 1 · 16 行</text>
+  <text x="82" y="567" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 2 · 16 行</text>
+  <text x="82" y="607" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 3 · 16 行</text>
+  <text x="83" y="648" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">64 × D=64</text>
+  <text x="250" y="442" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">Kⱼᵀ</text>
+  <rect x="239" y="481" width="112" height="120" rx="6" fill="#e0eee9" stroke="#a5ccbd" />
+  <text x="252" y="538" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">D × Bc</text>
+  <text x="256" y="563" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">64 × 64</text>
+  <text x="247" y="648" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">CTA 共享 K tile</text>
+  <text x="209" y="550" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="24px" font-weight="700">×</text>
+  <path d="M357 542 H396" class="line" stroke="#6b7d95" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <text x="366" y="515" class="tiny" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#52627a" font-size="12px">QK</text>
+  <text x="415" y="442" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">Sᵢⱼ</text>
+  <rect x="404" y="461" width="120" height="160" rx="6" fill="#f1effe" stroke="#c4b8ec" />
+  <rect x="405" y="462" width="118" height="39" fill="#e9e3fc" />
+  <rect x="405" y="502" width="118" height="39" fill="#e0d8fa" />
+  <rect x="405" y="542" width="118" height="39" fill="#d7ccf8" />
+  <rect x="405" y="582" width="118" height="38" fill="#cdbff4" />
+  <text x="431" y="487" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 0</text>
+  <text x="431" y="527" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 1</text>
+  <text x="431" y="567" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 2</text>
+  <text x="431" y="607" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 3</text>
+  <text x="415" y="648" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">64 × Bc=64</text>
+  <path d="M531 542 H552" class="line" stroke="#6b7d95" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <rect x="563" y="489" width="142" height="105" rx="10" fill="#fff3e5" stroke="#e8bf89" />
+  <text x="580" y="519" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">online softmax</text>
+  <text x="580" y="546" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">更新 m / ℓ / O</text>
+  <text x="580" y="569" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">attention 自定义</text>
+  <path d="M713 542 H733" class="line" stroke="#6b7d95" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <text x="753" y="442" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">Pᵢⱼ</text>
+  <rect x="744" y="461" width="120" height="160" rx="6" fill="#fef4e7" stroke="#eec795" />
+  <rect x="745" y="462" width="118" height="39" fill="#ffedd4" />
+  <rect x="745" y="502" width="118" height="39" fill="#ffe4bf" />
+  <rect x="745" y="542" width="118" height="39" fill="#ffdcaa" />
+  <rect x="745" y="582" width="118" height="38" fill="#ffd294" />
+  <text x="770" y="487" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 0</text>
+  <text x="770" y="527" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 1</text>
+  <text x="770" y="567" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 2</text>
+  <text x="770" y="607" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 3</text>
+  <text x="751" y="648" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">64 × Bc=64</text>
+  <text x="923" y="442" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">Vⱼ</text>
+  <rect x="906" y="481" width="116" height="120" rx="6" fill="#e0eee9" stroke="#a5ccbd" />
+  <text x="921" y="538" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">Bc × D</text>
+  <text x="931" y="563" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">64 × 64</text>
+  <text x="913" y="648" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">CTA 共享 V tile</text>
+  <text x="875" y="550" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="24px" font-weight="700">×</text>
+  <path d="M1030 542 H1071" class="line" stroke="#6b7d95" stroke-width="2" fill="none" marker-end="url(#arrow)" />
+  <text x="1043" y="515" class="tiny" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#52627a" font-size="12px">PV</text>
+  <text x="1090" y="442" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">Oᵢ</text>
+  <rect x="1082" y="461" width="120" height="160" rx="6" fill="#e9f7f4" stroke="#8dd3c7" />
+  <rect x="1083" y="462" width="118" height="39" fill="#d9f3ee" />
+  <rect x="1083" y="502" width="118" height="39" fill="#c6ece5" />
+  <rect x="1083" y="542" width="118" height="39" fill="#afe4d9" />
+  <rect x="1083" y="582" width="118" height="38" fill="#97dccf" />
+  <text x="1108" y="487" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 0</text>
+  <text x="1108" y="527" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 1</text>
+  <text x="1108" y="567" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 2</text>
+  <text x="1108" y="607" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">warp 3</text>
+  <text x="1090" y="648" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">64 × D=64</text>
+  <rect x="1222" y="456" width="158" height="174" rx="10" fill="#f1f5fb" stroke="#d1dbe9" />
+  <text x="1237" y="483" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">CUTLASS 2.x</text>
+  <text x="1237" y="510" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">CTA: 64×64×64</text>
+  <text x="1237" y="537" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">QK warp:</text>
+  <text x="1237" y="559" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">16×64×16</text>
+  <text x="1237" y="586" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">PV warp:</text>
+  <text x="1237" y="608" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">16×64×16</text>
+  <rect x="74" y="682" width="1302" height="86" rx="11" fill="#f4f7fc" stroke="#d7e1ee" />
+  <text x="91" y="710" class="label" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="16px" font-weight="650">MMA atom：m16n8k16</text>
+  <text x="91" y="736" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">QK 的 reduction 是 D=64 → 4 个 k16 步；PV 的 reduction 是 Bc=64 → 4 个 k16 步。</text>
+  <text x="91" y="758" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">四个 warp 保持相同 Q 行所有权；P 经 FragmentIteratorP 从 score accumulator 转为下一次 MMA 的 A fragment，不写全局 S/P。</text>
+  <rect x="36" y="810" width="1368" height="89" rx="18" class="panel" fill="white" stroke="#dae3ef" stroke-width="1.5" />
+  <text x="60" y="844" class="section" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#17243b" font-size="19px" font-weight="700">③ Backward：调换 CTA 的固定维度</text>
+  <text x="60" y="874" class="small" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#475569" font-size="14px">一个 CTA 固定 KV 的 64 行，扫描 Q 的 64 行块；独占 dK/dV，多个 KV-CTA 对同一 Q 行的 dQ 贡献经 FP32 workspace 合并。</text>
+  <text x="48" y="922" class="tiny" font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif" fill="#52627a" font-size="12px">来源：本项目 03-split-q/device 与 kernel policy；上游对照 3rdparty/flashattention/csrc/flash_attn/src 的 SM80 launch/traits/kernel。</text>
+</svg>

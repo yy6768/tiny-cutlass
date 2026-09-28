@@ -31,6 +31,7 @@ option(TINY_CUTLASS_BUILD_CONV_FUSED "Build conv-fused CUTLASS kernels" OFF)
 option(TINY_CUTLASS_BUILD_SWIN "Build Swin CUTLASS kernels and tests" ON)
 option(TINY_CUTLASS_BUILD_NATTEN "Build NATTEN SM80 CUTLASS learning examples" ON)
 option(TINY_CUTLASS_BUILD_CATMULL_ROM "Build Catmull-Rom reprojection CUTLASS kernels" ON)
+option(TINY_CUTLASS_BUILD_EVT "Build EVT (Epilogue Visitor Tree) learning kernels" ON)
 
 if(TINY_CUTLASS_BUILD_FLASH_ATTENTION)
   include(cmake/CUDNN.cmake)
@@ -42,8 +43,6 @@ if(TINY_CUTLASS_BUILD_CONV_FUSED)
 endif()
 
 if(TINY_CUTLASS_BUILD_SWIN)
-  include(cmake/CUDNN.cmake)
-  include(cmake/TensorRT.cmake)
   add_subdirectory(csrc/swin)
 endif()
 
@@ -53,4 +52,8 @@ endif()
 
 if(TINY_CUTLASS_BUILD_CATMULL_ROM)
   add_subdirectory(csrc/catmull-rom)
+endif()
+
+if(TINY_CUTLASS_BUILD_EVT)
+  add_subdirectory(csrc/evt)
 endif()

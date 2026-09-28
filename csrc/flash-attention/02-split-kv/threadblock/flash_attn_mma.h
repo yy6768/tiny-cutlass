@@ -1,45 +1,133 @@
 #pragma once
 
-#include <cmath>
 #include <math_constants.h>
 #include "cutlass/arch/memory_sm80.h"
 #include "cutlass/array.h"
-#include "cutlass/tensor_ref.h"
-#include "cutlass/numeric_conversion.h"
+#include "cutlass/matrix_coord.h"
+#include "../epilogue/row_iterator.h"
 
-// The policy supplies both stock warp MMAs and the global/shared iterators.
-// This class owns attention-specific dependencies between the two GEMMs.
+// FA1: KV is the outer loop, Q is the inner loop. One CTA owns a batch/head.
+// This layer owns both traversals, iterator advancement and synchronization.
 template <class Policy>
 class FlashAttnMma {
  public:
   using Element = typename Policy::Element;
+  using LayoutQ = typename Policy::LayoutQ;
+  using LayoutK = typename Policy::LayoutK;
+  using LayoutV = typename Policy::LayoutV;
   using WarpQK = typename Policy::WarpQK;
   using WarpPV = typename Policy::WarpPV;
+  using WarpShapeQK = typename Policy::WarpShapeQK;
+  using ThreadblockShape0 = typename Policy::ThreadblockShape0;
+  using ThreadblockShape1 = typename Policy::ThreadblockShape1;
   using FragmentS = typename WarpQK::Fragment;
   using FragmentO = typename WarpPV::Fragment;
   using FragmentL = typename WarpQK::FragmentRow;
-  using IteratorQ = typename Policy::LoaderQ::Iterator;
-  using IteratorK = typename Policy::LoaderK::Iterator;
-  using IteratorV = typename Policy::LoaderV::Iterator;
+  using IteratorQ = typename Policy::IteratorQ;
+  using IteratorK = typename Policy::IteratorK;
+  using IteratorV = typename Policy::IteratorV;
+  using SmemIteratorQ = typename Policy::SmemIteratorQ;
+  using SmemIteratorK = typename Policy::SmemIteratorK;
+  using SmemIteratorV = typename Policy::SmemIteratorV;
+  using ThreadMapQ = typename IteratorQ::ThreadMap;
+  using ThreadMapK = typename IteratorK::ThreadMap;
+  using ThreadMapV = typename IteratorV::ThreadMap;
+  using AccessTypeQ = typename IteratorQ::AccessType;
+  using AccessTypeK = typename IteratorK::AccessType;
+  using AccessTypeV = typename IteratorV::AccessType;
+  using WarpIteratorQ = typename WarpQK::IteratorA;
+  using WarpIteratorK = typename WarpQK::IteratorB;
+  using WarpIteratorV = typename WarpPV::IteratorB;
+  using FragmentIteratorP = typename Policy::FragmentIteratorP;
+  using ProbabilityOutputOp = typename Policy::ProbabilityOutputOp;
+  using ProbabilityOutputParams = typename ProbabilityOutputOp::Params;
+  using MmaPV = typename WarpPV::Mma;
+  using FragmentP = typename MmaPV::FragmentA;
+  using FragmentV = typename MmaPV::FragmentB;
+  using TransformedFragmentP = typename MmaPV::TransformedFragmentA;
+  using TransformedFragmentV = typename MmaPV::TransformedFragmentB;
+  using Epilogue = typename Policy::Epilogue;
+  using StateTileIterator = typename Epilogue::StateTileIterator;
+  using OutputTileIterator = typename Epilogue::OutputTileIterator;
+  using RowIterator = FlashAttnRowIterator<WarpQK>;
   static constexpr int kBr = Policy::kBr;
   static constexpr int kBc = Policy::kBc;
   static constexpr int kHeadDim = Policy::kHeadDim;
   static constexpr int kHeadDimV = Policy::kHeadDimV;
   static constexpr int kThreadCount = Policy::kThreadCount;
+  static constexpr int kComputeWarps = Policy::kWarpsM;
+  static constexpr int kQkIterations = kHeadDim / 16;
+  static constexpr int kPvIterations = Policy::kStorageBc / 16;
+  static constexpr int kCopyThreadsQ = Policy::kCopyThreadsQ;
+  static constexpr int kCopyThreadsK = Policy::kCopyThreadsK;
+  static constexpr int kCopyThreadsV = Policy::kCopyThreadsV;
+  static_assert(kBr % OutputTileIterator::Shape::kRow == 0,
+      "Output iterator slices must cover a complete Q tile");
 
   struct SharedStorage {
-    alignas(128) Element q[kBr * Policy::kPitchQ];
-    alignas(128) Element k[Policy::kStages][kBc * Policy::kPitchQ];
-    alignas(128) Element v[kBc * Policy::kPitchV];
-    alignas(128) Element p[kBr * kBc];
-    // Each KV warp contributes one statistic for every row that it owns.
-    alignas(128) float row_max[Policy::kWarpsN][kBr];
-    alignas(128) float row_sum[Policy::kWarpsN][kBr];
+    alignas(16) Element k[Policy::kStorageBc * kHeadDim];
+    alignas(16) Element v[Policy::kStorageBc * Policy::kPitchV];
+    alignas(16) Element q[kBr * kHeadDim];
   };
 
  private:
   SharedStorage& storage_;
-  int thread_, lane_, warp_m_, warp_n_;
+  int thread_, warp_, lane_;
+  SmemIteratorQ smem_iterator_q_;
+  SmemIteratorK smem_iterator_k_;
+  SmemIteratorV smem_iterator_v_;
+
+  // Same organization as example 13's B2bMmaMultistage::copy_tiles_and_advance_0:
+  // Mma owns the shared iterators and issues copies through stock iterator APIs.
+  // Global iterators are local copies; the mainloop advances the tile origins.
+  CUTLASS_DEVICE
+  void copy_query(IteratorQ iterator_q, int valid_q) {
+    if (thread_ < kCopyThreadsQ) {
+      iterator_q.set_iteration_index(0);
+      smem_iterator_q_.set_iteration_index(0);
+      int first_row = ThreadMapQ::initial_offset(thread_).strided();
+      CUTLASS_PRAGMA_UNROLL
+      for (int i = 0; i < ThreadMapQ::Iterations::kCount; ++i) {
+        int row = first_row + (i / ThreadMapQ::Iterations::kContiguous) * ThreadMapQ::Delta::kStrided;
+        cutlass::arch::cp_async_zfill<sizeof(AccessTypeQ), cutlass::arch::CacheOperation::Global>(
+            smem_iterator_q_.get(), iterator_q.get(), iterator_q.valid() && row < valid_q);
+        ++iterator_q;
+        ++smem_iterator_q_;
+      }
+    }
+  }
+
+  CUTLASS_DEVICE
+  void copy_key_value(IteratorK iterator_k, IteratorV iterator_v, int valid_kv) {
+    if (thread_ < kCopyThreadsK) {
+      iterator_k.set_iteration_index(0);
+      smem_iterator_k_.set_iteration_index(0);
+      int first_row = ThreadMapK::initial_offset(thread_).strided();
+      CUTLASS_PRAGMA_UNROLL
+      for (int i = 0; i < ThreadMapK::Iterations::kCount; ++i) {
+        int row = first_row + (i / ThreadMapK::Iterations::kContiguous) * ThreadMapK::Delta::kStrided;
+        // Zero the physical padding beyond logical Bc, including steady-state tiles.
+        cutlass::arch::cp_async_zfill<sizeof(AccessTypeK), cutlass::arch::CacheOperation::Global>(
+            smem_iterator_k_.get(), iterator_k.get(), iterator_k.valid() && row < valid_kv);
+        ++iterator_k;
+        ++smem_iterator_k_;
+      }
+    }
+    if (thread_ < kCopyThreadsV) {
+      iterator_v.set_iteration_index(0);
+      smem_iterator_v_.set_iteration_index(0);
+      int first_row = ThreadMapV::initial_offset(thread_).strided();
+      CUTLASS_PRAGMA_UNROLL
+      for (int i = 0; i < ThreadMapV::Iterations::kCount; ++i) {
+        int row = first_row + (i / ThreadMapV::Iterations::kContiguous) * ThreadMapV::Delta::kStrided;
+        // V remains logically row-major; the SM80 congruous layout swizzles banks.
+        cutlass::arch::cp_async_zfill<sizeof(AccessTypeV), cutlass::arch::CacheOperation::Global>(
+            smem_iterator_v_.get(), iterator_v.get(), iterator_v.valid() && row < valid_kv);
+        ++iterator_v;
+        ++smem_iterator_v_;
+      }
+    }
+  }
 
   CUTLASS_DEVICE
   static float reduce_max(float x) {
@@ -55,144 +143,175 @@ class FlashAttnMma {
  public:
   CUTLASS_DEVICE
   FlashAttnMma(SharedStorage& storage, int thread, int warp, int lane)
-      : storage_(storage), thread_(thread), lane_(lane),
-        warp_m_(warp % Policy::kWarpsM), warp_n_(warp / Policy::kWarpsM) {}
+      : storage_(storage), thread_(thread), warp_(warp), lane_(lane),
+        smem_iterator_q_({storage.q, LayoutQ(kHeadDim)},
+                         thread % kCopyThreadsQ),
+        smem_iterator_k_({storage.k, LayoutK(kHeadDim)},
+                         thread % kCopyThreadsK),
+        smem_iterator_v_({storage.v, LayoutV(Policy::kPitchV)},
+                         thread % kCopyThreadsV) {}
 
+  // Match official FA1 device_1xN_loop -> device_1xN_ (num_splits=1).
+  // Keep explicit m/l (Algorithm 1), rather than the official LSE encoding.
+  // Algorithm 1 line 2: first KV round initializes O_i=0, l_i=0, m_i=-inf in
+  // registers. Later rounds reload their FP32 state from global workspace.
   CUTLASS_DEVICE
-  void operator()(int kv_tile_iterations, int first_kv_rows,
-                  FragmentO& output, FragmentL& denominator,
-                  IteratorQ iterator_q, IteratorK iterator_k, IteratorV iterator_v,
-                  float scale) {
-    using LayoutQ = typename Policy::LayoutQ;
-    using LayoutK = typename Policy::LayoutK;
-    using LayoutP = typename Policy::LayoutP;
-    using LayoutV = typename Policy::LayoutV;
-    FragmentL running_max;
-    CUTLASS_PRAGMA_UNROLL
-    for (int r = 0; r < FragmentL::kElements; ++r) running_max[r] = -CUDART_INF_F;
-
-    // Q is persistent. Only K is staged; V keeps one buffer like LeetCUDA.
-    Policy::LoaderQ::copy(iterator_q, storage_.q, thread_);
-    cutlass::arch::cp_async_fence();
-
-    if (Policy::kStages == 2) {
-      Policy::LoaderK::copy(iterator_k, storage_.k[0], thread_);
-      iterator_k.add_tile_offset({0, 1});
+  void operator()(SharedStorage &storage, ) {
+    // Swizzle block
+    ProbabilityOutputOp convert(ProbabilityOutputParams{});
+    for (int j = 0; j < kv_tile_iterations; ++j) {
+      // Matrix coordinates are (sequence, channel). The iterator itself uses
+      // PitchLinear (channel, sequence), hence the {0, tile_index} conversion.
+      cutlass::MatrixCoord tb_offset_kv{j * kBc, 0};
+      IteratorK iterator_k = iterator_k_begin;
+      IteratorV iterator_v = iterator_v_begin;
+      if (tb_offset_kv.row()) {
+        iterator_k.add_tile_offset({0, tb_offset_kv.row() / kBc});
+        iterator_v.add_tile_offset({0, tb_offset_kv.row() / kBc});
+      }
+      int remaining_kv = seq_length_kv - tb_offset_kv.row();
+      int valid_kv = remaining_kv < kBc ? remaining_kv : kBc;
+      bool is_first = j == 0;
+      bool is_last = j + 1 == kv_tile_iterations;
+      copy_key_value(iterator_k, iterator_v, valid_kv);
       cutlass::arch::cp_async_fence();
       cutlass::arch::cp_async_wait<0>();
-      __syncthreads();
-    }
+      __syncthreads(); // K/V stay resident throughout the inner Q scan.
 
-    int read_stage = 0;
-    for (int tile = 0; tile < kv_tile_iterations; ++tile) {
-      // Stock access iterators visit the residue first, then full KV tiles.
-      // QK's padded score columns must use the same extent as the copies.
-      int valid_kv = tile == 0 ? first_kv_rows : kBc;
-      if (Policy::kStages == 1) {
-        Policy::LoaderK::copy(iterator_k, storage_.k[0], thread_);
-        iterator_k.add_tile_offset({0, 1});
+      StateTileIterator state = state_begin;
+      OutputTileIterator destination = output_begin;
+      for (int q = 0; q < q_tile_iterations; ++q) {
+        cutlass::MatrixCoord tb_offset_q{q * kBr, 0};
+        IteratorQ iterator_q = iterator_q_begin;
+        if (tb_offset_q.row())
+          iterator_q.add_tile_offset({0, tb_offset_q.row() / kBr});
+        int remaining_q = seq_length - tb_offset_q.row();
+        int valid_q = remaining_q < kBr ? remaining_q : kBr;
+        copy_query(iterator_q, valid_q);
         cutlass::arch::cp_async_fence();
-      }
-      Policy::LoaderV::copy(iterator_v, storage_.v, thread_);
-      iterator_v.add_tile_offset({0, 1});
-      cutlass::arch::cp_async_fence();
-
-      bool has_next = tile + 1 < kv_tile_iterations;
-      if (Policy::kStages == 2 && has_next) {
-        int write_stage = read_stage ^ 1;
-        Policy::LoaderK::copy(iterator_k, storage_.k[write_stage], thread_);
-        iterator_k.add_tile_offset({0, 1});
-        cutlass::arch::cp_async_fence();
-      }
-      if (Policy::kStages == 1) {
-        cutlass::arch::cp_async_wait<1>();
-        __syncthreads(); // Q and current K are visible; V may still be in flight.
-      }
-
-      typename WarpQK::IteratorA qa({storage_.q, LayoutQ(Policy::kPitchQ)}, lane_);
-      typename WarpQK::IteratorB kb({storage_.k[read_stage], LayoutK(Policy::kPitchQ)}, lane_);
-      qa.add_tile_offset({warp_m_, 0});
-      kb.add_tile_offset({0, warp_n_});
-      FragmentS score;
-      score.clear();
-      WarpQK{}(qa, kb, kHeadDim / 16, score);
-
-      FragmentL maximum, sum, alpha;
-      sum.clear();
-      CUTLASS_PRAGMA_UNROLL
-      for (int r = 0; r < FragmentL::kElements; ++r) maximum[r] = -CUDART_INF_F;
-      CUTLASS_PRAGMA_UNROLL
-      for (int i = 0; i < FragmentS::kElements; ++i) {
-        int col = warp_n_ * Policy::WarpShapeQK::kN + WarpQK::column(i, lane_);
-        score[i] = col < valid_kv ? score[i] * scale : -CUDART_INF_F;
-        int r = WarpQK::row_slot(i);
-        maximum[r] = fmaxf(maximum[r], score[i]);
-      }
-      CUTLASS_PRAGMA_UNROLL
-      for (int r = 0; r < FragmentL::kElements; ++r) {
-        maximum[r] = reduce_max(maximum[r]);
-        int row = warp_m_ * Policy::WarpShapeQK::kM + WarpQK::row(r, lane_);
-        if (lane_ % 4 == 0) storage_.row_max[warp_n_][row] = maximum[r];
-      }
-      __syncthreads(); // QK warps have only 1/4 of each row: exchange max.
-
-      CUTLASS_PRAGMA_UNROLL
-      for (int r = 0; r < FragmentL::kElements; ++r) {
-        int row = warp_m_ * Policy::WarpShapeQK::kM + WarpQK::row(r, lane_);
-        float m = running_max[r];
-        CUTLASS_PRAGMA_UNROLL
-        for (int n = 0; n < Policy::kWarpsN; ++n) m = fmaxf(m, storage_.row_max[n][row]);
-        alpha[r] = __expf(running_max[r] - m);
-        running_max[r] = m;
-      }
-      LayoutP layout_p(kBc);
-      cutlass::NumericConverter<Element, float> convert;
-      CUTLASS_PRAGMA_UNROLL
-      for (int i = 0; i < FragmentS::kElements; ++i) {
-        int r = WarpQK::row_slot(i);
-        int row = warp_m_ * Policy::WarpShapeQK::kM + WarpQK::row(r, lane_);
-        int col = warp_n_ * Policy::WarpShapeQK::kN + WarpQK::column(i, lane_);
-        float p = __expf(score[i] - running_max[r]);
-        sum[r] += p;
-        storage_.p[layout_p({row, col})] = convert(p);
-      }
-      CUTLASS_PRAGMA_UNROLL
-      for (int r = 0; r < FragmentL::kElements; ++r) {
-        sum[r] = reduce_sum(sum[r]);
-        int row = warp_m_ * Policy::WarpShapeQK::kM + WarpQK::row(r, lane_);
-        if (lane_ % 4 == 0) storage_.row_sum[warp_n_][row] = sum[r];
-      }
-      __syncthreads(); // P is readable by every PV warp; exchange row sum.
-
-      if (Policy::kStages == 2 && has_next)
-        cutlass::arch::cp_async_wait<1>(); // Drain V, leave next K outstanding.
-      else
         cutlass::arch::cp_async_wait<0>();
-      __syncthreads(); // cp.async wait is per thread; make V visible CTA-wide.
+        __syncthreads();
+        if (warp_ < kComputeWarps) {
+          RowIterator rows(row_maximum + tb_offset_q.row() + warp_ * WarpShapeQK::kM,
+                           row_denominator + tb_offset_q.row() + warp_ * WarpShapeQK::kM,
+                           WarpShapeQK::kM, 0, lane_);
+          FragmentO output;
+          FragmentL maximum, denominator;
+          if (is_first) {
+            output.clear();
+            denominator.clear();
+            CUTLASS_PRAGMA_UNROLL
+            for (int r = 0; r < FragmentL::kElements; ++r)
+              maximum[r] = -CUDART_INF_F;
+          } else {
+            state.load(output);
+            rows.load(maximum, denominator);
+          }
+          // QK: the warp layer owns the D/16 instruction loop.
+          WarpIteratorQ qa({storage_.q, LayoutQ(kHeadDim)}, lane_);
+          WarpIteratorK kb({storage_.k, LayoutK(kHeadDim)}, lane_);
+          qa.add_tile_offset({warp_, 0});
+          FragmentS score;
+          score.clear();
+          WarpQK mma_qk{};
+          mma_qk(qa, kb, kQkIterations, score);
 
-      CUTLASS_PRAGMA_UNROLL
-      for (int r = 0; r < FragmentL::kElements; ++r) {
-        int row = warp_m_ * Policy::WarpShapeQK::kM + WarpQK::row(r, lane_);
-        float l = 0.f;
-        CUTLASS_PRAGMA_UNROLL
-        for (int n = 0; n < Policy::kWarpsN; ++n) l += storage_.row_sum[n][row];
-        denominator[r] = alpha[r] * denominator[r] + l;
-      }
-      // Warp N now indexes output channels. It no longer partitions softmax K.
-      CUTLASS_PRAGMA_UNROLL
-      for (int i = 0; i < FragmentO::kElements; ++i) output[i] *= alpha[WarpPV::row_slot(i)];
-      typename WarpPV::IteratorA pa({storage_.p, LayoutP(kBc)}, lane_);
-      typename WarpPV::IteratorB vb({storage_.v, LayoutV(Policy::kPitchV)}, lane_);
-      pa.add_tile_offset({warp_m_, 0});
-      vb.add_tile_offset({0, warp_n_});
-      WarpPV{}(pa, vb, kBc / 16, output);
-      __syncthreads(); // Release P/V and reduction scratch before the next tile.
+          // Attention-specific online softmax; CUTLASS GEMM does not supply
+          // this step.
+          FragmentL tile_max, tile_sum; // tilde m_ij, tilde l_ij
+          CUTLASS_PRAGMA_UNROLL
+          for (int r = 0; r < FragmentL::kElements; ++r)
+            tile_max[r] = -CUDART_INF_F;
+          tile_sum.clear();
 
-      if (Policy::kStages == 2) {
-        cutlass::arch::cp_async_wait<0>();
-        __syncthreads(); // The prefetched K stage is now visible to every warp.
-        if (has_next) read_stage ^= 1;
-      }
+          // Each warp owns all KV columns of its Q rows; no cross-warp
+          // reduction.
+          CUTLASS_PRAGMA_UNROLL
+          for (int i = 0; i < FragmentS::kElements; ++i) {
+            int col = WarpQK::column(i, lane_);
+            score[i] = col < valid_kv ? score[i] * scale : -CUDART_INF_F;
+            int r = WarpQK::row_slot(i);
+            tile_max[r] = fmaxf(tile_max[r], score[i]);
+          }
+          CUTLASS_PRAGMA_UNROLL
+          for (int r = 0; r < FragmentL::kElements; ++r) {
+            tile_max[r] = reduce_max(tile_max[r]);
+          }
+          CUTLASS_PRAGMA_UNROLL
+          for (int i = 0; i < FragmentS::kElements; ++i) {
+            int r = WarpQK::row_slot(i);
+            // Algorithm 1, line 10: tilde P uses the current tile's maximum.
+            // Invalid KV columns have score=-inf, so their probability is zero.
+            float probability = __expf(score[i] - tile_max[r]);
+            tile_sum[r] += probability;
+            score[i] = probability;
+          }
+          CUTLASS_PRAGMA_UNROLL
+          for (int r = 0; r < FragmentL::kElements; ++r) {
+            tile_sum[r] = reduce_sum(tile_sum[r]);
+          }
+
+          // Algorithm 1, line 11. Keep alpha*l_old for the old normalized O;
+          // beta scales the current tile's tilde P V contribution.
+          FragmentL previous_weight, beta;
+          CUTLASS_PRAGMA_UNROLL
+          for (int r = 0; r < FragmentL::kElements; ++r) {
+            float new_max = fmaxf(maximum[r], tile_max[r]);
+            float alpha = __expf(maximum[r] - new_max);
+            beta[r] = __expf(tile_max[r] - new_max);
+            previous_weight[r] = alpha * denominator[r];
+            denominator[r] = previous_weight[r] + beta[r] * tile_sum[r];
+            maximum[r] = new_max;
+          }
+
+          // Compute tilde P V separately from the previous normalized output.
+          FragmentIteratorP pa(score);
+          WarpIteratorV vb({storage_.v, LayoutV(Policy::kPitchV)}, lane_);
+          FragmentO tile_output;
+          tile_output.clear();
+          MmaPV mma_pv;
+          CUTLASS_PRAGMA_UNROLL
+          for (int k = 0; k < kPvIterations; ++k) {
+            FragmentP probability;
+            FragmentV value;
+            TransformedFragmentP operand_p;
+            TransformedFragmentV operand_v;
+            pa.load(probability, convert);
+            vb.load(value);
+            ++pa;
+            ++vb;
+            mma_pv.transform(operand_p, operand_v, probability, value);
+            mma_pv(tile_output, operand_p, operand_v, tile_output);
+          }
+
+          // Algorithm 1, line 12: O_new = (alpha*l_old*O_old + beta*tilde P
+          // V)/l_new. Normalize after PV on every tile; neither P nor the final
+          // epilogue divides by l.
+          CUTLASS_PRAGMA_UNROLL
+          for (int i = 0; i < FragmentO::kElements; ++i) {
+            int r = WarpPV::row_slot(i);
+            output[i] =
+                (previous_weight[r] * output[i] + beta[r] * tile_output[i]) /
+                denominator[r];
+          }
+          if (is_last) {
+            epilogue(output, destination);
+          } else {
+            epilogue.store_intermediate(output, state);
+          }
+          rows.store(maximum, denominator);
+        }
+        // Release Q/K/V; also order global state stores before a later
+        // KV round reloads them. All threads execute the same Q/KV loop bounds.
+        __syncthreads();
+
+        if (q + 1 < q_tile_iterations) {
+          state.add_tile_offset({kBr / WarpShapeQK::kM, 0});
+          destination.add_tile_offset(
+              {kBr / OutputTileIterator::Shape::kRow, 0});
+        }
+      } // Q: every tile sees the same resident K_j/V_j.
+
     }
   }
 };

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 690" role="img" aria-labelledby="title desc" font-family="'Microsoft YaHei', 'Segoe UI', Arial, sans-serif">
+  <title id="title">02-split-kv 当前 Device、Kernel 与 Threadblock 分工</title>
+  <desc id="desc">以 D=64 为例，Device 分派架构与 D 并检查 workspace 和设备，can_implement 转发至 Kernel 的静态检查；Kernel 为 batch/head 定位并创建 iterator；Threadblock 的四个 warp 在 KV 外层、Q 内层的主循环中处理不同 Q 行。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1160" height="690" fill="#f8fafc"/>
+  <text x="580" y="38" text-anchor="middle" font-size="23" font-weight="700" fill="#0f172a">02-split-kv：从 Device 到 CTA 主循环</text>
+  <text x="580" y="63" text-anchor="middle" font-size="13" fill="#475569">当前 D=64 示例：Br=64、Bc=96、128 线程 / 4 个计算 warp</text>
+
+  <rect x="34" y="102" width="342" height="222" rx="11" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="53" y="132" font-size="17" font-weight="700" fill="#1e3a8a">device/flash_attn.cu</text>
+  <text x="53" y="161" font-size="13" fill="#334155">can_run：支持范围与设备 grid 上限</text>
+  <text x="53" y="188" font-size="13" fill="#334155">选择 SM80 / SM89、D∈{32,64,96,128}</text>
+  <text x="53" y="215" font-size="13" fill="#334155">FP16 固定；按容量公式选逻辑 Br / Bc</text>
+  <text x="53" y="242" font-size="13" fill="#334155">DefaultFlashAttn 组装 TensorOp policy</text>
+  <text x="53" y="284" font-size="14" font-weight="700" fill="#1d4ed8">dispatch&lt;Arch&gt; → launch&lt;Arch,D&gt;</text>
+
+  <rect x="409" y="102" width="342" height="222" rx="11" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+  <text x="428" y="132" font-size="17" font-weight="700" fill="#9a3412">device/flash_attn.h</text>
+  <text x="428" y="161" font-size="13" fill="#334155">FlashAttn&lt;Kernel&gt;</text>
+  <text x="428" y="188" font-size="13" fill="#334155">can_implement → Kernel::can_implement</text>
+  <text x="428" y="215" font-size="13" fill="#334155">检查 workspace、架构、smem、grid</text>
+  <text x="428" y="242" font-size="13" fill="#334155">初始化 Kernel::Params</text>
+  <text x="428" y="284" font-size="14" font-weight="700" fill="#c2410c">flash_attn_entry&lt;Kernel&gt;；grid=(B,H)</text>
+
+  <rect x="784" y="102" width="342" height="222" rx="11" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="803" y="132" font-size="17" font-weight="700" fill="#166534">kernel/flash_attn.h</text>
+  <text x="803" y="161" font-size="13" fill="#334155">静态检查形状、对齐与补齐后范围</text>
+  <text x="803" y="188" font-size="13" fill="#334155">blockIdx → (batch, head)</text>
+  <text x="803" y="215" font-size="13" fill="#334155">Q/K/V 从该 head 的序列首行定位</text>
+  <text x="803" y="242" font-size="13" fill="#334155">计算 Tq / Tkv、尾块，构造 iterator</text>
+  <text x="803" y="284" font-size="14" font-weight="700" fill="#15803d">Mma(iterator, state, output, epilogue)</text>
+
+  <g fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)">
+    <path d="M378 207 H401"/>
+    <path d="M753 207 H776"/>
+  </g>
+  <path d="M955 326 V348 H580 V366" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="61" y="375" width="1038" height="251" rx="12" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2"/>
+  <text x="83" y="406" font-size="18" font-weight="700" fill="#5b21b6">threadblock/flash_attn_mma.h：KV 外层，Q 内层</text>
+  <text x="83" y="431" font-size="13" fill="#475569">一个 CTA 负责一个 batch/head；D=64 时 4 个 warp 各算 16 行 Q，均覆盖全部 KV 列及输出通道。</text>
+
+  <rect x="89" y="458" width="207" height="103" rx="8" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="192" y="487" text-anchor="middle" font-size="15" font-weight="700" fill="#9a3412">外层 j：K/V tile</text>
+  <text x="192" y="514" text-anchor="middle" font-size="12" fill="#7c2d12">每轮搬入 shared 一次</text>
+  <text x="192" y="538" text-anchor="middle" font-size="12" fill="#7c2d12">cp_async wait + CTA sync</text>
+
+  <rect x="338" y="458" width="207" height="103" rx="8" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="441" y="487" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">内层 i：Q tile</text>
+  <text x="441" y="514" text-anchor="middle" font-size="12" fill="#1e40af">对每个 KV tile 重新搬 Q</text>
+  <text x="441" y="538" text-anchor="middle" font-size="12" fill="#1e40af">cp_async wait + CTA sync</text>
+
+  <rect x="587" y="458" width="207" height="103" rx="8" fill="#dcfce7" stroke="#86efac"/>
+  <text x="690" y="487" text-anchor="middle" font-size="15" font-weight="700" fill="#166534">各 warp 独立计算</text>
+  <text x="690" y="514" text-anchor="middle" font-size="12" fill="#166534">QK → softmax → P(reg) → PV</text>
+  <text x="690" y="538" text-anchor="middle" font-size="12" fill="#166534">每轮归一化 O</text>
+
+  <rect x="836" y="458" width="207" height="103" rx="8" fill="#ccfbf1" stroke="#5eead4"/>
+  <text x="939" y="487" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">保存状态 / 同步</text>
+  <text x="939" y="514" text-anchor="middle" font-size="12" fill="#0f766e">中间 O、m、ℓ → FP32 workspace</text>
+  <text x="939" y="538" text-anchor="middle" font-size="12" fill="#0f766e">最终 O → FP16；CTA sync</text>
+
+  <g fill="none" stroke="#475569" stroke-width="1.8" marker-end="url(#arrow)">
+    <path d="M298 509 H330"/>
+    <path d="M547 509 H579"/>
+    <path d="M796 509 H828"/>
+  </g>
+  <text x="580" y="602" text-anchor="middle" font-size="12" fill="#6d28d9">K/V 在整个 Q 扫描期间驻留；无 K 双 stage、无 Q/P shared union、无跨 warp softmax 归约。</text>
+  <text x="580" y="662" text-anchor="middle" font-size="12" fill="#64748b">Q/K/V 搬运与 CTA 同步由 threadblock 负责；Epilogue 只做最终输出转换和写回。</text>
+</svg>
